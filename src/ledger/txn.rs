@@ -1,6 +1,8 @@
 // imports
 use chrono::prelude::*;
 
+use super::wallet::Wallet;
+
 #[derive(Debug)]
 pub enum TxnType {
     Transfer,
@@ -16,8 +18,12 @@ pub struct Txn {
     signature: String,
 }
 
+pub struct TxnHash();
+pub struct TxnSignature();
+
 impl Txn {
-    /// Constructor fxn
+    /// Transaction constructor fxn
+    ///
     /// creates a transaction `object`
     /// is public
     pub fn new(
@@ -37,6 +43,23 @@ impl Txn {
             system_time,
             signature,
         }
+    }
+
+    ///
+    pub fn hash(_data: &Txn) -> TxnHash {
+        TxnHash()
+    }
+
+    ///
+    pub fn signature(_txn_hash: TxnHash) -> TxnSignature {
+        TxnSignature()
+    }
+
+    /// Takes the txn data object and returns a signature
+    pub fn sign(&self, _wallet: Wallet) -> TxnSignature {
+        let txn_hash = Self::hash(self);
+
+        Self::signature(txn_hash)
     }
 }
 
