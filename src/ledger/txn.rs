@@ -56,6 +56,24 @@ impl Txn {
         }
     }
 
+    // Signature is a ecdsa signature
+    pub fn validate_signature(&self, wallet: &Wallet) -> Option<bool> {
+        // init
+        let secp = Secp256k1::verification_only();
+
+        let pub_key = wallet.get_pubkey();
+        // TODO: get correct message body to hash
+        let msg_bytes = &[0xab; 32];
+        let msg = Message::from_slice(msg_bytes).expect("trying to get txn message");
+
+        if let Some(sig) = self.signature {
+            // return bool
+            Some(secp.verify_ecdsa(&msg, &sig, &pub_key).is_ok())
+        } else {
+            None
+        }
+    }
+
     /// Analogous wrapper method for `get_hash`
     /// Creates a transaction hash from transaction body
     /// Must be a full and complete transaction body

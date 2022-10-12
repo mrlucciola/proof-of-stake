@@ -1,10 +1,9 @@
 use anyhow::{format_err, Result};
 // imports
-// use p256::ecdsa::{signature::Signer, Signature, SigningKey};
 use secp256k1::{
     ecdsa::Signature as EcdsaSignature,
     rand::{rngs, SeedableRng},
-    KeyPair, Message, Secp256k1,
+    KeyPair, Message, PublicKey, Secp256k1,
 };
 use std::{
     fs::File,
@@ -15,19 +14,6 @@ use super::txn::Txn;
 
 pub struct TxnHash();
 pub struct TxnSignature();
-// pub struct TxnUtils();
-// impl TxnUtils {
-//     pub fn signature(_txn_hash: TxnHash) -> TxnSignature {
-//         TxnSignature()
-//     }
-
-//     /// Takes the txn data object and returns a signature
-//     pub fn get_txn_signature(_data: Txn) -> TxnSignature {
-//         let txn_hash = Txn::hash_txn(_data);
-
-//         Self::signature(txn_hash)
-//     }
-// }
 
 pub struct Wallet {
     /// TODO: make private
@@ -71,24 +57,13 @@ impl Wallet {
         sig
     }
 
-    // Signature is a ed25519 signature
-    pub fn signature_valid(
-        wallet: &Self,
-        txn_data: Txn,
-        signature: EcdsaSignature,
-        _pub_key_str: &String,
-    ) -> bool {
-        let pub_key = wallet.keypair.public_key();
-
-        let secp = Secp256k1::verification_only();
-
-        // TODO: get correct message body to hash
-        let _msg_hash = txn_data.hash();
-        let msg_bytes = &[0xab; 32];
-        let msg = Message::from_slice(msg_bytes).expect("trying to get txn message");
-
-        // return bool
-        secp.verify_ecdsa(&msg, &signature, &pub_key).is_ok()
+    /// Get the public key for this respective wallet
+    pub fn get_pubkey(&self) -> PublicKey {
+        self.keypair.public_key()
+    }
+    /// Get the string representation of the public key for this respective wallet
+    pub fn get_pubkey_str(&self) -> String {
+        self.keypair.public_key().to_string()
     }
 
     /// if you dont have a key, create one
