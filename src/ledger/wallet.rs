@@ -1,7 +1,7 @@
-use anyhow::{format_err, Result};
 // imports
+use anyhow::{format_err, Result};
 use secp256k1::{
-    ecdsa::Signature as EcdsaSignature,
+    ecdsa::Signature as TxnSignature,
     rand::{rngs, SeedableRng},
     KeyPair, Message, PublicKey, Secp256k1,
 };
@@ -11,9 +11,6 @@ use std::{
 };
 // local
 use super::txn::Txn;
-
-pub struct TxnHash();
-pub struct TxnSignature();
 
 pub struct Wallet {
     /// TODO: make private
@@ -37,33 +34,38 @@ impl Wallet {
         Self { keypair }
     }
 
+    pub fn get_msg_signature(&self, txn_msg: &Message) -> TxnSignature {
+        let secp = Secp256k1::new();
+        let sig: TxnSignature = secp.sign_ecdsa(&txn_msg, &self.keypair.secret_key());
+
+        sig
+    }
+
     /// Add the signature to the transaction body.
     ///
     /// 1) Sign the transaction
     /// 2) Return signature
-    pub fn sign(&self, txn_data: &Txn) -> EcdsaSignature {
-        let _txn_hash = txn_data.hash();
+    pub fn sign(&self, txn: &mut Txn) {
+        // get the txn message
+        let msg = txn.get_txn_msg();
+        // sign the txn
+        let sig = self.get_msg_signature(&msg);
 
-        let secp = Secp256k1::new();
-
-        // TODO: get correct message body to hash
-        let msg_bytes = &[0xab; 32];
-        let msg = Message::from_slice(msg_bytes).expect("trying to get txn message");
-
-        // 1) sign
-        let sig = secp.sign_ecdsa(&msg, &self.keypair.secret_key());
-
-        // 2) return transaction signature
-        sig
+        txn.signature = Some(sig);
     }
 
+    pub fn validate_signature(txn: &Txn, signature: TxnSignature, pbkey: PublicKey) -> bool {
+        // let txn_hash = txn_data.hash();
+        false
+    }
+
+    /// Get keypair for this respective wallet
+    fn get_keypair(&self) -> KeyPair {
+        self.keypair
+    }
     /// Get the public key for this respective wallet
     pub fn get_pubkey(&self) -> PublicKey {
         self.keypair.public_key()
-    }
-    /// Get the string representation of the public key for this respective wallet
-    pub fn get_pubkey_str(&self) -> String {
-        self.keypair.public_key().to_string()
     }
 
     /// if you dont have a key, create one
