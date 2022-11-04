@@ -1,11 +1,7 @@
 // imports
 use anyhow::Result as AResult;
 use chrono::prelude::*;
-use secp256k1::{
-    ecdsa::Signature as TxnSignature,
-    rand::{rngs, SeedableRng},
-    Message, PublicKey, Secp256k1,
-};
+use secp256k1::{ecdsa::Signature as TxnSignature, Message, PublicKey, Secp256k1};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 // local
@@ -13,18 +9,14 @@ use super::wallet::Wallet;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum TxnType {
-    Transfer,
+    Transfer = 1,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TxnBody {
     pub amt: u128,
-    pub txn_type: TxnType,
-    /// timestamp
-    pub system_time: u64,
     pub recv_pubkey: PublicKey,
     pub sender_pubkey: PublicKey,
-    pub id: String,
 }
 
 // TODO: turn this into a full-fledged wrapper around txn data
@@ -33,6 +25,10 @@ pub struct Txn {
     pub body: TxnBody,
     /// Ecdsa
     pub signature: Option<TxnSignature>,
+    /// The time the txn was created
+    pub system_time: u64,
+    pub txn_type: TxnType,
+    pub id: String,
 }
 impl Txn {
     /// Transaction constructor fxn
@@ -53,16 +49,17 @@ impl Txn {
             sender_pubkey,
             recv_pubkey,
             amt,
-            txn_type,
-            system_time, // timestamp
-            id,
         };
         Self {
+            system_time, // timestamp
             body,
             signature: Option::None,
+            txn_type,
+            id,
         }
     }
 
+    /// Get the hash digest of the transaction message
     pub fn get_txn_msg(&self) -> Message {
         let txn_msg_bytes = self.message_bytes();
 
@@ -125,38 +122,57 @@ impl Txn {
     }
 }
 
-pub fn create_sample_unsigned_txn() -> Txn {
-    let secp = Secp256k1::new();
-    let mut rng = rngs::StdRng::seed_from_u64(10);
-    let (_sender_privkey, sender_pubkey) = secp.generate_keypair(&mut rng);
-    let (_recv_privkey, recv_pubkey) = secp.generate_keypair(&mut rng);
+mod tests {
+    use secp256k1::KeyPair;
+    use std::{fs::File, io::BufReader};
+    fn init_test_vars() -> (KeyPair, KeyPair) {
+        let sender_kp = create_keypair_from_file("test_key.json".to_string());
+        let recv_kp = create_keypair_from_file("test_key_recv.json".to_string());
 
-    let amt = 100;
-    let txn_type = TxnType::Transfer;
+        (sender_kp, recv_kp)
+    }
+    fn create_keypair_from_file(filepath: String) -> KeyPair {
+        let f = File::open(filepath).unwrap();
+        let reader = BufReader::new(f);
+        let key_json: Vec<u8> = serde_json::from_reader(reader).unwrap();
+        let secp = Secp256k1::new();
 
-    // get signature
-    Txn::new(sender_pubkey, recv_pubkey, amt, txn_type)
-}
-pub fn create_sample_signed_txn() -> Txn {
-    let secp = Secp256k1::new();
-    let mut rng = rngs::StdRng::seed_from_u64(10);
-    let (_sender_privkey, sender_pubkey) = secp.generate_keypair(&mut rng);
-    let (_recv_privkey, recv_pubkey) = secp.generate_keypair(&mut rng);
+        let keypair = KeyPair::from_seckey_slice(&secp, &key_json).unwrap();
 
-    let amt = 100;
-    let txn_type = TxnType::Transfer;
+        keypair
+    }
+    fn create_transfer_txn_msg() -> Message {
+        let (sender_kp, recv_kp) = init_test_vars();
 
-    // turn the raw txn into message
-    let mut txn = Txn::new(sender_pubkey, recv_pubkey, amt, txn_type);
-    let msg = txn.get_txn_msg();
+        // turn the raw txn into message
+        let txn = Txn::new(
+            sender_kp.public_key(),
+            recv_kp.public_key(),
+            100,
+            TxnType::Transfer,
+        );
 
-    // get signature
-    let secp = Secp256k1::new();
-    let mut rng = rngs::StdRng::seed_from_u64(9);
-    let (priv_key, _pub_key) = secp.generate_keypair(&mut rng);
+        txn.get_txn_msg()
+    }
+    use super::*;
 
-    let signature = secp.sign_ecdsa(&msg, &priv_key);
-    txn.signature = Some(signature);
+    #[test]
+    fn create_unsigned_txn() {
+        let answer = "dbb52e564948611791557341a83560a75e8f375490433e319b8dbef6d78e1a9f";
+        let msg = create_transfer_txn_msg();
 
-    txn
+        assert!(msg.to_string() == answer.to_string(), "{msg:?}");
+    }
+    #[test]
+    fn create_signed_txn() {
+        let (sender_kp, _recv_kp) = init_test_vars();
+        let msg = create_transfer_txn_msg();
+
+        // get signature
+        let secp = Secp256k1::new();
+        let signature: TxnSignature = secp.sign_ecdsa(&msg, &sender_kp.secret_key());
+        let answer = "3045022100fd15a048c36c5b3805da858e7a8a68d6c4bfd45450b0bf4bdfefcb7e92b553f30220445729607f6a2fb18c592922bd2bc44c0daf66fa43205820c9073c3b3568654f";
+
+        assert!(signature.to_string() == answer.to_string(), "{signature:?}",);
+    }
 }

@@ -21,8 +21,7 @@ impl Wallet {
     /// Create a new wallet instance
     ///
     /// 1. load keypair
-    /// TODO: input from file
-    pub fn new(filepath: &String) -> Self {
+    pub fn new_from_file(filepath: &String) -> Self {
         // load the keypair
         let f = File::open(filepath).unwrap();
         let reader = BufReader::new(f);
@@ -45,13 +44,15 @@ impl Wallet {
     ///
     /// 1) Sign the transaction
     /// 2) Return signature
-    pub fn sign(&self, txn: &mut Txn) {
+    pub fn sign(&self, txn: &mut Txn) -> TxnSignature {
         // get the txn message
         let msg = txn.get_txn_msg();
         // sign the txn
         let sig = self.get_msg_signature(&msg);
 
         txn.signature = Some(sig);
+
+        sig
     }
 
     pub fn validate_signature(txn: &Txn, signature: TxnSignature, pbkey: PublicKey) -> bool {
@@ -59,10 +60,6 @@ impl Wallet {
         false
     }
 
-    /// Get keypair for this respective wallet
-    fn get_keypair(&self) -> KeyPair {
-        self.keypair
-    }
     /// Get the public key for this respective wallet
     pub fn get_pubkey(&self) -> PublicKey {
         self.keypair.public_key()
