@@ -59,6 +59,25 @@ impl Txn {
         }
     }
 
+    /// Signed transaction constructor fxn
+    ///
+    /// Create a transaction and sign it with given wallet
+    pub fn new_signed(
+        wallet: Wallet,
+        recv_pbkey: PublicKey,
+        amt_to_send: u128,
+        txn_type: TxnType,
+    ) -> Txn {
+        let mut txn = Self::new(wallet.get_pbkey(), recv_pbkey, amt_to_send, txn_type);
+        let sig = wallet.sign(&mut txn);
+
+        let is_signed = txn.signature.unwrap() == sig;
+
+        match is_signed {
+            true => return txn,
+            false => panic!("transaction is not signed"),
+        }
+    }
     /// Get the hash digest of the transaction message
     pub fn get_txn_msg(&self) -> Message {
         let txn_msg_bytes = self.message_bytes();
@@ -135,6 +154,8 @@ mod tests {
 
         txn.get_txn_msg()
     }
+    use crate::ledger::txn;
+
     use super::*;
 
     #[test]
@@ -152,6 +173,20 @@ mod tests {
         // get signature
         let secp = Secp256k1::new();
         let signature: TxnSignature = secp.sign_ecdsa(&msg, &sender_kp.secret_key());
+        let answer = "3045022100fd15a048c36c5b3805da858e7a8a68d6c4bfd45450b0bf4bdfefcb7e92b553f30220445729607f6a2fb18c592922bd2bc44c0daf66fa43205820c9073c3b3568654f";
+
+        assert!(signature.to_string() == answer.to_string(), "{signature:?}",);
+    }
+    #[test]
+    fn create_new_signed_txn() {
+        let (kp_send, kp_recv) = init_test_vars();
+        let wallet_send = Wallet::new_from_kp(&kp_send);
+        let signed_txn = Txn::new_signed(wallet_send, kp_recv.public_key(), 100, TxnType::Transfer);
+        let msg = signed_txn.get_txn_msg();
+
+        // get signature
+        let secp = Secp256k1::new();
+        let signature: TxnSignature = secp.sign_ecdsa(&msg, &kp_send.secret_key());
         let answer = "3045022100fd15a048c36c5b3805da858e7a8a68d6c4bfd45450b0bf4bdfefcb7e92b553f30220445729607f6a2fb18c592922bd2bc44c0daf66fa43205820c9073c3b3568654f";
 
         assert!(signature.to_string() == answer.to_string(), "{signature:?}",);

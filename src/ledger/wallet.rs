@@ -20,7 +20,7 @@ pub struct Wallet {
 impl Wallet {
     /// Create a new wallet instance
     ///
-    /// 1. load keypair
+    /// Load keypair from file and return wallet instance
     pub fn new_from_file(filepath: &String) -> Self {
         // load the keypair
         let f = File::open(filepath).unwrap();
@@ -31,6 +31,14 @@ impl Wallet {
         let keypair = KeyPair::from_seckey_slice(&secp, &key_json).unwrap();
 
         Self { keypair }
+    }
+    /// Create a new wallet instance
+    ///
+    /// Load keypair and return wallet instance
+    pub fn new_from_kp(keypair: &KeyPair) -> Self {
+        Self {
+            keypair: keypair.clone(),
+        }
     }
 
     pub fn get_msg_signature(&self, txn_msg: &Message) -> TxnSignature {
