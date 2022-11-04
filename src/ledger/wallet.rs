@@ -3,7 +3,7 @@ use anyhow::{format_err, Result};
 use secp256k1::{
     ecdsa::Signature as TxnSignature,
     rand::{rngs, SeedableRng},
-    KeyPair, Message, PublicKey, Secp256k1,
+    Error as SecpError, KeyPair, Message, PublicKey, Secp256k1,
 };
 use std::{
     fs::File,
@@ -55,13 +55,20 @@ impl Wallet {
         sig
     }
 
-    pub fn validate_signature(txn: &Txn, signature: TxnSignature, pbkey: PublicKey) -> bool {
+    pub fn validate_signature(txn: &Txn, signature: &TxnSignature, pbkey: &PublicKey) -> bool {
         // let txn_hash = txn_data.hash();
-        false
+        let secp = Secp256k1::new();
+        let is_valid = match secp.verify_ecdsa(&txn.get_txn_msg(), signature, pbkey) {
+            Ok(_) => true,
+            Err(SecpError::IncorrectSignature) => false,
+            Err(e) => panic!("Signature validation: {}", e),
+        };
+
+        is_valid
     }
 
     /// Get the public key for this respective wallet
-    pub fn get_pubkey(&self) -> PublicKey {
+    pub fn get_pbkey(&self) -> PublicKey {
         self.keypair.public_key()
     }
 

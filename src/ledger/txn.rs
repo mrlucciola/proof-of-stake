@@ -84,25 +84,6 @@ impl Txn {
         sig
     }
 
-    /// Check if the existing signature matches the transaction object
-    /// Only works if signature is set
-    /// Signature is a ecdsa signature
-    pub fn validate_signature(&self, sig: TxnSignature, wallet: Wallet) -> Option<bool> {
-        let msg = self.get_txn_msg();
-        let pbkey = wallet.get_pubkey();
-
-        // init
-        let secp = Secp256k1::verification_only();
-
-        Some(secp.verify_ecdsa(&msg, &sig, &pbkey).is_ok());
-        if let Some(sig) = self.signature {
-            // return bool
-            Some(true)
-        } else {
-            None
-        }
-    }
-
     /// Wrapper for wallet.sign()
     ///
     /// 1) Sign the transaction
