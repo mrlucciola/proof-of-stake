@@ -1,4 +1,4 @@
-pub mod txn;
-pub mod wallet;
 pub mod general;
-pub mod TxnPool;
+pub mod txn;
+pub mod txn_pool;
+pub mod wallet;
