@@ -1,4 +1,24 @@
 {
+  "name": "proof-of-stake",
+  "version": "0.0.0",
+  "description": "Proof of stake implementation in Rust",
+  "main": "./",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrlucciola/proof-of-stake.git"
+  },
+  "keywords": [
+    "PoS",
+    "Proof of Stake",
+    "Blockchain",
+    "Consensus"
+  ],
+  "author": "Rocco Lucciola (mrlucciola)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mrlucciola/proof-of-stake/issues"
+  },
+  "homepage": "https://github.com/mrlucciola/proof-of-stake#readme",
   "devDependencies": {
     "husky": "^8.0.0"
   },
@@ -7,6 +27,10 @@
     "@commitlint/config-conventional": "^17.3.0"
   },
   "scripts": {
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "standard-version",
+    "release:patch": "standard-version --release-as patch",
+    "release:minor": "standard-version --release-as minor",
+    "release:major": "standard-version --release-as major"
   }
 }
