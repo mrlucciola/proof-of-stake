@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npx --no-install commitlint --edit "$1"
+
+# follows the https://www.conventionalcommits.org/en/v1.0.0/ standard
+
+MESSAGE=$(cat $1)
+COMMITFORMAT="^(feat|fix|docs|style|refactor|test|chore|perf|other)(\((.*)\))?: #([0-9]+) (.*)$"
+
+if ! [[ "$MESSAGE" =~ $COMMITFORMAT ]]; then
+  echo "Your commit was rejected due to the commit message. Skipping..."
+  echo ""
+  echo "Please use the following format:"
+  echo "feat: #1234 feature example comment"
+  echo "fix(ui): #4321 bugfix example comment"
+  echo ""
+  echo "More details on COMMITS.md"
+  exit 1
+fi
