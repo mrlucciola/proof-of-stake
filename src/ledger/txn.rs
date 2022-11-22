@@ -7,12 +7,12 @@ use uuid::Uuid;
 // local
 use super::wallet::Wallet;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum TxnType {
     Transfer = 1,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct TxnBody {
     pub amt: u128,
     pub recv_pubkey: PublicKey,
@@ -20,7 +20,7 @@ pub struct TxnBody {
 }
 
 // TODO: turn this into a full-fledged wrapper around txn data
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Txn {
     pub body: TxnBody,
     /// Ecdsa
@@ -28,7 +28,7 @@ pub struct Txn {
     /// The time the txn was created
     pub system_time: u64,
     pub txn_type: TxnType,
-    pub id: String,
+    pub hash: Option<Message>,
 }
 impl Txn {
     /// Transaction constructor fxn
@@ -42,7 +42,6 @@ impl Txn {
         txn_type: TxnType,
     ) -> Self {
         let system_time: u64 = Utc::now().timestamp_millis().try_into().unwrap();
-        let id = Uuid::new_v4().to_string();
 
         // TODO: make `new` assoc fxn
         let body = TxnBody {
@@ -50,12 +49,13 @@ impl Txn {
             recv_pubkey,
             amt,
         };
+        let hash = Self::get_txn_hash(&body);
         Self {
             system_time, // timestamp
             body,
             signature: Option::None,
             txn_type,
-            id,
+            hash: Some(hash),
         }
     }
 
@@ -78,9 +78,17 @@ impl Txn {
             false => panic!("transaction is not signed"),
         }
     }
-    /// Get the hash digest of the transaction message
-    pub fn get_txn_msg(&self) -> Message {
-        let txn_msg_bytes = self.message_bytes();
+    /// Hash the transaction and store the output on the Txn object
+    pub fn hash(&mut self) -> Message {
+        let hash = self.get_txn_msg();
+
+        self.hash = Some(hash);
+
+        hash
+    }
+    /// Get the hash digest of the transaction message - associated fxn
+    pub fn get_txn_hash(txn_body: &TxnBody) -> Message {
+        let txn_msg_bytes = Self::get_msg_bytes(txn_body);
 
         // get hash digest of txn
         use blake3::traits::digest::Digest;
@@ -91,6 +99,10 @@ impl Txn {
 
         // return the message digest
         Message::from_slice(&hash).expect("trying to get txn message")
+    }
+    /// Get the hash digest of the transaction message - method
+    pub fn get_txn_msg(&self) -> Message {
+        Self::get_txn_hash(&self.body)
     }
 
     /// Create and return a message signature based on
@@ -113,7 +125,12 @@ impl Txn {
 
         Ok(())
     }
+    /// Get the message in bytes from transaction body
+    pub fn get_msg_bytes(txn_body: &TxnBody) -> Vec<u8> {
+        let encoded: Vec<u8> = serde_json::to_vec(txn_body).unwrap();
 
+        encoded
+    }
     /// Get the message in bytes
     pub fn message_bytes(&self) -> Vec<u8> {
         let encoded: Vec<u8> = serde_json::to_vec(&self.body).unwrap();
