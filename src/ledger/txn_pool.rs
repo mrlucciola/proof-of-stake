@@ -1,22 +1,36 @@
+use std::collections::HashMap;
+
 use secp256k1::Message;
 
 use super::txn::Txn;
 pub type Result<T> = std::result::Result<T, failure::Error>;
+pub type TxnMap = HashMap<Message, Txn>;
 
 /// Data structure which holds all pending transactions
 #[derive(Debug)]
 struct TxnPool {
     /// Array of transactions
-    txns: Vec<Txn>,
+    txns: TxnMap,
 }
-/// TODO: create `add_txn` method
-/// TODO: create `remove_txn` method
 impl TxnPool {
     /// Initializer for Transaction Pool
     ///
     /// Create a data structure which
     pub fn new() -> Self {
-        TxnPool { txns: vec![] }
+        let new_thing = TxnMap::new();
+
+        TxnPool {
+            txns: TxnMap::new(),
+        }
+    }
+    /// Check if a transaction exists in the txn pool (#7)
+    ///
+    /// Use txn hash to query the pool, return true if it exists
+    pub fn does_txn_exist(&self, &txn_hash: &Message) -> bool {
+        match self.txns.get(&txn_hash) {
+            Some(x) => true,
+            None => false,
+        }
     }
     /// Add a transaction to the pool
     ///
@@ -25,7 +39,7 @@ impl TxnPool {
         // TODO: verify the requesting node is authorized
 
         // add txn to pool
-        self.txns.push(txn);
+        self.txns.entry(txn.get_txn_msg()).or_insert(txn);
 
         Ok(())
     }
@@ -33,26 +47,15 @@ impl TxnPool {
     /// Remove a transaction from the pool by its hash
     ///
     /// Calls remove_txn
-    pub fn remove_txn(&mut self, txn_hash: &Message) -> Result<()> {
+    pub fn remove_txn(&mut self, txn_hash: &Message) -> Result<Txn> {
         // TODO: verify the requesting node is authorized
 
-        let txn_iter: Vec<&Txn> = self
-            .txns
-            .iter()
-            .filter(|&v| &v.hash.unwrap() == txn_hash)
-            .collect();
-
-        // verify no dups
-        match txn_iter.len() {
-            // fine
-            1 => {}
-            0 => return Err(failure::err_msg("NotFound")),
-            x if x > 1 => return Err(failure::err_msg("DuplicateTxn")),
-            _ => return Err(failure::err_msg("UnknownError")),
+        match self.txns.remove(txn_hash) {
+            Some(txn) => Ok(txn),
+            None => Err(failure::err_msg("NoTxn")), // TODO: create proper txn error
         }
-        self.txns.retain(|txn| &txn.hash.unwrap() != txn_hash);
 
-        Ok(())
+        // Ok(())
     }
 }
 
@@ -116,6 +119,24 @@ mod tests {
         // remove from pool
         txn_pool.remove_txn(&hash)?;
         assert!(txn_pool.txns.len() == 0);
+
+        Ok(())
+    }
+    #[test]
+    fn does_txn_exist_PASS() -> Result<()> {
+        // init txn pool
+        let mut txn_pool = TxnPool::new();
+        let pbkey1 = Wallet::new_from_file(&"./test_key.json".to_string()).get_pbkey();
+        let pbkey2 = Wallet::new_from_file(&"./test_key_recv.json".to_string()).get_pbkey();
+        // create txn
+        let txn_1 = Txn::new(pbkey1, pbkey2, 100, TxnType::Transfer);
+
+        // add to pool
+        txn_pool.add_txn(txn_1.clone())?;
+        assert!(txn_pool.txns.len() == 1);
+        let hash = txn_1.get_txn_msg();
+
+        assert!(txn_pool.does_txn_exist(&hash));
 
         Ok(())
     }
