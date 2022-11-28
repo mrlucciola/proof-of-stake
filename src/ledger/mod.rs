@@ -1,3 +1,4 @@
+pub mod block;
 pub mod general;
 pub mod txn;
 pub mod txn_pool;

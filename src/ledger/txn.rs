@@ -1,11 +1,14 @@
 // imports
 use anyhow::Result as AResult;
 use chrono::prelude::*;
-use secp256k1::{ecdsa::Signature as TxnSignature, Message, PublicKey, Secp256k1};
+use secp256k1::{Message, Secp256k1};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 // local
 use super::wallet::Wallet;
+// aliased types
+use super::general::PbKey;
+pub use secp256k1::ecdsa::Signature as TxnSignature;
+pub use secp256k1::Message as TxnHash;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum TxnType {
@@ -15,8 +18,8 @@ pub enum TxnType {
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct TxnBody {
     pub amt: u128,
-    pub recv_pubkey: PublicKey,
-    pub sender_pubkey: PublicKey,
+    pub recv_pubkey: PbKey,
+    pub sender_pubkey: PbKey,
 }
 
 // TODO: turn this into a full-fledged wrapper around txn data
@@ -36,8 +39,8 @@ impl Txn {
     /// creates a transaction `object`
     /// is public
     pub fn new(
-        sender_pubkey: PublicKey,
-        recv_pubkey: PublicKey,
+        sender_pubkey: PbKey,
+        recv_pubkey: PbKey,
         amt: u128,
         txn_type: TxnType,
     ) -> Self {
@@ -64,7 +67,7 @@ impl Txn {
     /// Create a transaction and sign it with given wallet
     pub fn new_signed(
         wallet: Wallet,
-        recv_pbkey: PublicKey,
+        recv_pbkey: PbKey,
         amt_to_send: u128,
         txn_type: TxnType,
     ) -> Txn {
