@@ -1,19 +1,24 @@
 // imports
 use anyhow::{format_err, Result};
 use secp256k1::{
-    ecdsa::Signature as TxnSignature,
     rand::{rngs, SeedableRng},
-    Error as SecpError, KeyPair, Message, PublicKey, Secp256k1,
+    Error as SecpError,
+    KeyPair,
+    Message,
+    PublicKey,
+    Secp256k1,
 };
 use std::{
     fs::File,
     io::{BufReader, BufWriter, Write},
 };
 // local
-use super::txn::Txn;
+use crate::ledger::{
+    general::SecpEcdsaSignature,
+    txn::{Txn, TxnHash, TxnSig},
+};
 
 pub struct Wallet {
-    /// TODO: make private
     keypair: KeyPair,
 }
 
@@ -40,37 +45,46 @@ impl Wallet {
             keypair: keypair.clone(),
         }
     }
-
-    pub fn get_msg_signature(&self, txn_msg: &Message) -> TxnSignature {
-        let secp = Secp256k1::new();
-        let sig: TxnSignature = secp.sign_ecdsa(&txn_msg, &self.keypair.secret_key());
-
-        sig
-    }
-
-    /// Add the signature to the transaction body.
+    /// Sign transaction hash with `secp256k1` library, and return the signature.
     ///
-    /// 1) Sign the transaction
-    /// 2) Return signature
-    pub fn sign(&self, txn: &mut Txn) -> TxnSignature {
-        // get the txn message
-        let msg = txn.get_txn_msg();
-        // sign the txn
-        let sig = self.get_msg_signature(&msg);
+    /// For use in `secp256k1` transaction signing.
+    fn secp_get_sig_from_txn_hash(&self, txn_hash: &TxnHash) -> TxnSig {
+        // Convert byte array to `secp256k1::Message` format
+        let msg = secp256k1::Message::from_slice(txn_hash).unwrap();
+        // init secp
+        let secp = Secp256k1::new();
 
-        txn.signature = Some(sig);
+        let sig = secp.sign_ecdsa(&msg, &self.keypair.secret_key());
 
-        sig
+        sig.serialize_compact()
+    }
+    /// Convert compact signature byte array to `Signature` struct.
+    ///
+    /// For use in `secp256k1` transaction signing.
+    fn secp_sig_bytes_to_sig_obj(sig_bytes: &TxnSig) -> secp256k1::ecdsa::Signature {
+        secp256k1::ecdsa::Signature::from_compact(sig_bytes).unwrap()
+    }
+    /// Return the signature for a given txn hash/message.
+    ///
+    /// Take in message/hash digest, sign digest with current wallet's key, return signature.
+    pub fn get_signature(&self, txn_hash: &TxnHash) -> TxnSig {
+        // convert to correct message type
+        self.secp_get_sig_from_txn_hash(txn_hash)
     }
 
-    pub fn validate_signature(txn: &Txn, signature: &TxnSignature, pbkey: &PublicKey) -> bool {
+    pub fn validate_signature(
+        txn: &Txn,
+        signature: &SecpEcdsaSignature,
+        pbkey: &PublicKey,
+    ) -> bool {
         // let txn_hash = txn_data.hash();
         let secp = Secp256k1::new();
-        let is_valid = match secp.verify_ecdsa(&txn.get_txn_msg(), signature, pbkey) {
-            Ok(_) => true,
-            Err(SecpError::IncorrectSignature) => false,
-            Err(e) => panic!("Signature validation: {}", e),
-        };
+        let is_valid =
+            match secp.verify_ecdsa(&Message::from_slice(&txn.hash()).unwrap(), signature, pbkey) {
+                Ok(_) => true,
+                Err(SecpError::IncorrectSignature) => false,
+                Err(e) => panic!("Signature validation: {}", e),
+            };
 
         is_valid
     }

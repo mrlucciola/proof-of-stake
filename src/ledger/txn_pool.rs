@@ -1,16 +1,17 @@
+// import
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-use secp256k1::Message;
-
-use super::txn::Txn;
+// local
+use crate::ledger::txn::{Txn, TxnHash};
+// export types
 pub type Result<T> = std::result::Result<T, failure::Error>;
-pub type TxnMap = HashMap<Message, Txn>;
+pub type TxnMap = HashMap<TxnHash, Txn>;
 
 /// Data structure which holds all pending transactions
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 struct TxnPool {
-    /// Array of transactions
-    txns: TxnMap,
+    // Array of transactions
+    pub txns: TxnMap,
 }
 impl TxnPool {
     /// Initializer for Transaction Pool
@@ -26,7 +27,7 @@ impl TxnPool {
     /// Check if a transaction exists in the txn pool (#7)
     ///
     /// Use txn hash to query the pool, return true if it exists
-    pub fn does_txn_exist(&self, &txn_hash: &Message) -> bool {
+    pub fn does_txn_exist(&self, &txn_hash: &TxnHash) -> bool {
         match self.txns.get(&txn_hash) {
             Some(x) => true,
             None => false,
@@ -39,7 +40,7 @@ impl TxnPool {
         // TODO: verify the requesting node is authorized
 
         // add txn to pool
-        self.txns.entry(txn.get_txn_msg()).or_insert(txn);
+        self.txns.entry(txn.hash).or_insert(txn);
 
         Ok(())
     }
@@ -47,7 +48,7 @@ impl TxnPool {
     /// Remove a transaction from the pool by its hash
     ///
     /// Calls remove_txn
-    pub fn remove_txn(&mut self, txn_hash: &Message) -> Result<Txn> {
+    pub fn remove_txn(&mut self, txn_hash: &TxnHash) -> Result<Txn> {
         // TODO: verify the requesting node is authorized
 
         match self.txns.remove(txn_hash) {
@@ -60,7 +61,9 @@ impl TxnPool {
 }
 
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
+    #[allow(unused_imports)]
     use crate::ledger::{txn::TxnType, wallet::Wallet};
 
     #[test]
@@ -114,7 +117,7 @@ mod tests {
         // add to pool
         txn_pool.add_txn(txn_1.clone())?;
         assert!(txn_pool.txns.len() == 1);
-        let hash = txn_1.get_txn_msg();
+        let hash = txn_1.hash();
 
         // remove from pool
         txn_pool.remove_txn(&hash)?;
@@ -134,7 +137,7 @@ mod tests {
         // add to pool
         txn_pool.add_txn(txn_1.clone())?;
         assert!(txn_pool.txns.len() == 1);
-        let hash = txn_1.get_txn_msg();
+        let hash = txn_1.hash;
 
         assert!(txn_pool.does_txn_exist(&hash));
 
