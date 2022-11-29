@@ -5,23 +5,23 @@ use std::collections::HashMap;
 use crate::ledger::txn::{Txn, TxnHash};
 // export types
 pub type Result<T> = std::result::Result<T, failure::Error>;
-pub type TxnMap = HashMap<TxnHash, Txn>;
+pub type PoolTxnMap = HashMap<TxnHash, Txn>;
 
 /// Data structure which holds all pending transactions
 #[derive(Debug, Serialize, Deserialize)]
 struct TxnPool {
     // Array of transactions
-    pub txns: TxnMap,
+    pub txns: PoolTxnMap,
 }
 impl TxnPool {
     /// Initializer for Transaction Pool
     ///
     /// Create a data structure which
     pub fn new() -> Self {
-        let new_thing = TxnMap::new();
+        let new_thing = PoolTxnMap::new();
 
         TxnPool {
-            txns: TxnMap::new(),
+            txns: PoolTxnMap::new(),
         }
     }
     /// Check if a transaction exists in the txn pool (#7)
