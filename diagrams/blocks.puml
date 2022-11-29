@@ -1,0 +1,11 @@
+@startuml
+' `-`: private, `#`: protected, `~`: package private, `+`: public
+class "Block" as bl {
+  +transactions: Txn
+  +prev_blockhash: TxnHash
+  +leader: PbKey
+  +block_ct: u128
+}
+
+
+@enduml
