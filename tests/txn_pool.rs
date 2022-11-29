@@ -5,17 +5,20 @@ use posbc::ledger::{
     txn_pool::{Result, TxnPool},
 };
 
-mod common;
-use crate::common::init_send_recv;
+pub mod common;
+use common::init_send_recv;
+// pub use crate::common::init_send_recv;
 
 // TODO: create a fail case (if possible)
 #[test]
 fn create_txn_pool_pass() {
     let txn_pool = TxnPool::new();
+
     assert!(txn_pool.txns.len() == 0);
 }
+
 #[test]
-fn add_txn_pass() -> Result<()> {
+pub fn add_txn_pass() -> Result<()> {
     // init
     let (send, recv) = init_send_recv();
     let mut txn_pool = TxnPool::new();

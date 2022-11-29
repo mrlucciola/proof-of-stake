@@ -4,9 +4,10 @@ use std::{fs::File, io::BufReader};
 // local
 use posbc::ledger::{
     general::{PbKey, KP},
+    txn::{Txn, TxnHash, TxnType},
     wallet::Wallet,
 };
-mod constants;
+pub mod constants;
 use constants::*;
 
 fn create_keypair_from_file(filepath: &String) -> KP {
@@ -50,4 +51,18 @@ pub fn init_users() -> UsersInfo {
 pub fn init_send_recv() -> (UserInfo, UserInfo) {
     let users = init_users();
     (users.send, users.recv)
+}
+
+pub fn create_transfer_txn_msg() -> blake3::Hash {
+    let (send, recv) = init_send_recv();
+
+    // turn the raw txn into message
+    let txn = Txn::new(send.pbkey(), recv.pbkey(), 100, TxnType::Transfer);
+    let mut txn = Txn {
+        system_time: 1669699785826,
+        ..txn
+    };
+    txn.set_hash();
+
+    Txn::get_hash(&txn)
 }
