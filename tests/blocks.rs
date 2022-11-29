@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 // imports
 // local
 use posbc::ledger::{
@@ -78,11 +76,6 @@ fn create_full_block() {
     // create txn map
     add_sample_txns_to_block(3, &mut block);
 
-    // for tx in block.transactions.iter() {
-    //     println!("\n\ntx: {:?}--\n{:?}\n", tx.0, tx.1);
-    // }
-
     // check if hashes line up
     assert_eq!(block.hash(), block.hash, "{:?}", block.hash());
-    // assert_eq!(new_block.hash(), "".as_bytes(), "{:?}", new_block.hash());
 }

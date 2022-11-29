@@ -35,8 +35,7 @@ pub struct Txn {
 impl Txn {
     /// Transaction constructor fxn
     ///
-    /// creates a transaction `object`
-    /// is public
+    /// Creates a transaction `object`
     pub fn new(
         pbkey_send: PbKey,
         pbkey_recv: PbKey,
@@ -106,9 +105,6 @@ impl Txn {
     pub fn hash(&self) -> TxnHash {
         Self::get_hash(&self).as_bytes().to_owned()
     }
-    // pub fn hash_bytes(&self) -> TxnHash {
-    //     let hash = Self::get_hash(&self)
-    // }
     /// Get Txn map key (String) from byte array
     pub fn hash_str(&self) -> String {
         let hash = Self::get_hash(&self);
