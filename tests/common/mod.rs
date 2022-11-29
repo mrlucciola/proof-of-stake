@@ -4,7 +4,7 @@ use std::{fs::File, io::BufReader};
 // local
 use posbc::ledger::{
     general::{PbKey, KP},
-    txn::{Txn, TxnHash, TxnType},
+    txn::{Txn, TxnType},
     wallet::Wallet,
 };
 pub mod constants;
@@ -53,7 +53,7 @@ pub fn init_send_recv() -> (UserInfo, UserInfo) {
     (users.send, users.recv)
 }
 
-pub fn create_transfer_txn_msg() -> blake3::Hash {
+pub fn create_transfer_txn() -> Txn {
     let (send, recv) = init_send_recv();
 
     // turn the raw txn into message
@@ -64,5 +64,5 @@ pub fn create_transfer_txn_msg() -> blake3::Hash {
     };
     txn.set_hash();
 
-    Txn::get_hash(&txn)
+    txn
 }

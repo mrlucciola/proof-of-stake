@@ -11,7 +11,7 @@ pub type PoolTxnMap = HashMap<TxnHash, Txn>;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TxnPool {
     // Array of transactions
-    pub txns: PoolTxnMap,
+    txns: PoolTxnMap,
 }
 impl TxnPool {
     /// Initializer for Transaction Pool
@@ -54,5 +54,11 @@ impl TxnPool {
             Some(txn) => Ok(txn),
             None => Err(failure::err_msg("NoTxn")), // TODO: create proper txn error
         }
+    }
+    pub fn txns(&self) -> &PoolTxnMap {
+        &self.txns
+    }
+    pub fn txn_ct(&self) -> usize {
+        self.txns.len()
     }
 }

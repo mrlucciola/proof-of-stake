@@ -85,9 +85,10 @@ impl Wallet {
         self.keypair.public_key()
     }
 
-    /// if you dont have a key, create one
-    /// filepath must be json
-    pub fn create_key(filepath: String) -> Result<()> {
+    /// if you dont have a key, create one.
+    /// 
+    /// File must be `.json`.
+    pub fn create_random_key(filepath: String) -> Result<()> {
         if !filepath.contains(".json") {
             return Err(format_err!("Please specify json filetype."));
         }
