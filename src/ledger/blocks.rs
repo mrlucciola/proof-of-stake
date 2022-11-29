@@ -98,8 +98,3 @@ impl Block {
         hash
     }
 }
-
-// tests:
-// create a block
-// add txn to block
-// add block to chain
