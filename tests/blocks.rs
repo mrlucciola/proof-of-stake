@@ -8,6 +8,11 @@ use posbc::ledger::{
 mod common;
 use common::{init_users, UsersInfo};
 
+// tests:
+// create a block
+// add txn to block
+// add block to chain
+
 fn create_sample_txn_map(num_txns: u8) -> BlockTxnMap {
     let UsersInfo {
         main: _,

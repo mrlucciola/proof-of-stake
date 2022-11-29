@@ -2,7 +2,10 @@
 use secp256k1::Secp256k1;
 use std::{fs::File, io::BufReader};
 // local
-use posbc::ledger::{general::KP, wallet::Wallet};
+use posbc::ledger::{
+    general::{PbKey, KP},
+    wallet::Wallet,
+};
 mod constants;
 use constants::*;
 
@@ -21,6 +24,11 @@ pub struct UserInfo {
     pub kp: KP,
     pub wallet: Wallet,
 }
+impl UserInfo {
+    pub fn pbkey(&self) -> PbKey {
+        self.kp.public_key()
+    }
+}
 fn get_user_info(key_str: &String) -> UserInfo {
     let kp = create_keypair_from_file(key_str);
     let wallet = Wallet::new_from_kp(&kp);
@@ -37,4 +45,9 @@ pub fn init_users() -> UsersInfo {
         send: get_user_info(&KEYPAIR_SEND.to_string()),
         recv: get_user_info(&KEYPAIR_RECV.to_string()),
     }
+}
+
+pub fn init_send_recv() -> (UserInfo, UserInfo) {
+    let users = init_users();
+    (users.send, users.recv)
 }
