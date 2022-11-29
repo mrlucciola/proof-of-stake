@@ -90,7 +90,7 @@ impl Txn {
         adj_txn_body.signature = [0u8; 64];
 
         // serialize to a byte vector
-        let txn_msg_bytes: Vec<u8> = serde_json::to_vec(txn).unwrap();
+        let txn_msg_bytes: Vec<u8> = serde_json::to_vec(&adj_txn_body).unwrap();
 
         // get hash digest of txn
         let mut hasher = blake3::Hasher::new();
