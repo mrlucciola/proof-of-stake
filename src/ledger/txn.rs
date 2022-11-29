@@ -1,5 +1,4 @@
 // imports
-// use anyhow::Result as AResult;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_big_array::{self, BigArray};

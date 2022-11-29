@@ -2,9 +2,12 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 // local
-use crate::ledger::txn::{Txn, TxnHash};
+use crate::ledger::{
+    general::Result,
+    txn::{Txn, TxnHash},
+};
+
 // export types
-pub type Result<T> = std::result::Result<T, failure::Error>;
 pub type PoolTxnMap = HashMap<TxnHash, Txn>;
 
 /// Data structure which holds all pending transactions
@@ -52,7 +55,7 @@ impl TxnPool {
         // TODO: verify the requesting node is authorized
         match self.txns.remove(txn_hash) {
             Some(txn) => Ok(txn),
-            None => Err(failure::err_msg("NoTxn")), // TODO: create proper txn error
+            None => Err(anyhow::format_err!("NoTxn")), // TODO: create proper txn error
         }
     }
     pub fn txns(&self) -> &PoolTxnMap {

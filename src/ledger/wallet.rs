@@ -1,5 +1,5 @@
 // imports
-use anyhow::{format_err, Result};
+use anyhow::format_err;
 use secp256k1::{
     rand::{rngs, SeedableRng},
     Error as SecpError, KeyPair, Message, Secp256k1,
@@ -10,7 +10,7 @@ use std::{
 };
 // local
 use crate::ledger::{
-    general::{PbKey, SecpEcdsaSignature},
+    general::{PbKey, SecpEcdsaSignature, Result},
     txn::{Txn, TxnHash, TxnSig},
 };
 
@@ -86,7 +86,7 @@ impl Wallet {
     }
 
     /// if you dont have a key, create one.
-    /// 
+    ///
     /// File must be `.json`.
     pub fn create_random_key(filepath: String) -> Result<()> {
         if !filepath.contains(".json") {

@@ -1,5 +1,4 @@
 // imports
-use anyhow::Result;
 use ledger::txn::{Txn, TxnSig, TxnType};
 // local
 pub mod ledger;
