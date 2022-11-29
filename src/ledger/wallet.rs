@@ -2,11 +2,7 @@
 use anyhow::{format_err, Result};
 use secp256k1::{
     rand::{rngs, SeedableRng},
-    Error as SecpError,
-    KeyPair,
-    Message,
-    PublicKey,
-    Secp256k1,
+    Error as SecpError, KeyPair, Message, Secp256k1,
 };
 use std::{
     fs::File,
@@ -14,7 +10,7 @@ use std::{
 };
 // local
 use crate::ledger::{
-    general::SecpEcdsaSignature,
+    general::{PbKey, SecpEcdsaSignature},
     txn::{Txn, TxnHash, TxnSig},
 };
 
@@ -61,7 +57,7 @@ impl Wallet {
     /// Convert compact signature byte array to `Signature` struct.
     ///
     /// For use in `secp256k1` transaction signing.
-    fn secp_sig_bytes_to_sig_obj(sig_bytes: &TxnSig) -> secp256k1::ecdsa::Signature {
+    pub fn secp_sig_bytes_to_sig_obj(sig_bytes: &TxnSig) -> secp256k1::ecdsa::Signature {
         secp256k1::ecdsa::Signature::from_compact(sig_bytes).unwrap()
     }
     /// Return the signature for a given txn hash/message.
@@ -72,12 +68,7 @@ impl Wallet {
         self.secp_get_sig_from_txn_hash(txn_hash)
     }
 
-    pub fn validate_signature(
-        txn: &Txn,
-        signature: &SecpEcdsaSignature,
-        pbkey: &PublicKey,
-    ) -> bool {
-        // let txn_hash = txn_data.hash();
+    pub fn validate_signature(txn: &Txn, signature: &SecpEcdsaSignature, pbkey: &PbKey) -> bool {
         let secp = Secp256k1::new();
         let is_valid =
             match secp.verify_ecdsa(&Message::from_slice(&txn.hash()).unwrap(), signature, pbkey) {
@@ -90,7 +81,7 @@ impl Wallet {
     }
 
     /// Get the public key for this respective wallet
-    pub fn get_pbkey(&self) -> PublicKey {
+    pub fn pbkey(&self) -> PbKey {
         self.keypair.public_key()
     }
 
