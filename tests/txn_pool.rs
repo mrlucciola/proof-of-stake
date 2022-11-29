@@ -1,8 +1,9 @@
 // imports
 // local
 use posbc::ledger::{
+    general::Result,
     txn::{Txn, TxnType},
-    txn_pool::{Result, TxnPool},
+    txn_pool::TxnPool,
 };
 
 pub mod common;
