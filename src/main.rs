@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn example_create_and_sign_txn() -> (Txn, TxnSig) {
-    let wallet_main = Wallet::new_from_file(&"test_key.json".to_string());
+    let wallet_main = Wallet::new_from_file(&"test_key_send.json".to_string());
     let wallet_recv = Wallet::new_from_file(&"test_key_recv.json".to_string());
 
     // turn the raw txn into message

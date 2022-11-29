@@ -70,7 +70,7 @@ impl Txn {
     /// Receives `Wallet` instance for signing.
     /// Uses `Txn::new()` assoc fxn. to construct the txn, and signs the txn with given wallet.
     pub fn new_signed(
-        wallet: Wallet,
+        wallet: &Wallet,
         pbkey_recv: PublicKey,
         amt_to_send: u128,
         txn_type: TxnType,
@@ -214,7 +214,7 @@ mod tests {
     fn create_new_signed_txn() {
         let (kp_send, kp_recv) = init_test_vars();
         let wallet_send = Wallet::new_from_kp(&kp_send);
-        let signed_txn = Txn::new_signed(wallet_send, kp_recv.public_key(), 100, TxnType::Transfer);
+        let signed_txn = Txn::new_signed(&wallet_send, kp_recv.public_key(), 100, TxnType::Transfer);
         let msg = signed_txn.hash();
 
         // get signature
