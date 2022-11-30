@@ -3,3 +3,4 @@ test_key*
 /node_modules
 yarn.lock
 **/hidden*
+/tests/keys
