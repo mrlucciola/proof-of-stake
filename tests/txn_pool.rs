@@ -43,10 +43,11 @@ fn add_txn_fail_dup() -> Result<()> {
 
     // create txn
     let txn_1 = Txn::new(send.pbkey(), recv.pbkey(), 100, TxnType::Transfer);
+    let txn_1_copy = Txn { ..txn_1 };
     // add to pool
     txn_pool.add_txn(txn_1)?;
     // should fail
-    txn_pool.add_txn(txn_1)?;
+    txn_pool.add_txn(txn_1_copy)?;
     assert!(txn_pool.txn_ct() == 1);
 
     Ok(())
