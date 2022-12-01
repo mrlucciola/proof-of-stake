@@ -1,10 +1,6 @@
 // imports
 // local
-use posbc::ledger::{
-    blockchain::{Blockchain, BlocksMap},
-    blocks::{Block, BlockTxnMap},
-    txn::{Txn, TxnHash, TxnType},
-};
+use posbc::ledger::blockchain::Blockchain;
 
 pub mod common;
 use common::{init_users, UsersInfo};
@@ -14,10 +10,9 @@ use common::{init_users, UsersInfo};
 #[test]
 fn create_blockchain_pass() {
     let UsersInfo {
-        main,
+        main: _,
         send: _,
         recv: _,
     } = init_users();
     let blockchain = Blockchain::new();
-    
 }

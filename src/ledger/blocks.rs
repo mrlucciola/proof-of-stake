@@ -26,7 +26,7 @@ pub struct Block {
     pub leader: PbKey,
     pub prev_blockhash: BlockHash,
     /// block height - current number of blocks in blockchain + 1
-    pub block_height: u128,
+    pub blockheight: u128,
     /// current time - unix time stamp
     pub system_time: u64,
     /// hash of the current block
@@ -45,17 +45,17 @@ impl Block {
         transactions: BlockTxnMap,
         leader: PbKey,
         prev_blockhash: BlockHash,
-        prev_block_height: u128,
+        prev_blockheight: u128,
     ) -> Self {
         // get the current system time
         let system_time: u64 = Utc::now().timestamp_millis().try_into().unwrap();
-        let block_height = prev_block_height + 1;
+        let blockheight = prev_blockheight + 1;
 
         let mut block = Self {
             transactions,
             leader,
             prev_blockhash,
-            block_height,
+            blockheight,
             system_time,
             hash: [0u8; 32],
             signature: [0u8; 64],
