@@ -47,6 +47,7 @@ impl Blockchain {
         // check if entry exists -> if not, then insert
         self.blocks.entry(block.id_key()).or_insert(block)
     }
+    /// Getter for `blocks`
     pub fn blocks(&self) -> &BlockMap {
         &self.blocks
     }

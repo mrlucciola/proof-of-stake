@@ -6,12 +6,11 @@ use serde_big_array::{self, BigArray};
 use std::collections::BTreeMap;
 // local
 use crate::ledger::{
+    blockchain::{BlockMapKey, Blockchain},
     general::PbKey,
     txn::{Txn, TxnMapKey},
     wallet::Wallet,
 };
-
-use super::blockchain::BlockMapKey;
 
 // export types
 pub type BlockId = [u8; 32]; // TODO: change to hex
@@ -19,6 +18,7 @@ pub type BlockSignature = [u8; 64];
 
 // TODO: add condition that this map cant have more than _ number of txns
 pub type BlockTxnMap = BTreeMap<TxnMapKey, Txn>;
+pub type BlockTxnHash = String;
 
 /// Info contained within a block
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -70,7 +70,14 @@ impl Block {
         // return the block
         block
     }
-    /// Get and set the `id` for `Block` object.
+    /// Create the Genesis block.
+    ///
+    /// The genesis block is the 'seed' block for the entire blockchain
+    pub fn genesis(mut blockchain: Blockchain) {
+        // blockchain length must be == 0
+        let block_len = blockchain.blocks().len();
+    }
+    /// Get and set the `hash` for `block` object.
     ///
     /// Returns id
     pub fn set_id(&mut self) -> BlockId {
