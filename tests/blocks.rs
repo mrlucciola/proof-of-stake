@@ -40,13 +40,13 @@ fn create_empty_block_pass() {
 
     // genesis
     let prev_blockhash: TxnHash = [0u8; 32];
-    let prev_block_height = 0;
+    let prev_blockheight = 0;
     let leader = main.pbkey();
     let mut block = Block::new(
         BlockTxnMap::new(),
         leader,
         prev_blockhash,
-        prev_block_height,
+        prev_blockheight,
     );
     // create txn map
     add_sample_txns_to_block(0, &mut block);
@@ -65,13 +65,13 @@ fn create_full_block_pass() {
 
     // genesis
     let prev_blockhash: TxnHash = [0u8; 32];
-    let prev_block_height = 0;
+    let prev_blockheight = 0;
     let leader = main.pbkey();
     let mut block = Block::new(
         BlockTxnMap::new(),
         leader,
         prev_blockhash,
-        prev_block_height,
+        prev_blockheight,
     );
     // create txn map
     add_sample_txns_to_block(3, &mut block);

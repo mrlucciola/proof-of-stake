@@ -31,7 +31,7 @@ impl Blockchain {
         let leader: PbKey = leader_wallet.pbkey();
 
         let mut genesis_block = Block::new(BlockTxnMap::new(), leader, [0u8; 32], 0);
-        genesis_block.block_height = 0;
+        genesis_block.blockheight = 0;
         genesis_block.set_hash();
 
         blocks.insert(genesis_block.hash_str(), genesis_block);
