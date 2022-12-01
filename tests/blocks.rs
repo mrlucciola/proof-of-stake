@@ -31,7 +31,7 @@ fn add_sample_txns_to_block(num_txns: u8, block: &mut Block) {
 }
 
 #[test]
-fn create_empty_block() {
+fn create_empty_block_pass() {
     let UsersInfo {
         main,
         send: _,
@@ -56,7 +56,7 @@ fn create_empty_block() {
 }
 
 #[test]
-fn create_full_block() {
+fn create_full_block_pass() {
     let UsersInfo {
         main,
         send: _,
