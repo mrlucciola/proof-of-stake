@@ -7,6 +7,8 @@ use std::collections::HashMap;
 // local
 use crate::ledger::{general::PbKey, txn::Txn};
 
+use super::wallet::Wallet;
+
 // export types
 pub type BlockHash = [u8; 32];
 pub type BlockSignature = [u8; 64];
@@ -67,7 +69,7 @@ impl Block {
     /// Get and set the `hash` for `block` object.
     ///
     /// Returns hash
-    fn set_hash(&mut self) -> BlockHash {
+    pub fn set_hash(&mut self) -> BlockHash {
         let hash = self.hash();
         self.hash = hash;
 
@@ -122,5 +124,24 @@ impl Block {
     /// There should be no direct access to the `transactions` mapping.
     pub fn transactions(&self) -> &BlockTxnMap {
         &self.transactions
+    }
+    /// Create and return a block signature based on
+    ///    the contents of the transaction
+    pub fn get_signature(&self, wallet: &Wallet) -> BlockSignature {
+        wallet.get_signature(&self.hash())
+    }
+    /// Set the signature for the block
+    pub fn set_signature(&mut self, signature: BlockSignature) {
+        self.signature = signature;
+    }
+    /// Add the signature to the block body in place.
+    ///
+    /// 1) Sign the block hash
+    /// 2) Add signature to `Block` body
+    /// 3) Return signature
+    pub fn sign(&mut self, wallet: &Wallet) -> BlockSignature {
+        let sig: BlockSignature = self.get_signature(wallet);
+        self.set_signature(sig);
+        sig
     }
 }

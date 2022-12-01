@@ -15,7 +15,8 @@ pub enum TxnType {
 }
 
 /// Serializable body of the transaction
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+/// 
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Txn {
     pub amt: u128,
     pub pbkey_send: PbKey,

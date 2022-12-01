@@ -1,3 +1,4 @@
+pub mod blockchain;
 pub mod blocks;
 pub mod general;
 pub mod txn;
