@@ -6,13 +6,14 @@ use std::collections::HashMap;
 use super::{
     blocks::{Block, BlockTxnMap},
     general::{PbKey, PvKey},
+    wallet::Wallet,
 };
 
 pub type BlocksMap = HashMap<String, Block>;
 
 /// Data structure, contains list of sequential block
 #[derive(Debug, Deserialize, Serialize)]
-struct Blockchain {
+pub struct Blockchain {
     blocks: HashMap<String, Block>,
 }
 impl Blockchain {
@@ -26,9 +27,9 @@ impl Blockchain {
 
         // Create the genesis block
         // TODO: move this to a separate private method
-        let leader: PbKey = PvKey::from_slice(&[0u8; 32])
-            .expect("32 bytes, within curve order")
-            .public_key(&Secp256k1::new());
+        let leader_wallet = Wallet::new_from_file(&"hidden/master_key.json".to_string());
+        let leader: PbKey = leader_wallet.pbkey();
+
         let mut genesis_block = Block::new(BlockTxnMap::new(), leader, [0u8; 32], 0);
         genesis_block.block_height = 0;
         genesis_block.set_hash();

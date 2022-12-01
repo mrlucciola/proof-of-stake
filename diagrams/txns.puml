@@ -1,0 +1,13 @@
+@startuml
+
+class "Txn" as txn {
+  +amt: u128
+  +pbkey_send: PbKey
+  +pbkey_recv: PbKey
+  +system_time: u64
+  +txn_type: TxnType
+  +hash: TxnHash
+  +signature: TxnSig
+}
+
+@enduml
