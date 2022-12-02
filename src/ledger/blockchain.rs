@@ -1,5 +1,5 @@
 // imports
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::collections::BTreeMap;
 // local
 use super::{
@@ -12,7 +12,7 @@ use super::{
 pub type BlockMapKey = String; // TODO: change to hex
 pub type BlockMap = BTreeMap<BlockMapKey, Block>;
 /// Data structure, contains list of sequential block
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Blockchain {
     blocks: BlockMap,
 }
@@ -58,5 +58,14 @@ impl Blockchain {
         genesis_block.set_id();
 
         self.add_block(genesis_block);
+    }
+    pub fn is_genesis_block(block: &Block) -> bool {
+        let block_id = Block::calc_id(block);
+        block.id() == [0u8; 32]
+    }
+    /// Check if the current blockheight is valid
+    pub fn is_blockheight_valid(&self) -> bool {
+        self.blocks.values().last().unwrap().blockheight
+            == (self.blocks().len() - 1).try_into().unwrap()
     }
 }
