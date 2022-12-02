@@ -10,9 +10,11 @@ use std::{
 };
 // local
 use crate::ledger::{
-    general::{PbKey, SecpEcdsaSignature, Result},
+    general::{PbKey, Result, SecpEcdsaSignature},
     txn::{Txn, TxnHash, TxnSig},
 };
+
+use super::{blocks::BlockId, txn::TxnId};
 
 pub struct Wallet {
     keypair: KeyPair,
@@ -54,6 +56,16 @@ impl Wallet {
 
         sig.serialize_compact()
     }
+    fn secp_get_sig_from_block_id(&self, block_id: &BlockId) -> TxnSig {
+        // Convert byte array to `secp256k1::Message` format
+        let msg = secp256k1::Message::from_slice(block_id).unwrap();
+        // init secp
+        let secp = Secp256k1::new();
+
+        let sig = secp.sign_ecdsa(&msg, &self.keypair.secret_key());
+
+        sig.serialize_compact()
+    }
     /// Convert compact signature byte array to `Signature` struct.
     ///
     /// For use in `secp256k1` transaction signing.
@@ -63,9 +75,13 @@ impl Wallet {
     /// Return the signature for a given txn hash/message.
     ///
     /// Take in message/hash digest, sign digest with current wallet's key, return signature.
-    pub fn get_signature(&self, txn_hash: &TxnHash) -> TxnSig {
+    pub fn get_signature(&self, txn_hash: &TxnId) -> TxnSig {
         // convert to correct message type
         self.secp_get_sig_from_txn_hash(txn_hash)
+    }
+    pub fn get_block_signature(&self, block_id: &BlockId) -> TxnSig {
+        // convert to correct message type
+        self.secp_get_sig_from_block_id(block_id)
     }
 
     pub fn validate_signature(txn: &Txn, signature: &SecpEcdsaSignature, pbkey: &PbKey) -> bool {

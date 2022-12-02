@@ -5,17 +5,20 @@ use serde::{Deserialize, Serialize};
 use serde_big_array::{self, BigArray};
 use std::collections::HashMap;
 // local
-use crate::ledger::{general::PbKey, txn::Txn};
+use crate::ledger::{
+    general::PbKey,
+    txn::{Txn, TxnMapKey},
+    wallet::Wallet,
+};
 
-use super::wallet::Wallet;
+use super::blockchain::BlockMapKey;
 
 // export types
-pub type BlockHash = [u8; 32];
+pub type BlockId = [u8; 32]; // TODO: change to hex
 pub type BlockSignature = [u8; 64];
+
 // TODO: add condition that this map cant have more than _ number of txns
-// pub type BlockTxnHash = [u8; 32].to
-pub type BlockTxnHash = String;
-pub type BlockTxnMap = HashMap<BlockTxnHash, Txn>;
+pub type BlockTxnMap = HashMap<TxnMapKey, Txn>;
 
 /// Info contained within a block
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -24,13 +27,14 @@ pub struct Block {
     transactions: BlockTxnMap,
     /// public key of the current block proposer (node)
     pub leader: PbKey,
-    pub prev_blockhash: BlockHash,
+    /// Identifier of the previous block - hash digest
+    pub prev_block_id: BlockId,
     /// block height - current number of blocks in blockchain + 1
     pub blockheight: u128,
     /// current time - unix time stamp
     pub system_time: u64,
-    /// hash of the current block
-    pub hash: BlockHash,
+    /// Identifier/ID - hash digest of the current block
+    pub id: BlockId,
     /// the leader's signature for this block submission - Ecdsa signature
     #[serde(with = "BigArray")]
     pub signature: BlockSignature,
@@ -44,7 +48,7 @@ impl Block {
     pub fn new(
         transactions: BlockTxnMap,
         leader: PbKey,
-        prev_blockhash: BlockHash,
+        prev_block_id: BlockId,
         prev_blockheight: u128,
     ) -> Self {
         // get the current system time
@@ -54,43 +58,62 @@ impl Block {
         let mut block = Self {
             transactions,
             leader,
-            prev_blockhash,
+            prev_block_id,
             blockheight,
             system_time,
-            hash: [0u8; 32],
+            id: [0u8; 32],
             signature: [0u8; 64],
         };
 
-        // set the hash with the body
-        block.set_hash();
+        // set the id (hash) with the body
+        block.set_id();
         // return the block
         block
     }
-    /// Get and set the `hash` for `block` object.
+    /// Get and set the `id` for `Block` object.
     ///
-    /// Returns hash
-    pub fn set_hash(&mut self) -> BlockHash {
-        let hash = self.hash();
-        self.hash = hash;
+    /// Returns id
+    pub fn set_id(&mut self) -> BlockId {
+        let id = self.id();
+        self.id = id;
 
-        hash
+        id
     }
-    /// Method wrapper/analog for `get_hash()`
-    pub fn hash(&self) -> BlockHash {
-        Self::get_hash(&self).as_bytes().to_owned()
+    /// Method wrapper/analog for `get_id()`
+    pub fn id(&self) -> BlockId {
+        Self::get_id(&self).as_bytes().to_owned()
     }
-    /// Get BlockTxn map key (String) from byte array
-    pub fn hash_str(&self) -> String {
-        let hash = Self::get_hash(self);
-        hash.to_string()
+    /// Get Block Id in `String` form
+    /// TODO: incorrect id type
+    pub fn id_str(&self) -> String {
+        let id = self.id();
+        String::from_utf8(id.to_vec()).unwrap()
     }
-    /// Compute the hash digest of the block - associated fxn
+    /// Get Block Id in BlockMap key type
     ///
-    /// Zero-out the has and signature in order to compute properly
-    pub fn get_hash(block: &Block) -> BlakeHash {
+    /// The Txn Map key type is currently `String` (could be hex string)
+    pub fn id_key(&self) -> BlockMapKey {
+        self.id_str()
+    }
+    /// Get Block Id in `hex` form.
+    ///
+    /// TODO: convert `Self::get_id()` to `self.id()`
+    pub fn id_hex(&self) -> String {
+        let id = Self::get_id(self);
+        id.to_string()
+    }
+    /// Compute the ID (hash digest) of the block - associated fxn
+    ///
+    /// Zero-out the `id` and `signature` in order to compute properly
+    ///
+    /// TODO: abstract out the `block`-specific attributes to separate `block` struct.
+    ///     Create new `UnsignedBlock` struct - `{ block: Block, id: BlockId }`
+    ///     Create new `SignedBlock` struct - `{ block: Block, id: BlockId, signature: BlockSignature }`
+    /// TODO: change BlakeHash to BlockId
+    pub fn get_id(block: &Block) -> BlakeHash {
         let mut adj_block_body = block.clone();
         // set blank vars
-        adj_block_body.hash = [0u8; 32];
+        adj_block_body.id = [0u8; 32];
         adj_block_body.signature = [0u8; 64];
 
         // serialize to a byte vector
@@ -105,19 +128,21 @@ impl Block {
         let mut hasher = blake3::Hasher::new();
         hasher.update(b"block-v0");
         hasher.update(&block_msg_bytes);
-        let hash: BlakeHash = hasher.finalize();
+        let id_abstract: BlakeHash = hasher.finalize();
 
-        hash
+        id_abstract
     }
     /// Add a transaction to the block.
     ///
-    /// Since we are updating the state of the block, we update the block hash here.
+    /// Since we are updating the state of the block, we update the block id (hash) here.
     pub fn add_txn(&mut self, new_txn: Txn) {
+        // TODO: change to Txn.key()
         self.transactions
+            // .entry(new_txn.key())
             .entry(new_txn.hash_str())
             .or_insert(new_txn);
         // update block hash since the transactions map has been updated
-        self.set_hash();
+        self.set_id();
     }
     /// Getter for `transactions` mapping.
     ///
@@ -128,7 +153,7 @@ impl Block {
     /// Create and return a block signature based on
     ///    the contents of the transaction
     pub fn get_signature(&self, wallet: &Wallet) -> BlockSignature {
-        wallet.get_signature(&self.hash())
+        wallet.get_signature(&self.id())
     }
     /// Set the signature for the block
     pub fn set_signature(&mut self, signature: BlockSignature) {
