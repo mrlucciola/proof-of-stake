@@ -66,8 +66,8 @@ fn remove_txn_pass() -> Result<()> {
     txn_pool.add_txn(txn_1.clone())?;
 
     // remove from pool
-    let hash_to_remove = txn_1.hash();
-    txn_pool.remove_txn(&hash_to_remove)?;
+    let id_to_remove = txn_1.id();
+    txn_pool.remove_txn(&id_to_remove)?;
     assert!(txn_pool.txn_ct() == 0);
 
     Ok(())
@@ -86,9 +86,9 @@ fn does_txn_exist_pass() -> Result<()> {
     // add to pool
     txn_pool.add_txn(txn_1.clone())?;
     assert!(txn_pool.txn_ct() == 1);
-    let hash = txn_1.hash;
+    let id = txn_1.id;
 
-    assert!(txn_pool.does_txn_exist(&hash));
+    assert!(txn_pool.does_txn_exist(&id));
 
     Ok(())
 }

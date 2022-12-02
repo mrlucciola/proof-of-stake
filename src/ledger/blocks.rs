@@ -139,7 +139,7 @@ impl Block {
         // TODO: change to Txn.key()
         self.transactions
             // .entry(new_txn.key())
-            .entry(new_txn.hash_str())
+            .entry(new_txn.id_str())
             .or_insert(new_txn);
         // update block hash since the transactions map has been updated
         self.set_id();
