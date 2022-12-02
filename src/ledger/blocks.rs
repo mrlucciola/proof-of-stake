@@ -1,16 +1,16 @@
-use arrayvec::ArrayString;
-use base64::display::Base64Display;
 // imports
-// use blake3::Hash as BlakeHash;
 use chrono::prelude::*;
-use serde::{Serialize, Serializer};
-use std::{collections::BTreeMap, hash::Hash};
+use serde::Serialize;
+use std::collections::BTreeMap;
 // local
-use crate::ledger::{
-    blockchain::BlockMapKey,
-    general::PbKey,
-    txn::{Txn, TxnMapKey},
-    wallet::Wallet,
+use crate::{
+    ledger::{
+        blockchain::BlockMapKey,
+        general::PbKey,
+        txn::{Txn, TxnMapKey},
+        wallet::Wallet,
+    },
+    utils::blake_hash::{BlakeHash, BlakeHex},
 };
 
 // export types
@@ -35,10 +35,10 @@ pub struct Block {
     pub system_time: u64,
     /// Identifier/ID - hash digest of the current block
     #[serde(skip_serializing)]
-    pub id: BlockId,
+    pub id: Option<BlockId>,
     /// the leader's signature for this block submission - Ecdsa signature
     #[serde(skip_serializing)]
-    pub signature: BlockSignature,
+    pub signature: Option<BlockSignature>,
 }
 
 impl Block {
@@ -55,8 +55,6 @@ impl Block {
         // get the current system time
         let system_time: u64 = Utc::now().timestamp_millis().try_into().unwrap();
         let blockheight = prev_blockheight + 1;
-        let init_id = BlakeHash::from_bytes([0u8; 32]);
-        let init_sig = [0u8; 64];
 
         let mut block = Self {
             transactions,
@@ -64,89 +62,62 @@ impl Block {
             prev_block_id,
             blockheight,
             system_time,
-            id: init_id,
-            signature: init_sig,
+            id: None,
+            signature: None,
         };
 
         // set the id (hash) with the body
         block.set_id();
         block
     }
-    pub fn digest(&self) {
+    pub fn as_bytes(&self) -> Vec<u8> {
         // serialize to a byte vector
-        let block_digest: Vec<u8> = serde_json::to_vec(&self).expect("Error serializing block");
+        serde_json::to_vec(&self).expect("Error serializing block")
     }
-    pub fn calc_id(&self) -> BlakeHash {
-        // get hash digest of block
+    /// Calculate, set and return the id for a `Block`.
+    ///
+    /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
+    ///
+    /// Hashes this info and produces a digest - the ID.
+    pub fn calc_id(&self) -> BlockId {
         let mut hasher = blake3::Hasher::new();
+        // version
         hasher.update(b"block-v0");
-        hasher.update(&block_digest);
-        let id_abstract: BlakeHash = hasher.finalize();
-
-        id_abstract
+        // add the block bytes
+        hasher.update(&self.as_bytes());
+        // return the hash digest - the block's id
+        hasher.finalize().into()
     }
     /// Get and set the id for a `Block`.
     ///
     /// Returns id
     pub fn set_id(&mut self) -> BlockId {
-        let id = Self::calc_id(self);
-        self.id = id;
+        let id = self.calc_id();
+        self.id = Some(id);
 
         id
     }
-    /// Method wrapper/analog for `self::calc_id()`
+    /// Method wrapper/analog for `self.calc_id()`
+    ///
+    /// TODO: add `Result`
     pub fn id(&self) -> BlockId {
-        Self::calc_id(&self).as_bytes().to_owned()
+        self.id.unwrap()
     }
-    /// Get Block Id in `String` form
-    /// TODO: incorrect id type
+    /// Get Block Id in `String` form.
     pub fn id_str(&self) -> String {
-        // let id = self.id();
-        // String::from_utf8_lossy(&id.to_vec()).to_string()
-        Self::calc_id(self).to_string()
+        self.id().to_string()
     }
     /// Get Block Id in `hex` form.
-    ///
-    /// TODO: convert `Self::calc_id()` to `self.id()`
-    pub fn id_hex(&self) -> String {
-        let id = Self::calc_id(self);
-        id.to_string()
+    pub fn id_hex(&self) -> BlakeHex {
+        self.id().to_hex()
+    }
+    /// Get Block Id Hex in `String` form.
+    pub fn id_hex_string(&self) -> String {
+        self.id().to_hex().to_string()
     }
     /// Get `BlockMap` key type (derived from BlockId)
-    ///
-    /// The Block Map key type is currently `String` (could be hex string)
     pub fn id_key(&self) -> BlockMapKey {
-        self.id_str()
-    }
-    /// Compute the ID (hash digest) of the block - associated fxn
-    ///
-    /// Zero-out the `id` and `signature` in order to compute properly
-    ///
-    /// TODO: abstract out the `block`-specific attributes to separate `block` struct.
-    ///     Create new `UnsignedBlock` struct - `{ block: Block, id: BlockId }`
-    ///     Create new `SignedBlock` struct - `{ block: Block, id: BlockId, signature: BlockSignature }`
-    /// TODO: change BlakeHash to BlockId
-    pub fn _calc_id(block: &Block) -> BlakeHash {
-        let mut adj_block_body = block.clone();
-        // set blank vars
-        adj_block_body.id = [0u8; 32];
-        adj_block_body.signature = [0u8; 64];
-
-        // serialize to a byte vector
-        let block_msg_bytes: Vec<u8> = match serde_json::to_vec(&adj_block_body) {
-            Ok(b) => b,
-            Err(err) => {
-                panic!("\n\nHelp - block_msg_bytes: \n{:?}\n\n", err)
-            }
-        };
-
-        // get hash digest of block
-        let mut hasher = blake3::Hasher::new();
-        hasher.update(b"block-v0");
-        hasher.update(&block_msg_bytes);
-        let id_abstract: BlakeHash = hasher.finalize();
-
-        id_abstract
+        self.id_hex_string()
     }
     /// Add a transaction to the block.
     ///
@@ -168,11 +139,12 @@ impl Block {
     }
     /// Create and return a block signature based on
     ///    the contents of the transaction
-    pub fn get_signature(&self, wallet: &Wallet) -> BlockSignature {
-        wallet.get_signature(&self.id())
+    /// prev: get_signature
+    pub fn calc_signature(&self, wallet: &Wallet) -> BlockSignature {
+        wallet.get_signature(&self.id().as_bytes())
     }
     /// Set the signature for the block
-    pub fn set_signature(&mut self, signature: BlockSignature) {
+    fn set_signature(&mut self, signature: Option<BlockSignature>) {
         self.signature = signature;
     }
     /// Add the signature to the block body in place.
@@ -181,8 +153,9 @@ impl Block {
     /// 2) Add signature to `Block` body
     /// 3) Return signature
     pub fn sign(&mut self, wallet: &Wallet) -> BlockSignature {
-        let sig: BlockSignature = self.get_signature(wallet);
-        self.set_signature(sig);
+        let sig: BlockSignature = self.calc_signature(wallet);
+        self.set_signature(Some(sig));
+
         sig
     }
 }
