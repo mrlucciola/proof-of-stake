@@ -1,12 +1,27 @@
 use arrayvec::ArrayString;
 use base64::display::Base64Display;
+use blake3::OUT_LEN;
 use serde::{Serialize, Serializer};
+use std::convert::{From, Into};
+use std::fmt;
 
-pub const OUT_LEN: usize = 32;
+pub type BlakeHex = ArrayString<{ 2 * OUT_LEN }>;
 
-#[derive(Clone, Copy, Hash, Debug, Serialize)]
+#[derive(Clone, Copy, Hash, Serialize)]
 pub struct BlakeHash([u8; OUT_LEN]);
 
+impl Into<BlakeHash> for blake3::Hash {
+    fn into(self) -> BlakeHash {
+        BlakeHash(*self.as_bytes())
+    }
+}
+
+impl From<[u8; OUT_LEN]> for BlakeHash {
+    #[inline]
+    fn from(bytes: [u8; OUT_LEN]) -> Self {
+        Self(bytes)
+    }
+}
 impl BlakeHash {
     pub fn from_bytes(bytes: [u8; 32]) -> Self {
         Self(bytes)
@@ -57,5 +72,29 @@ pub fn serialize<S: Serializer>(v: &Vec<u8>, s: S) -> Result<S::Ok, S::Error> {
         s.collect_str(&Base64Display::with_config(v, base64::STANDARD))
     } else {
         serde_bytes::serialize(v, s)
+    }
+}
+
+impl fmt::Display for BlakeHash {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Formatting field as `&str` to reduce code size since the `Debug`
+        // dynamic dispatch table for `&str` is likely needed elsewhere already,
+        // but that for `ArrayString<[u8; 64]>` is not.
+        let hex = self.to_hex();
+        let hex: &str = hex.as_str();
+
+        f.write_str(hex)
+    }
+}
+
+impl fmt::Debug for BlakeHash {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Formatting field as `&str` to reduce code size since the `Debug`
+        // dynamic dispatch table for `&str` is likely needed elsewhere already,
+        // but that for `ArrayString<[u8; 64]>` is not.
+        let hex = self.to_hex();
+        let hex: &str = hex.as_str();
+
+        f.debug_tuple("Hash").field(&hex).finish()
     }
 }
