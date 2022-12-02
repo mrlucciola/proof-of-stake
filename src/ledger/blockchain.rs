@@ -1,6 +1,6 @@
 // imports
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 // local
 use super::{
     blocks::{Block, BlockTxnMap},
@@ -10,23 +10,23 @@ use super::{
 
 /// Lookup type for the `blocks` map a string
 pub type BlockMapKey = String; // TODO: change to hex
-pub type BlocksMap = HashMap<BlockMapKey, Block>;
+pub type BlockMap = BTreeMap<BlockMapKey, Block>;
 /// Data structure, contains list of sequential block
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Blockchain {
-    blocks: BlocksMap,
+    blocks: BlockMap,
 }
 impl Blockchain {
     /// Create new `Blockchain` instance
     ///
-    /// Contains list (hashmap) of blocks in sequence, queriable by their ID, in string form
+    /// Contains list (BTreeMap) of blocks in sequence, queriable by their ID, in string form
     ///
     /// The first block in a blockchain is the genesis block
     pub fn new() -> Self {
-        let mut blocks = BlocksMap::new();
+        let blocks = BlockMap::new();
 
         // Create the genesis block
-        // TODO: move this to a separate private method
+        // TODO: move this to a separate private method on `Block`
         let leader_wallet = Wallet::new_from_file(&"hidden/master_key.json".to_string());
         let leader: PbKey = leader_wallet.pbkey();
 
@@ -34,13 +34,20 @@ impl Blockchain {
         genesis_block.blockheight = 0;
         genesis_block.set_id();
 
-        blocks.insert(genesis_block.id_key(), genesis_block);
-        Self { blocks }
+        let mut blockchain = Self { blocks };
+
+        blockchain.add_block(genesis_block);
+
+        blockchain
     }
     /// Add a new block to the blockchain
-    pub fn add_block(&mut self, block: Block) {
-        let key = block.id();
+    pub fn add_block(&mut self, block: Block) -> &mut Block {
+        // check if block is valid
+        // check if block is signed
         // check if entry exists -> if not, then insert
-        // self.blocks.entry(key).or_insert(block)
+        self.blocks.entry(block.id_key()).or_insert(block)
+    }
+    pub fn blocks(&self) -> &BlockMap {
+        &self.blocks
     }
 }
