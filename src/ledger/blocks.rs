@@ -3,7 +3,7 @@ use blake3::Hash as BlakeHash;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_big_array::{self, BigArray};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 // local
 use crate::ledger::{
     general::PbKey,
@@ -18,7 +18,7 @@ pub type BlockId = [u8; 32]; // TODO: change to hex
 pub type BlockSignature = [u8; 64];
 
 // TODO: add condition that this map cant have more than _ number of txns
-pub type BlockTxnMap = HashMap<TxnMapKey, Txn>;
+pub type BlockTxnMap = BTreeMap<TxnMapKey, Txn>;
 
 /// Info contained within a block
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -87,13 +87,7 @@ impl Block {
     /// TODO: incorrect id type
     pub fn id_str(&self) -> String {
         let id = self.id();
-        String::from_utf8(id.to_vec()).unwrap()
-    }
-    /// Get Block Id in BlockMap key type
-    ///
-    /// The Txn Map key type is currently `String` (could be hex string)
-    pub fn id_key(&self) -> BlockMapKey {
-        self.id_str()
+        String::from_utf8_lossy(&id.to_vec()).to_string()
     }
     /// Get Block Id in `hex` form.
     ///
@@ -101,6 +95,12 @@ impl Block {
     pub fn id_hex(&self) -> String {
         let id = Self::get_id(self);
         id.to_string()
+    }
+    /// Get `BlockMap` key type (derived from BlockId)
+    ///
+    /// The Block Map key type is currently `String` (could be hex string)
+    pub fn id_key(&self) -> BlockMapKey {
+        self.id_str()
     }
     /// Compute the ID (hash digest) of the block - associated fxn
     ///

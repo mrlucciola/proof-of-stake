@@ -1,6 +1,6 @@
 // import
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 // local
 use crate::ledger::{
     general::Result,
@@ -8,7 +8,7 @@ use crate::ledger::{
 };
 
 // export types
-pub type PoolTxnMap = HashMap<TxnId, Txn>;
+pub type PoolTxnMap = BTreeMap<TxnId, Txn>;
 
 /// Data structure which holds all pending transactions
 #[derive(Debug, Serialize, Deserialize)]

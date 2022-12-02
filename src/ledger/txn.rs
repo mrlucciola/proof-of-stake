@@ -111,7 +111,6 @@ impl Txn {
         let id_abstract = Self::get_id(&self);
         id_abstract.to_string()
     }
-    #[deprecated(note = "use `id`")]
     /// Get identifier (hash) for txn and set on txn object and store the output on the Txn object
     ///
     /// Returns id
@@ -123,7 +122,7 @@ impl Txn {
     }
     /// Get id with traits from Blake3 library
     ///
-    /// Returns id
+    /// Returns id abstraction
     pub fn get_blake_id(&self) -> BlakeHash {
         let txn_id = self.id();
         BlakeHash::from(txn_id)

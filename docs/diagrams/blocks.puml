@@ -3,7 +3,7 @@ allowmixing
 
 ' `-`: private, `#`: protected, `~`: package private, `+`: public
 class "Block" as bl {
-  +transactions: ""Hashmap<Hash, Txn>""
+  +transactions: ""BTreeMap<TxnId, Txn>""
   +prev_blockhash: TxnHash
   +leader: PbKey
   +block_ct: u128
