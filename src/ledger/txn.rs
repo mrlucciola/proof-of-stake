@@ -1,6 +1,6 @@
 // imports
 use chrono::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_big_array::{self, BigArray};
 // local
 use crate::ledger::{general::PbKey, wallet::Wallet};
@@ -10,14 +10,14 @@ pub type TxnSig = [u8; 64];
 pub type TxnMapKey = String;
 pub use blake3::Hash as BlakeHash;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Serialize, Debug, Clone, Copy)]
 pub enum TxnType {
     Transfer = 1,
 }
 
 /// Serializable body of the transaction
 ///
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone)]
 pub struct Txn {
     pub amt: u128,
     pub pbkey_send: PbKey,
