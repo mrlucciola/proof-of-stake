@@ -1,20 +1,20 @@
-use secp256k1::Secp256k1;
 // imports
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 // local
 use super::{
     blocks::{Block, BlockTxnMap},
-    general::{PbKey, PvKey},
+    general::PbKey,
     wallet::Wallet,
 };
 
-pub type BlocksMap = HashMap<String, Block>;
-
+/// Lookup type for the `blocks` map a string
+pub type BlockMapKey = String; // TODO: change to hex
+pub type BlocksMap = HashMap<BlockMapKey, Block>;
 /// Data structure, contains list of sequential block
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Blockchain {
-    blocks: HashMap<String, Block>,
+    blocks: BlocksMap,
 }
 impl Blockchain {
     /// Create new `Blockchain` instance
@@ -32,9 +32,15 @@ impl Blockchain {
 
         let mut genesis_block = Block::new(BlockTxnMap::new(), leader, [0u8; 32], 0);
         genesis_block.blockheight = 0;
-        genesis_block.set_hash();
+        genesis_block.set_id();
 
-        blocks.insert(genesis_block.hash_str(), genesis_block);
+        blocks.insert(genesis_block.id_key(), genesis_block);
         Self { blocks }
+    }
+    /// Add a new block to the blockchain
+    pub fn add_block(&mut self, block: Block) {
+        let key = block.id();
+        // check if entry exists -> if not, then insert
+        // self.blocks.entry(key).or_insert(block)
     }
 }

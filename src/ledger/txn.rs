@@ -6,7 +6,10 @@ use serde_big_array::{self, BigArray};
 use crate::ledger::{general::PbKey, wallet::Wallet};
 // exported types
 pub type TxnSig = [u8; 64];
+#[deprecated(note="use `id`")]
 pub type TxnHash = [u8; 32];
+pub type TxnId = [u8; 32];
+pub type TxnMapKey = String;
 pub use blake3::Hash as BlakeHash;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -15,7 +18,7 @@ pub enum TxnType {
 }
 
 /// Serializable body of the transaction
-/// 
+///
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Txn {
     pub amt: u128,
@@ -26,6 +29,9 @@ pub struct Txn {
     /// Type of transaction - as int
     pub txn_type: TxnType,
     /// Blake3 hash as byte array
+    // pub id: TxnId,
+    // pub id: TxnHash,
+    #[deprecated(note="use `id`")]
     pub hash: TxnHash,
     /// Ecdsa signature as byte array
     #[serde(with = "BigArray")]
@@ -81,6 +87,7 @@ impl Txn {
 
         txn
     }
+    #[deprecated(note="use `id`")]
     /// Compute the hash digest of the transaction message - associated fxn
     pub fn get_hash(txn: &Txn) -> BlakeHash {
         // set blank vars
@@ -101,15 +108,18 @@ impl Txn {
 
         hash
     }
+    #[deprecated(note="use `id`")]
     /// Method wrapper/analog for `get_hash()`
     pub fn hash(&self) -> TxnHash {
         Self::get_hash(&self).as_bytes().to_owned()
     }
+    #[deprecated(note="use `id`")]
     /// Get Txn map key (String) from byte array
     pub fn hash_str(&self) -> String {
         let hash = Self::get_hash(&self);
         hash.to_string()
     }
+    #[deprecated(note="use `id`")]
     /// Get hash for txn and set on txn object and store the output on the Txn object
     ///
     /// Returns hash
