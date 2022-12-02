@@ -21,26 +21,17 @@ impl Blockchain {
     ///
     /// Contains list (BTreeMap) of blocks in sequence, queriable by their ID, in string form
     ///
-    /// The first block in a blockchain is the genesis block
+    /// The first block in a blockchain is the genesis block.
     pub fn new() -> Self {
         let blocks = BlockMap::new();
-
-        // Create the genesis block
-        // TODO: move this to a separate private method on `Block`
-        let leader_wallet = Wallet::new_from_file(&"hidden/master_key.json".to_string());
-        let leader: PbKey = leader_wallet.pbkey();
-
-        let mut genesis_block = Block::new(BlockTxnMap::new(), leader, [0u8; 32], 0);
-        genesis_block.blockheight = 0;
-        genesis_block.set_id();
-
         let mut blockchain = Self { blocks };
 
-        blockchain.add_block(genesis_block);
+        // Create the genesis block
+        blockchain.genesis();
 
         blockchain
     }
-    /// Add a new block to the blockchain
+    /// Add a new block to the blockchain.
     pub fn add_block(&mut self, block: Block) -> &mut Block {
         // check if block is valid
         // check if block is signed
@@ -50,5 +41,22 @@ impl Blockchain {
     /// Getter for `blocks`
     pub fn blocks(&self) -> &BlockMap {
         &self.blocks
+    }
+    /// Create and add the genesis block.
+    ///
+    /// The genesis block is the initial/seed block for the entire blockchain.
+    fn genesis(&mut self) {
+        if !self.blocks().is_empty() {
+            panic!("Need to be empty")
+        }
+
+        let leader_wallet = Wallet::new_from_file(&"hidden/master_key.json".to_string());
+        let leader: PbKey = leader_wallet.pbkey();
+
+        let mut genesis_block = Block::new(BlockTxnMap::new(), leader, [0u8; 32], 0);
+        genesis_block.blockheight = 0;
+        genesis_block.set_id();
+
+        self.add_block(genesis_block);
     }
 }

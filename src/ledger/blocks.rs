@@ -6,7 +6,7 @@ use serde_big_array::{self, BigArray};
 use std::collections::BTreeMap;
 // local
 use crate::ledger::{
-    blockchain::{BlockMapKey, Blockchain},
+    blockchain::BlockMapKey,
     general::PbKey,
     txn::{Txn, TxnMapKey},
     wallet::Wallet,
@@ -70,13 +70,6 @@ impl Block {
         // return the block
         block
     }
-    /// Create the Genesis block.
-    ///
-    /// The genesis block is the 'seed' block for the entire blockchain
-    pub fn genesis(mut blockchain: Blockchain) {
-        // blockchain length must be == 0
-        let block_len = blockchain.blocks().len();
-    }
     /// Get and set the `hash` for `block` object.
     ///
     /// Returns id
@@ -93,8 +86,9 @@ impl Block {
     /// Get Block Id in `String` form
     /// TODO: incorrect id type
     pub fn id_str(&self) -> String {
-        let id = self.id();
-        String::from_utf8_lossy(&id.to_vec()).to_string()
+        // let id = self.id();
+        // String::from_utf8_lossy(&id.to_vec()).to_string()
+        Self::get_id(self).to_string()
     }
     /// Get Block Id in `hex` form.
     ///
