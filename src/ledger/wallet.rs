@@ -10,11 +10,10 @@ use std::{
 };
 // local
 use crate::ledger::{
+    blocks::BlockId,
     general::{PbKey, Result, SecpEcdsaSignature},
-    txn::{Txn, TxnHash, TxnSig},
+    txn::{Txn, TxnId, TxnSig},
 };
-
-use super::{blocks::BlockId, txn::TxnId};
 
 pub struct Wallet {
     keypair: KeyPair,
@@ -43,12 +42,12 @@ impl Wallet {
             keypair: keypair.clone(),
         }
     }
-    /// Sign transaction hash with `secp256k1` library, and return the signature.
+    /// Sign transaction id with `secp256k1` library, and return the signature.
     ///
     /// For use in `secp256k1` transaction signing.
-    fn secp_get_sig_from_txn_hash(&self, txn_hash: &TxnHash) -> TxnSig {
+    fn secp_get_sig_from_txn_id(&self, txn_id: &TxnId) -> TxnSig {
         // Convert byte array to `secp256k1::Message` format
-        let msg = secp256k1::Message::from_slice(txn_hash).unwrap();
+        let msg = secp256k1::Message::from_slice(txn_id).unwrap();
         // init secp
         let secp = Secp256k1::new();
 
@@ -72,12 +71,12 @@ impl Wallet {
     pub fn secp_sig_bytes_to_sig_obj(sig_bytes: &TxnSig) -> secp256k1::ecdsa::Signature {
         secp256k1::ecdsa::Signature::from_compact(sig_bytes).unwrap()
     }
-    /// Return the signature for a given txn hash/message.
+    /// Return the signature for a given txn id/hash.
     ///
-    /// Take in message/hash digest, sign digest with current wallet's key, return signature.
-    pub fn get_signature(&self, txn_hash: &TxnId) -> TxnSig {
+    /// Take in id/hash digest, sign digest with current wallet's key, return signature.
+    pub fn get_signature(&self, txn_id: &TxnId) -> TxnSig {
         // convert to correct message type
-        self.secp_get_sig_from_txn_hash(txn_hash)
+        self.secp_get_sig_from_txn_id(txn_id)
     }
     pub fn get_block_signature(&self, block_id: &BlockId) -> TxnSig {
         // convert to correct message type
@@ -87,7 +86,7 @@ impl Wallet {
     pub fn validate_signature(txn: &Txn, signature: &SecpEcdsaSignature, pbkey: &PbKey) -> bool {
         let secp = Secp256k1::new();
         let is_valid =
-            match secp.verify_ecdsa(&Message::from_slice(&txn.hash()).unwrap(), signature, pbkey) {
+            match secp.verify_ecdsa(&Message::from_slice(&txn.id()).unwrap(), signature, pbkey) {
                 Ok(_) => true,
                 Err(SecpError::IncorrectSignature) => false,
                 Err(e) => panic!("Signature validation: {}", e),

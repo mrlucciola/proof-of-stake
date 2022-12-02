@@ -14,5 +14,5 @@ fn create_blockchain_pass() {
         send: _,
         recv: _,
     } = init_users();
-    let blockchain = Blockchain::new();
+    // let blockchain = Blockchain::new();
 }

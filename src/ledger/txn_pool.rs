@@ -4,11 +4,11 @@ use std::collections::HashMap;
 // local
 use crate::ledger::{
     general::Result,
-    txn::{Txn, TxnHash},
+    txn::{Txn, TxnId},
 };
 
 // export types
-pub type PoolTxnMap = HashMap<TxnHash, Txn>;
+pub type PoolTxnMap = HashMap<TxnId, Txn>;
 
 /// Data structure which holds all pending transactions
 #[derive(Debug, Serialize, Deserialize)]
@@ -27,9 +27,9 @@ impl TxnPool {
     }
     /// Check if a transaction exists in the txn pool (#7)
     ///
-    /// Use txn hash to query the pool, return true if it exists
-    pub fn does_txn_exist(&self, &txn_hash: &TxnHash) -> bool {
-        match self.txns.get(&txn_hash) {
+    /// Use txn id to query the pool, return true if it exists
+    pub fn does_txn_exist(&self, &txn_id: &TxnId) -> bool {
+        match self.txns.get(&txn_id) {
             Some(_) => true,
             None => false,
         }
@@ -43,17 +43,17 @@ impl TxnPool {
         // TODO: verify the requesting node is authorized
 
         // add txn to pool
-        self.txns.entry(txn.hash).or_insert(txn);
+        self.txns.entry(txn.id).or_insert(txn);
 
         Ok(())
     }
 
-    /// Remove a transaction from the pool by its hash
+    /// Remove a transaction from the pool by its id (hash)
     ///
     /// Calls remove_txn
-    pub fn remove_txn(&mut self, txn_hash: &TxnHash) -> Result<Txn> {
+    pub fn remove_txn(&mut self, txn_id: &TxnId) -> Result<Txn> {
         // TODO: verify the requesting node is authorized
-        match self.txns.remove(txn_hash) {
+        match self.txns.remove(txn_id) {
             Some(txn) => Ok(txn),
             None => Err(anyhow::format_err!("NoTxn")), // TODO: create proper txn error
         }

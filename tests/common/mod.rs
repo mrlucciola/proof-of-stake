@@ -62,7 +62,7 @@ pub fn create_transfer_txn() -> Txn {
         system_time: 1669699785826,
         ..txn
     };
-    txn.set_hash();
+    txn.set_id();
 
     txn
 }
