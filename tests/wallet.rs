@@ -2,7 +2,7 @@
 use secp256k1::{Message, Secp256k1};
 use std::str::FromStr;
 // local
-use posbc::ledger::{general::SecpEcdsaSignature, txn::Txn, wallet::Wallet};
+use posbc::{ledger::{txn::Txn, wallet::Wallet}, utils::signature::TxnSignature};
 pub mod common;
 use common::{create_transfer_txn, init_send_recv};
 
@@ -15,8 +15,6 @@ fn verify_signature_pass() {
 
     // sign with txn+wallet method
     let txn_sig_arr = txn.sign(&send.wallet);
-    // convert to Signature
-    // let txn_sig_secp = SecpEcdsaSignature::from_compact(&txn_sig_arr).unwrap();
 
     // get signature
     let secp = Secp256k1::new();
