@@ -3,7 +3,10 @@ use chrono::prelude::*;
 use serde::Serialize;
 use serde_big_array::{self, BigArray};
 // local
-use crate::ledger::{general::PbKey, wallet::Wallet};
+use crate::{
+    ledger::{general::PbKey, wallet::Wallet},
+    utils::signature::TxnSignature,
+};
 // exported types
 pub type TxnId = [u8; 32];
 pub type TxnSig = [u8; 64];
@@ -30,7 +33,7 @@ pub struct Txn {
     pub id: TxnId,
     /// Ecdsa signature as byte array
     #[serde(with = "BigArray")]
-    pub signature: TxnSig,
+    pub signature: TxnSignature,
 }
 
 impl Txn {
@@ -129,14 +132,12 @@ impl Txn {
     }
     /// Create and return a message signature based on
     ///    the contents of the transaction
-    pub fn get_signature(&self, wallet: &Wallet) -> TxnSig {
+    pub fn get_signature(&self, wallet: &Wallet) -> TxnSignature {
         let msg: TxnId = self.id();
 
-        let sig = wallet.get_signature(&msg);
-
-        sig
+        wallet.sign_txn(&msg)
     }
-    pub fn set_signature(&mut self, signature: TxnSig) {
+    pub fn set_signature(&mut self, signature: TxnSignature) {
         self.signature = signature;
     }
     /// Add the signature to the transaction body in place.
@@ -144,8 +145,8 @@ impl Txn {
     /// 1) Sign the transaction
     /// 2) Add signature to transaction body
     /// 3) Return signature
-    pub fn sign(&mut self, wallet: &Wallet) -> TxnSig {
-        let sig: TxnSig = self.get_signature(wallet);
+    pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
+        let sig = self.get_signature(wallet);
 
         // 2) set signature - add sig to txn body
         self.set_signature(sig);
