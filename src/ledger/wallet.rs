@@ -1,6 +1,7 @@
 // imports
 use anyhow::format_err;
 use secp256k1::{
+    ecdsa::Signature,
     rand::{rngs, SeedableRng},
     Error as SecpError, KeyPair, Message, Secp256k1,
 };
@@ -9,10 +10,13 @@ use std::{
     io::{BufReader, BufWriter, Write},
 };
 // local
-use crate::ledger::{
-    blocks::BlockId,
-    general::{PbKey, Result, SecpEcdsaSignature},
-    txn::{Txn, TxnId, TxnSig},
+use crate::{
+    ledger::{
+        blocks::BlockId,
+        general::{PbKey, Result, SecpEcdsaSignature},
+        txn::{Txn, TxnId},
+    },
+    utils::signature::{BlockSignature, TxnSignature},
 };
 
 pub struct Wallet {
@@ -42,51 +46,23 @@ impl Wallet {
             keypair: keypair.clone(),
         }
     }
-    /// Sign transaction id with `secp256k1` library, and return the signature.
-    ///
-    /// For use in `secp256k1` transaction signing.
-    fn secp_get_sig_from_txn_id(&self, txn_id: &TxnId) -> TxnSig {
-        // Convert byte array to `secp256k1::Message` format
-        let msg = secp256k1::Message::from_slice(txn_id).unwrap();
-        // init secp
-        let secp = Secp256k1::new();
-
-        let sig = secp.sign_ecdsa(&msg, &self.keypair.secret_key());
-
-        sig.serialize_compact()
-    }
-    fn secp_get_sig_from_block_id(&self, block_id: &BlockId) -> TxnSig {
-        // Convert byte array to `secp256k1::Message` format
-        let msg = secp256k1::Message::from_slice(block_id).unwrap();
-        // init secp
-        let secp = Secp256k1::new();
-
-        let sig = secp.sign_ecdsa(&msg, &self.keypair.secret_key());
-
-        sig.serialize_compact()
-    }
-    /// Convert compact signature byte array to `Signature` struct.
-    ///
-    /// For use in `secp256k1` transaction signing.
-    pub fn secp_sig_bytes_to_sig_obj(sig_bytes: &TxnSig) -> secp256k1::ecdsa::Signature {
-        secp256k1::ecdsa::Signature::from_compact(sig_bytes).unwrap()
-    }
     /// Return the signature for a given txn id/hash.
     ///
     /// Take in id/hash digest, sign digest with current wallet's key, return signature.
-    pub fn get_signature(&self, txn_id: &TxnId) -> TxnSig {
+    pub fn sign_txn(&self, txn_id: &TxnId) -> TxnSignature {
         // convert to correct message type
-        self.secp_get_sig_from_txn_id(txn_id)
+        TxnSignature::sign_id(txn_id, &self.keypair.secret_key())
     }
-    pub fn get_block_signature(&self, block_id: &BlockId) -> TxnSig {
-        // convert to correct message type
-        self.secp_get_sig_from_block_id(block_id)
+    pub fn sign_block(&self, block_id: &BlockId) -> BlockSignature {
+        BlockSignature::sign_id(block_id, &self.keypair.secret_key())
     }
 
-    pub fn validate_signature(txn: &Txn, signature: &SecpEcdsaSignature, pbkey: &PbKey) -> bool {
+    pub fn validate_txn_signature(txn: &Txn, signature: &TxnSignature, pbkey: &PbKey) -> bool {
         let secp = Secp256k1::new();
+        let new_sig = Signature::from_compact(&signature.0.serialize_compact()).unwrap();
         let is_valid =
-            match secp.verify_ecdsa(&Message::from_slice(&txn.id()).unwrap(), signature, pbkey) {
+            // match secp.verify_ecdsa(&Message::from_slice(&txn.id()).unwrap(), &new_sig, pbkey) {
+            match secp.verify_ecdsa(&Message::from_slice(&txn.id()).unwrap(), &signature.0.0, pbkey) {
                 Ok(_) => true,
                 Err(SecpError::IncorrectSignature) => false,
                 Err(e) => panic!("Signature validation: {}", e),

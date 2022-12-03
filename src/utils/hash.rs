@@ -15,7 +15,7 @@ impl Into<BlakeHash> for blake3::Hash {
         BlakeHash(*self.as_bytes())
     }
 }
-
+// Convert bytes to blake hash type
 impl From<[u8; OUT_LEN]> for BlakeHash {
     #[inline]
     fn from(bytes: [u8; OUT_LEN]) -> Self {

@@ -10,12 +10,14 @@ use crate::{
         txn::{Txn, TxnMapKey},
         wallet::Wallet,
     },
-    utils::blake_hash::{BlakeHash, BlakeHex},
+    utils::{
+        hash::{BlakeHash, BlakeHex},
+        signature::BlockSignature,
+    },
 };
 
 // export types
 pub type BlockId = BlakeHash; // TODO: change to hex
-pub type BlockSignature = [u8; 64];
 
 // TODO: add condition that this map cant have more than _ number of txns
 pub type BlockTxnMap = BTreeMap<TxnMapKey, Txn>;
@@ -74,23 +76,27 @@ impl Block {
         // serialize to a byte vector
         serde_json::to_vec(&self).expect("Error serializing block")
     }
-    /// Calculate, set and return the id for a `Block`.
+    /// Calculate the id (blockhash) for a `Block`.
     ///
     /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
     ///
     /// Hashes this info and produces a digest - the ID.
     pub fn calc_id(&self) -> BlockId {
         let mut hasher = blake3::Hasher::new();
-        // version
+        // add the block version
         hasher.update(b"block-v0");
         // add the block bytes
         hasher.update(&self.as_bytes());
         // return the hash digest - the block's id
         hasher.finalize().into()
     }
-    /// Get and set the id for a `Block`.
+    /// Calculate and set the id for a `Block`.
     ///
     /// Returns id
+    /// set_id() -> BlockId
+    ///     calc_id() -> BlockId
+    ///         blake3::Hasher::new()
+    ///         Hasher.finalize()
     pub fn set_id(&mut self) -> BlockId {
         let id = self.calc_id();
         self.id = Some(id);
@@ -141,7 +147,7 @@ impl Block {
     ///    the contents of the transaction
     /// prev: get_signature
     pub fn calc_signature(&self, wallet: &Wallet) -> BlockSignature {
-        wallet.get_signature(&self.id().as_bytes())
+        wallet.sign_block(&self.id())
     }
     /// Set the signature for the block
     fn set_signature(&mut self, signature: Option<BlockSignature>) {

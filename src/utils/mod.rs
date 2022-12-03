@@ -1,1 +1,2 @@
-pub mod blake_hash;
+pub mod hash;
+pub mod signature;

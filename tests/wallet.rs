@@ -37,11 +37,11 @@ fn verify_signature_pass() {
 
     // using the wallet fxn
     assert!(
-        Wallet::validate_signature(&txn, &answer_secp, &send.pbkey()),
+        Wallet::validate_txn_signature(&txn, &answer_secp, &send.pbkey()),
         "{test_sig_secp:?}"
     );
     assert!(
-        Wallet::validate_signature(&txn, &test_sig_secp, &send.pbkey()),
+        Wallet::validate_txn_signature(&txn, &test_sig_secp, &send.pbkey()),
         "{test_sig_secp:?}"
     );
 }

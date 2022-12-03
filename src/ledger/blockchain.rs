@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 // local
 use super::{
-    blocks::{Block, BlockTxnMap},
+    blocks::{Block, BlockId, BlockTxnMap},
     general::PbKey,
     wallet::Wallet,
 };
@@ -47,14 +47,22 @@ impl Blockchain {
     /// The genesis block is the initial/seed block for the entire blockchain.
     fn genesis(&mut self) {
         if !self.blocks().is_empty() {
-            panic!("Need to be empty")
+            panic!("Blockchain needs to be empty")
         }
 
         let leader_wallet = Wallet::new_from_file(&"hidden/master_key.json".to_string());
         let leader: PbKey = leader_wallet.pbkey();
 
-        let mut genesis_block = Block::new(BlockTxnMap::new(), leader, [0u8; 32], 0);
+        // creates a new block using the `Block` constructor - we need to replace the blockheight, id, and signature
+        let mut genesis_block = Block::new(
+            BlockTxnMap::new(),
+            leader,
+            BlockId::from_bytes([0u8; 32]),
+            0,
+        );
+        // replace blockheight
         genesis_block.blockheight = 0;
+        // replace id/hash
         genesis_block.set_id();
 
         self.add_block(genesis_block);
