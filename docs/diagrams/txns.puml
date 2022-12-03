@@ -7,7 +7,7 @@ class "Txn" as txn {
   +system_time: u64
   +txn_type: TxnType
   +hash: TxnHash
-  +signature: TxnSig
+  +signature: TxnSignature
 }
 
 @enduml
