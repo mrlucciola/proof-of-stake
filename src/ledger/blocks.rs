@@ -1,11 +1,16 @@
 // imports
 use chrono::prelude::*;
+use secp256k1::Secp256k1;
 use serde::Serialize;
 use std::collections::BTreeMap;
 // local
 use crate::{
     ledger::{
-        blockchain::BlockMapKey, general::PbKey, txn::Txn, txn_pool::TxnMapKey, wallet::Wallet,
+        blockchain::BlockMapKey,
+        general::{PbKey, SecpError},
+        txn::Txn,
+        txn_pool::TxnMapKey,
+        wallet::Wallet,
     },
     utils::{
         hash::{BlakeHash, BlakeHex},
@@ -23,7 +28,7 @@ pub type BlockTxnMap = BTreeMap<TxnMapKey, Txn>;
 #[derive(Debug, Clone, Serialize)]
 pub struct Block {
     /// list/map of all transactions to be included in the block
-    transactions: BlockTxnMap,
+    txns: BlockTxnMap,
     /// public key of the current block proposer (node)
     pub leader: PbKey,
     /// Identifier of the previous block - hash digest
@@ -46,7 +51,7 @@ impl Block {
     /// transactions: List of transactions (`Txn`) to be included in the block\
     /// TODO: add `blockchain` as param - use it to get block count
     pub fn new(
-        transactions: BlockTxnMap,
+        txns: BlockTxnMap,
         leader: PbKey,
         prev_block_id: BlockId,
         prev_blockheight: u128,
@@ -56,7 +61,7 @@ impl Block {
         let blockheight = prev_blockheight + 1;
 
         let mut block = Self {
-            transactions,
+            txns,
             leader,
             prev_block_id,
             blockheight,
@@ -102,9 +107,7 @@ impl Block {
 
         id
     }
-    /// Method wrapper/analog for `self.calc_id()`
-    ///
-    /// TODO: add `Result`
+    /// Getter for `Block` `id` property.
     pub fn id(&self) -> BlockId {
         self.id.unwrap()
     }
@@ -129,7 +132,7 @@ impl Block {
     /// Since we are updating the state of the block, we update the block id (hash) here.
     pub fn add_txn(&mut self, new_txn: Txn) {
         // TODO: change to Txn.key()
-        self.transactions
+        self.txns
             // .entry(new_txn.key())
             .entry(new_txn.id_str())
             .or_insert(new_txn);
@@ -138,9 +141,13 @@ impl Block {
     }
     /// Getter for `transactions` mapping.
     ///
-    /// There should be no direct access to the `transactions` mapping.
-    pub fn transactions(&self) -> &BlockTxnMap {
-        &self.transactions
+    /// There should be no direct access to the `transactions` map.
+    pub fn txns(&self) -> &BlockTxnMap {
+        &self.txns
+    }
+    /// Getter for `signature` property.
+    pub fn signature(&self) -> Option<&BlockSignature> {
+        self.signature.as_ref()
     }
     /// Create and return a block signature based on
     ///    the contents of the transaction
@@ -162,5 +169,19 @@ impl Block {
         self.set_signature(signature.clone());
 
         signature
+    }
+    pub fn is_signature_valid(&self, wallet: &Wallet) -> Option<bool> {
+        let secp = Secp256k1::new();
+        match secp.verify_ecdsa(
+            // &secp256k1::Message::from_slice(self.id().id().as_bytes()).unwrap(),
+            &secp256k1::Message::from_slice(self.id().as_bytes()).unwrap(),
+            // TODO: fix this
+            &self.signature()?.0 .0,
+            &wallet.pbkey(),
+        ) {
+            Ok(_) => Some(true),
+            Err(SecpError::IncorrectSignature) => Some(false),
+            Err(e) => panic!("Signature validation: {}", e),
+        }
     }
 }

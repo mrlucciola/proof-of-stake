@@ -57,11 +57,9 @@ pub fn create_transfer_txn() -> Txn {
     let (send, recv) = init_send_recv();
 
     // turn the raw txn into message
-    let txn = Txn::new(send.pbkey(), recv.pbkey(), 100, TxnType::Transfer);
-    let mut txn = Txn {
-        system_time: 1669699785826,
-        ..txn
-    };
+    let mut txn = Txn::new(send.pbkey(), recv.pbkey(), 100, TxnType::Transfer);
+    txn.system_time = 1669699785826;
+
     txn.set_id();
 
     txn
