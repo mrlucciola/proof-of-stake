@@ -31,10 +31,10 @@ pub struct Txn {
     pub txn_type: TxnType,
     /// Transaction identifier: Blake3 hash (currently as byte array)
     #[serde(skip_serializing)]
-    pub id: Option<TxnId>,
+    id: Option<TxnId>,
     /// Ecdsa signature as byte array
     #[serde(skip_serializing)]
-    pub signature: Option<TxnSignature>,
+    signature: Option<TxnSignature>,
 }
 
 impl Txn {
@@ -106,6 +106,10 @@ impl Txn {
     pub fn id_key(&self) -> TxnMapKey {
         self.id_hex_string()
     }
+    /// Getter for `Txn` `signature` property
+    pub fn signature(&self) -> &TxnSignature {
+        self.signature.as_ref().unwrap()
+    }
     /// Convert to bytes - NOT id/hash/message/digest
     /// TODO: replace `Vec<u8>` - don't allocate
     pub fn as_bytes(&self) -> Vec<u8> {
@@ -137,7 +141,7 @@ impl Txn {
     }
     /// Create and return a message signature based on
     ///    the contents of the transaction
-    pub fn get_signature(&self, wallet: &Wallet) -> TxnSignature {
+    pub fn calc_signature(&self, wallet: &Wallet) -> TxnSignature {
         let msg: TxnId = self.id();
 
         wallet.sign_txn(&msg)
@@ -151,7 +155,7 @@ impl Txn {
     /// 2) Add signature to transaction body
     /// 3) Return signature
     pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
-        let sig = self.get_signature(wallet);
+        let sig = self.calc_signature(wallet);
         self.set_signature(sig.clone());
 
         sig

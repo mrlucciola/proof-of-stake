@@ -2,7 +2,7 @@
 use anyhow::format_err;
 use secp256k1::{
     rand::{rngs, SeedableRng},
-    Error as SecpError, KeyPair, Message, Secp256k1,
+    KeyPair, Message, Secp256k1,
 };
 use std::{
     fs::File,
@@ -12,7 +12,7 @@ use std::{
 use crate::{
     ledger::{
         blocks::BlockId,
-        general::{PbKey, Result},
+        general::{PbKey, Result, SecpError},
         txn::{Txn, TxnId},
     },
     utils::signature::{BlockSignature, TxnSignature},

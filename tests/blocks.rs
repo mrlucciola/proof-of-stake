@@ -72,3 +72,21 @@ fn create_full_block_pass() {
     // check if hashes line up
     assert_eq!(block.id(), block.calc_id(), "{:?}", block.id());
 }
+#[test]
+fn is_signature_valid_pass() {
+    let UsersInfo {
+        main,
+        send: _,
+        recv: _,
+    } = init_users();
+
+    let prev_block_id: TxnId = BlakeHash::from_bytes([0u8; 32]);
+    let prev_blockheight = 0;
+    let leader = main.pbkey();
+    let mut block = Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight);
+
+    assert_eq!(block.is_signature_valid(&main.wallet), None, "{:?}", block);
+    
+    block.sign(&main.wallet);
+    assert_eq!(block.is_signature_valid(&main.wallet), Some(true), "{:?}", block);
+}
