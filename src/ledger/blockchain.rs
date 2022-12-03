@@ -69,7 +69,7 @@ impl Blockchain {
     }
     pub fn is_genesis_block(block: &Block) -> bool {
         let block_id = Block::calc_id(block);
-        block.id() == [0u8; 32]
+        block_id == [0u8; 32] && block.id() == [0u8; 32]
     }
     /// Check if the current blockheight is valid
     pub fn is_blockheight_valid(&self) -> bool {

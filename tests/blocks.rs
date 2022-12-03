@@ -1,8 +1,11 @@
 // imports
 // local
-use posbc::ledger::{
-    blocks::{Block, BlockTxnMap},
-    txn::{Txn, TxnId, TxnType},
+use posbc::{
+    ledger::{
+        blocks::{Block, BlockTxnMap},
+        txn::{Txn, TxnId, TxnType},
+    },
+    utils::hash::BlakeHash,
 };
 
 pub mod common;
@@ -39,7 +42,7 @@ fn create_empty_block_pass() {
     } = init_users();
 
     // genesis
-    let prev_block_id: TxnId = [0u8; 32];
+    let prev_block_id: TxnId = BlakeHash::from_bytes([0u8; 32]);
     let prev_blockheight = 0;
     let leader = main.pbkey();
     let mut block = Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight);
@@ -47,7 +50,7 @@ fn create_empty_block_pass() {
     add_sample_txns_to_block(0, &mut block);
 
     // check if hashes line up
-    assert_eq!(block.id(), block.id, "{:?}", block.id());
+    assert_eq!(block.id(), block.calc_id(), "{:?}", block.id());
 }
 
 #[test]
@@ -59,7 +62,7 @@ fn create_full_block_pass() {
     } = init_users();
 
     // genesis
-    let prev_block_id: TxnId = [0u8; 32];
+    let prev_block_id: TxnId = BlakeHash::from_bytes([0u8; 32]);
     let prev_blockheight = 0;
     let leader = main.pbkey();
     let mut block = Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight);
@@ -67,5 +70,5 @@ fn create_full_block_pass() {
     add_sample_txns_to_block(3, &mut block);
 
     // check if hashes line up
-    assert_eq!(block.id(), block.id, "{:?}", block.id());
+    assert_eq!(block.id(), block.calc_id(), "{:?}", block.id());
 }

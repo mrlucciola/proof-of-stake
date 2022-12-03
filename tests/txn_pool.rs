@@ -43,12 +43,13 @@ fn add_txn_fail_dup() -> Result<()> {
 
     // create txn
     let txn_1 = Txn::new(send.pbkey(), recv.pbkey(), 100, TxnType::Transfer);
-    let txn_1_copy = Txn { ..txn_1 };
+    let txn_1_copy = Txn { ..txn_1.clone() };
     // add to pool
     txn_pool.add_txn(txn_1)?;
     // should fail
     txn_pool.add_txn(txn_1_copy)?;
-    assert!(txn_pool.txn_ct() == 1);
+    assert_ne!(txn_pool.txn_ct(), 2);
+    assert_eq!(txn_pool.txn_ct(), 1);
 
     Ok(())
 }
@@ -66,8 +67,7 @@ fn remove_txn_pass() -> Result<()> {
     txn_pool.add_txn(txn_1.clone())?;
 
     // remove from pool
-    let id_to_remove = txn_1.id();
-    txn_pool.remove_txn(&id_to_remove)?;
+    txn_pool.remove_txn(&txn_1)?;
     assert!(txn_pool.txn_ct() == 0);
 
     Ok(())
@@ -86,9 +86,8 @@ fn does_txn_exist_pass() -> Result<()> {
     // add to pool
     txn_pool.add_txn(txn_1.clone())?;
     assert!(txn_pool.txn_ct() == 1);
-    let id = txn_1.id;
 
-    assert!(txn_pool.does_txn_exist(&id));
+    assert!(txn_pool.does_txn_exist(&txn_1));
 
     Ok(())
 }

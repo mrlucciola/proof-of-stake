@@ -1,7 +1,6 @@
 // imports
 use anyhow::format_err;
 use secp256k1::{
-    ecdsa::Signature,
     rand::{rngs, SeedableRng},
     Error as SecpError, KeyPair, Message, Secp256k1,
 };
@@ -13,7 +12,7 @@ use std::{
 use crate::{
     ledger::{
         blocks::BlockId,
-        general::{PbKey, Result, SecpEcdsaSignature},
+        general::{PbKey, Result},
         txn::{Txn, TxnId},
     },
     utils::signature::{BlockSignature, TxnSignature},
@@ -59,10 +58,9 @@ impl Wallet {
 
     pub fn validate_txn_signature(txn: &Txn, signature: &TxnSignature, pbkey: &PbKey) -> bool {
         let secp = Secp256k1::new();
-        let new_sig = Signature::from_compact(&signature.0.serialize_compact()).unwrap();
         let is_valid =
-            // match secp.verify_ecdsa(&Message::from_slice(&txn.id()).unwrap(), &new_sig, pbkey) {
-            match secp.verify_ecdsa(&Message::from_slice(&txn.id()).unwrap(), &signature.0.0, pbkey) {
+            // TODO: fix the signature field
+            match secp.verify_ecdsa(&Message::from_slice(txn.id().as_bytes()).unwrap(), &signature.0.0, pbkey) {
                 Ok(_) => true,
                 Err(SecpError::IncorrectSignature) => false,
                 Err(e) => panic!("Signature validation: {}", e),

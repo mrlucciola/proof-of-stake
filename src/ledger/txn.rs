@@ -1,17 +1,17 @@
 // imports
 use chrono::prelude::*;
 use serde::Serialize;
-use serde_big_array::{self, BigArray};
 // local
 use crate::{
-    ledger::{general::PbKey, wallet::Wallet},
-    utils::signature::TxnSignature,
+    ledger::{general::PbKey, txn_pool::TxnMapKey, wallet::Wallet},
+    utils::{
+        hash::{BlakeHash, BlakeHex},
+        signature::TxnSignature,
+    },
 };
+
 // exported types
-pub type TxnId = [u8; 32];
-pub type TxnSig = [u8; 64];
-pub type TxnMapKey = String;
-pub use blake3::Hash as BlakeHash;
+pub type TxnId = BlakeHash;
 
 #[derive(Serialize, Debug, Clone, Copy)]
 pub enum TxnType {
@@ -30,10 +30,11 @@ pub struct Txn {
     /// Type of transaction - as int
     pub txn_type: TxnType,
     /// Transaction identifier: Blake3 hash (currently as byte array)
-    pub id: TxnId,
+    #[serde(skip_serializing)]
+    pub id: Option<TxnId>,
     /// Ecdsa signature as byte array
-    #[serde(with = "BigArray")]
-    pub signature: TxnSignature,
+    #[serde(skip_serializing)]
+    pub signature: Option<TxnSignature>,
 }
 
 impl Txn {
@@ -57,8 +58,8 @@ impl Txn {
             amt,
             system_time,
             txn_type,
-            id: [0u8; 32],
-            signature: [0u8; 64],
+            id: None,        //[0u8; 32],
+            signature: None, //[0u8; 64],
         };
 
         // set the id with the body
@@ -85,50 +86,54 @@ impl Txn {
 
         txn
     }
-    /// Compute the id (hash digest) of the transaction message - associated fxn
-    pub fn get_id(txn: &Txn) -> BlakeHash {
-        // set blank vars
-        let adj_txn_body = Txn {
-            id: [0u8; 32],
-            signature: [0u8; 64],
-            ..txn.clone()
-        };
-
-        // serialize to a byte vector
-        let txn_msg_bytes: Vec<u8> = serde_json::to_vec(&adj_txn_body).unwrap();
-
-        // get id (hash digest) of txn
-        let mut hasher = blake3::Hasher::new();
-        hasher.update(b"txn-v0");
-        hasher.update(&txn_msg_bytes);
-        let id_abstract = hasher.finalize();
-
-        id_abstract
-    }
-    /// Method wrapper/analog for `get_id()`
+    /// Getter
     pub fn id(&self) -> TxnId {
-        Self::get_id(&self).as_bytes().to_owned()
+        self.id.unwrap()
     }
-    /// Get Txn map key (String) from byte array
+    /// Get Txn Id in `String` form.
     pub fn id_str(&self) -> String {
-        let id_abstract = Self::get_id(&self);
-        id_abstract.to_string()
+        self.id().to_string()
+    }
+    /// Get Txn Id in `hex` form.
+    pub fn id_hex(&self) -> BlakeHex {
+        self.id().to_hex()
+    }
+    /// Get Txn Id Hex in `String` form.
+    pub fn id_hex_string(&self) -> String {
+        self.id().to_hex().to_string()
+    }
+    /// Get `TxnMap` key type (derived from TxnId)
+    pub fn id_key(&self) -> TxnMapKey {
+        self.id_hex_string()
+    }
+    /// Convert to bytes - NOT id/hash/message/digest
+    /// TODO: replace `Vec<u8>` - don't allocate
+    pub fn as_bytes(&self) -> Vec<u8> {
+        // serialize to a byte vector
+        serde_json::to_vec(&self).expect("Error serializing txn")
+    }
+    /// Compute the id (hash digest) of the transaction.
+    ///
+    /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
+    ///
+    /// Hashes this info and produces a digest - the ID.
+    pub fn calc_id(&self) -> TxnId {
+        let mut hasher = blake3::Hasher::new();
+        // add the block version
+        hasher.update(b"txn-v0");
+        // add the block bytes
+        hasher.update(&self.as_bytes());
+        // return the hash digest - the block's id
+        hasher.finalize().into()
     }
     /// Get identifier (hash) for txn and set on txn object and store the output on the Txn object
     ///
     /// Returns id
     pub fn set_id(&mut self) -> TxnId {
-        let id = self.id();
-        self.id = id;
+        let id = self.calc_id();
+        self.id = Some(id);
 
         id
-    }
-    /// Get id with traits from Blake3 library
-    ///
-    /// Returns id abstraction
-    pub fn get_blake_id(&self) -> BlakeHash {
-        let txn_id = self.id();
-        BlakeHash::from(txn_id)
     }
     /// Create and return a message signature based on
     ///    the contents of the transaction
@@ -138,7 +143,7 @@ impl Txn {
         wallet.sign_txn(&msg)
     }
     pub fn set_signature(&mut self, signature: TxnSignature) {
-        self.signature = signature;
+        self.signature = Some(signature);
     }
     /// Add the signature to the transaction body in place.
     ///
@@ -147,11 +152,8 @@ impl Txn {
     /// 3) Return signature
     pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
         let sig = self.get_signature(wallet);
+        self.set_signature(sig.clone());
 
-        // 2) set signature - add sig to txn body
-        self.set_signature(sig);
-
-        // 3) return signature
         sig
     }
 }

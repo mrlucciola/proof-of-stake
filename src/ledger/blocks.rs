@@ -5,10 +5,7 @@ use std::collections::BTreeMap;
 // local
 use crate::{
     ledger::{
-        blockchain::BlockMapKey,
-        general::PbKey,
-        txn::{Txn, TxnMapKey},
-        wallet::Wallet,
+        blockchain::BlockMapKey, general::PbKey, txn::Txn, txn_pool::TxnMapKey, wallet::Wallet,
     },
     utils::{
         hash::{BlakeHash, BlakeHex},
@@ -17,7 +14,7 @@ use crate::{
 };
 
 // export types
-pub type BlockId = BlakeHash; // TODO: change to hex
+pub type BlockId = BlakeHash;
 
 // TODO: add condition that this map cant have more than _ number of txns
 pub type BlockTxnMap = BTreeMap<TxnMapKey, Txn>;
@@ -72,6 +69,8 @@ impl Block {
         block.set_id();
         block
     }
+    /// Convert to bytes - NOT id/hash/message/digest
+    /// TODO: replace `Vec<u8>` - don't allocate
     pub fn as_bytes(&self) -> Vec<u8> {
         // serialize to a byte vector
         serde_json::to_vec(&self).expect("Error serializing block")
@@ -150,8 +149,8 @@ impl Block {
         wallet.sign_block(&self.id())
     }
     /// Set the signature for the block
-    fn set_signature(&mut self, signature: Option<BlockSignature>) {
-        self.signature = signature;
+    fn set_signature(&mut self, signature: BlockSignature) {
+        self.signature = Some(signature);
     }
     /// Add the signature to the block body in place.
     ///
@@ -159,9 +158,9 @@ impl Block {
     /// 2) Add signature to `Block` body
     /// 3) Return signature
     pub fn sign(&mut self, wallet: &Wallet) -> BlockSignature {
-        let sig: BlockSignature = self.calc_signature(wallet);
-        self.set_signature(Some(sig));
+        let signature = self.calc_signature(wallet);
+        self.set_signature(signature.clone());
 
-        sig
+        signature
     }
 }
