@@ -9,8 +9,4 @@ class "Block" as bl {
   +block_ct: u128
 }
 
-actor klaus
-
-klaus -> bl::transactions
-
 @enduml

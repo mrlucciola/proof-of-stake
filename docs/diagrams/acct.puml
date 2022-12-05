@@ -1,0 +1,10 @@
+@startuml
+allowmixing
+
+' `-`: private, `#`: protected, `~`: package private, `+`: public
+class "Acct" as acct {
+  -id: ""AcctId - secp256k1::PublicKey""
+  -balance: ""u128""
+}
+
+@enduml
