@@ -56,24 +56,27 @@ impl Wallet {
         BlockSignature::sign_id(block_id, &self.keypair.secret_key())
     }
 
-    pub fn validate_txn_signature(txn: &Txn, signature: &TxnSignature, pbkey: &PbKey) -> bool {
-        let secp = Secp256k1::new();
-        let is_valid =
-            // TODO: fix the signature field
-            match secp.verify_ecdsa(&Message::from_slice(txn.id().as_bytes()).unwrap(), &signature.0.0, pbkey) {
-                Ok(_) => true,
-                Err(SecpError::IncorrectSignature) => false,
-                Err(e) => panic!("Signature validation: {}", e),
-            };
-
-        is_valid
-    }
+    /////////////////////////////////////////////////////////////////////
+    ////////////////////////////// GETTERS //////////////////////////////
 
     /// Get the public key for this respective wallet
     pub fn pbkey(&self) -> PbKey {
         self.keypair.public_key()
     }
 
+    ////////////////////////////// GETTERS //////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    ////////////////////////////// SETTERS //////////////////////////////
+    ////////////////////////////// SETTERS //////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    /////////////////////////////// UTILS ///////////////////////////////
+
+    /// Create JSON file containing keypair as a u8-byte array
+    ///
     /// if you dont have a key, create one.
     ///
     /// File must be `.json`.
@@ -95,4 +98,26 @@ impl Wallet {
 
         Ok(())
     }
+
+    /////////////////////////////// UTILS ///////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    ///////////////////////////// VALIDATION ////////////////////////////
+
+    pub fn validate_txn_signature(txn: &Txn, signature: &TxnSignature, pbkey: &PbKey) -> bool {
+        let secp = Secp256k1::new();
+        let is_valid =
+            // TODO: fix the signature field
+            match secp.verify_ecdsa(&Message::from_slice(txn.id().as_bytes()).unwrap(), &signature.0.0, pbkey) {
+                Ok(_) => true,
+                Err(SecpError::IncorrectSignature) => false,
+                Err(e) => panic!("Signature validation: {}", e),
+            };
+
+        is_valid
+    }
+
+    ///////////////////////////// VALIDATION ////////////////////////////
+    /////////////////////////////////////////////////////////////////////
 }

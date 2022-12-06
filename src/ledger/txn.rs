@@ -86,6 +86,10 @@ impl Txn {
 
         txn
     }
+
+    /////////////////////////////////////////////////////////////////////
+    ////////////////////////////// GETTERS //////////////////////////////
+
     /// Getter
     pub fn id(&self) -> TxnId {
         self.id.unwrap()
@@ -110,12 +114,60 @@ impl Txn {
     pub fn signature(&self) -> &TxnSignature {
         self.signature.as_ref().unwrap()
     }
-    /// Convert to bytes - NOT id/hash/message/digest
+
+    ////////////////////////////// GETTERS //////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    ////////////////////////////// SETTERS //////////////////////////////
+
+    /// Get identifier (hash) for txn and set on txn object and store the output on the Txn object
+    ///
+    /// Returns id
+    pub fn set_id(&mut self) -> TxnId {
+        let id = self.calc_id();
+        self.id = Some(id);
+
+        id
+    }
+
+    pub fn set_signature(&mut self, signature: TxnSignature) {
+        self.signature = Some(signature);
+    }
+
+    /// Add the signature to the transaction body in place.
+    ///
+    /// 1) Sign the transaction
+    /// 2) Add signature to transaction body
+    /// 3) Return signature
+    pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
+        let sig = self.calc_signature(wallet);
+        self.set_signature(sig.clone());
+
+        sig
+    }
+
+    ////////////////////////////// SETTERS //////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    /////////////////////////////// UTILS ///////////////////////////////
+
+    /// Convert transaction struct to bytes - NOT id/hash/message/digest
     /// TODO: replace `Vec<u8>` - don't allocate
     pub fn as_bytes(&self) -> Vec<u8> {
         // serialize to a byte vector
         serde_json::to_vec(&self).expect("Error serializing txn")
     }
+
+    /// Create and return a message signature based on
+    ///    the contents of the transaction
+    pub fn calc_signature(&self, wallet: &Wallet) -> TxnSignature {
+        let msg: TxnId = self.id();
+
+        wallet.sign_txn(&msg)
+    }
+
     /// Compute the id (hash digest) of the transaction.
     ///
     /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
@@ -130,34 +182,12 @@ impl Txn {
         // return the hash digest - the block's id
         hasher.finalize().into()
     }
-    /// Get identifier (hash) for txn and set on txn object and store the output on the Txn object
-    ///
-    /// Returns id
-    pub fn set_id(&mut self) -> TxnId {
-        let id = self.calc_id();
-        self.id = Some(id);
 
-        id
-    }
-    /// Create and return a message signature based on
-    ///    the contents of the transaction
-    pub fn calc_signature(&self, wallet: &Wallet) -> TxnSignature {
-        let msg: TxnId = self.id();
+    /////////////////////////////// UTILS ///////////////////////////////
+    /////////////////////////////////////////////////////////////////////
 
-        wallet.sign_txn(&msg)
-    }
-    pub fn set_signature(&mut self, signature: TxnSignature) {
-        self.signature = Some(signature);
-    }
-    /// Add the signature to the transaction body in place.
-    ///
-    /// 1) Sign the transaction
-    /// 2) Add signature to transaction body
-    /// 3) Return signature
-    pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
-        let sig = self.calc_signature(wallet);
-        self.set_signature(sig.clone());
-
-        sig
-    }
+    /////////////////////////////////////////////////////////////////////
+    ///////////////////////////// VALIDATION ////////////////////////////
+    ///////////////////////////// VALIDATION ////////////////////////////
+    /////////////////////////////////////////////////////////////////////
 }

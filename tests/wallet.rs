@@ -2,34 +2,36 @@
 use secp256k1::{Message, Secp256k1};
 use std::str::FromStr;
 // local
-use posbc::{ledger::{txn::Txn, wallet::Wallet}, utils::signature::TxnSignature};
+use posbc::{
+    ledger::{txn::Txn, wallet::Wallet},
+    utils::signature::TxnSignature,
+};
 pub mod common;
 use common::{create_transfer_txn, init_send_recv};
 
 #[test]
-fn verify_signature_pass() {
+fn verify_txn_signature_pass() {
     // init
-    let answer_str = "30440220136c9d8e942c527262695b2ceeb2b90ff7f7650e9230a17355dcc560ea3c7648022029e1519209a08d3a2a9d8d8b55e39c07d739bb1780329d09d0273a07695a9fa9";
+    let answer_str = "304402203277d88a0cc247efb4677b7e8617f5fbb71d9150d13b45fc578664777b611740022044f62b8748cb3a5e6d7a1fe60f65670a51943605ee5b6961c1fdb88e661f5550";
     let (send, _recv) = init_send_recv();
     let mut txn = create_transfer_txn();
 
     // sign with txn+wallet method
-    let txn_sig_arr = txn.sign(&send.wallet);
+    let txn_sig_arr: TxnSignature = txn.sign(&send.wallet).into();
 
     // get signature
     let secp = Secp256k1::new();
-    // let test_sig_secp: SecpEcdsaSignature = secp.sign_ecdsa(
-    //     &Message::from_slice(id_abstract.as_bytes()).unwrap(),
-    //     &send.kp.secret_key(),
-    // );
+    let msg = &Message::from_slice(txn.calc_id().as_bytes()).unwrap();
+    let sk = &send.kp.secret_key();
+    let test_sig_secp = secp.sign_ecdsa(msg, sk);
 
     // as Signature
-    // let answer_secp = SecpEcdsaSignature::from_str(answer_str).unwrap();
+    let answer_secp = secp256k1::ecdsa::Signature::from_str(answer_str).unwrap();
 
-    // assert_eq!(answer_secp, test_sig_secp, "{test_sig_secp:?}");
-    // assert_eq!(txn_sig_secp, test_sig_secp, "{test_sig_secp:?}");
+    assert_eq!(answer_secp, test_sig_secp, "{test_sig_secp:?}");
+
     // as array
-    // let answer_arr = answer_secp.serialize_compact();
+    let answer_arr = answer_secp.serialize_compact();
     // assert_eq!(answer_arr, txn_sig_arr, "{txn_sig_arr:?}");
 
     // using the wallet fxn

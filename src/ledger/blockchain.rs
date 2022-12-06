@@ -31,6 +31,21 @@ impl Blockchain {
 
         blockchain
     }
+
+    /////////////////////////////////////////////////////////////////////
+    ////////////////////////////// GETTERS //////////////////////////////
+
+    /// Getter for `blocks`
+    pub fn blocks(&self) -> &BlockMap {
+        &self.blocks
+    }
+
+    ////////////////////////////// GETTERS //////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    ////////////////////////////// SETTERS //////////////////////////////
+
     /// Add a new block to the blockchain.
     pub fn add_block(&mut self, block: Block) -> &mut Block {
         // check if block is valid
@@ -38,10 +53,7 @@ impl Blockchain {
         // check if entry exists -> if not, then insert
         self.blocks.entry(block.id_key()).or_insert(block)
     }
-    /// Getter for `blocks`
-    pub fn blocks(&self) -> &BlockMap {
-        &self.blocks
-    }
+
     /// Create and add the genesis block.
     ///
     /// The genesis block is the initial/seed block for the entire blockchain.
@@ -67,13 +79,22 @@ impl Blockchain {
 
         self.add_block(genesis_block);
     }
-    pub fn is_genesis_block(block: &Block) -> bool {
-        let block_id = Block::calc_id(block);
-        block_id == [0u8; 32] && block.id() == [0u8; 32]
-    }
+
+    ////////////////////////////// SETTERS //////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+    ///////////////////////////// VALIDATION ////////////////////////////
+
     /// Check if the current blockheight is valid
     pub fn is_blockheight_valid(&self) -> bool {
         self.blocks.values().last().unwrap().blockheight
             == (self.blocks().len() - 1).try_into().unwrap()
     }
+    pub fn is_genesis_block(block: &Block) -> bool {
+        let block_id = Block::calc_id(block);
+        block_id == [0u8; 32] && block.id() == [0u8; 32]
+    }
+
+    ///////////////////////////// VALIDATION ////////////////////////////
+    /////////////////////////////////////////////////////////////////////
 }
