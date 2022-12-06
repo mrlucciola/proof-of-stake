@@ -4,6 +4,8 @@ use secp256k1::PublicKey;
 
 /// Representation of a single on-chain account.
 ///
+/// TODO: add `rent`
+#[derive(Debug, Clone, Copy)]
 pub struct Account {
     /// ID: An on-chain account's public identifier, as its represented throughout the rest of the repositories. Abstract class, derives public key
     id: AccountId,
