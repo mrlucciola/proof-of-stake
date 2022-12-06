@@ -3,8 +3,8 @@
 allowmixing
 
 ' `-`: private, `#`: protected, `~`: package private, `+`: public
-class "Acct" as acct {
-  -id: ""AcctId - secp256k1::PublicKey""
+class "Account" as acct {
+  -id: ""AccountId - secp256k1::PublicKey""
   -balance: ""u128""
 }
 
