@@ -1,4 +1,5 @@
 @startuml
+!include blocks.puml
 allowmixing
 
 ' `-`: private, `#`: protected, `~`: package private, `+`: public
