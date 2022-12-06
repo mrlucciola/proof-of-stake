@@ -4,18 +4,18 @@ use secp256k1::PublicKey;
 
 /// Representation of a single on-chain account.
 ///
-pub struct Acct {
+pub struct Account {
     /// ID: An on-chain account's public identifier, as its represented throughout the rest of the repositories. Abstract class, derives public key
-    id: AcctId,
+    id: AccountId,
     /// Amount of blockchain token stored in account. Can be transfered to other accounts or contracts
     balance: u128,
 }
 
-pub type AcctId = PublicKey;
-pub type AcctPbkey = PublicKey;
-pub type AcctMapkey = String;
+pub type AccountId = PublicKey;
+pub type AccountPbkey = PublicKey;
+pub type AccountMapkey = String;
 
-impl Acct {
+impl Account {
     /// Constructor: Create instance of an on-chain account.
     ///
     /// This assoc. fxn does NOT create an account on chain.
@@ -32,17 +32,17 @@ impl Acct {
     }
     /////////////////////////////////////////////////////////////
     ////////////////////////// GETTERS //////////////////////////
-    pub fn id(&self) -> &AcctId {
+    pub fn id(&self) -> &AccountId {
         &self.id
     }
-    pub fn id_pbkey(&self) -> &AcctPbkey {
+    pub fn id_pbkey(&self) -> &AccountPbkey {
         self.id()
     }
     pub fn id_str(&self) -> String {
         self.id().to_string()
     }
     /// Get the lookup key for Account ID in hash maps throughout the application.
-    pub fn id_key(&self) -> AcctMapkey {
+    pub fn id_key(&self) -> AccountMapkey {
         self.id_str()
     }
     pub fn balance(&self) -> &u128 {
@@ -53,7 +53,7 @@ impl Acct {
 
     /////////////////////////////////////////////////////////////
     ////////////////////////// SETTERS //////////////////////////
-    pub fn set_id(&mut self, new_acct_id: AcctId) {
+    pub fn set_id(&mut self, new_acct_id: AccountId) {
         self.id = new_acct_id;
     }
     ////////////////////////// SETTERS //////////////////////////
