@@ -94,19 +94,17 @@ impl Block {
         // return the hash digest - the block's id
         hasher.finalize().into()
     }
-    /// Calculate and set the id for a `Block`.
-    ///
-    /// Returns id
-    /// set_id() -> BlockId
-    ///     calc_id() -> BlockId
-    ///         blake3::Hasher::new()
-    ///         Hasher.finalize()
-    pub fn set_id(&mut self) -> BlockId {
-        let id = self.calc_id();
-        self.id = Some(id);
 
-        id
+    /// Create and return a block signature based on
+    ///    the contents of the transaction
+    /// prev: get_signature
+    pub fn calc_signature(&self, wallet: &Wallet) -> BlockSignature {
+        wallet.sign_block(&self.id())
     }
+
+    /////////////////////////////////////////////////////////////////////
+    ////////////////////////////// GETTERS //////////////////////////////
+
     /// Getter for `Block` `id` property.
     pub fn id(&self) -> BlockId {
         self.id.unwrap()
@@ -127,6 +125,54 @@ impl Block {
     pub fn id_key(&self) -> BlockMapKey {
         self.id_hex_string()
     }
+    /// Getter for `transactions` mapping.
+    ///
+    /// There should be no direct access to the `transactions` map.
+    pub fn txns(&self) -> &BlockTxnMap {
+        &self.txns
+    }
+    /// Getter for `signature` property.
+    pub fn signature(&self) -> Option<&BlockSignature> {
+        self.signature.as_ref()
+    }
+
+    ////////////////////////////// GETTERS //////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    ////////////////////////////// SETTERS //////////////////////////////
+
+    /// Set the signature for the block
+    fn set_signature(&mut self, signature: BlockSignature) {
+        self.signature = Some(signature);
+    }
+
+    /// Add the signature to the block body in place.
+    ///
+    /// 1) Sign the block hash
+    /// 2) Add signature to `Block` body
+    /// 3) Return signature
+    pub fn sign(&mut self, wallet: &Wallet) -> BlockSignature {
+        let signature = self.calc_signature(wallet);
+        self.set_signature(signature.clone());
+
+        signature
+    }
+
+    /// Calculate and set the id for a `Block`.
+    ///
+    /// Returns id
+    /// set_id() -> BlockId
+    ///     calc_id() -> BlockId
+    ///         blake3::Hasher::new()
+    ///         Hasher.finalize()
+    pub fn set_id(&mut self) -> BlockId {
+        let id = self.calc_id();
+        self.id = Some(id);
+
+        id
+    }
+
     /// Add a transaction to the block.
     ///
     /// Since we are updating the state of the block, we update the block id (hash) here.
@@ -139,37 +185,18 @@ impl Block {
         // update block hash since the transactions map has been updated
         self.set_id();
     }
-    /// Getter for `transactions` mapping.
-    ///
-    /// There should be no direct access to the `transactions` map.
-    pub fn txns(&self) -> &BlockTxnMap {
-        &self.txns
-    }
-    /// Getter for `signature` property.
-    pub fn signature(&self) -> Option<&BlockSignature> {
-        self.signature.as_ref()
-    }
-    /// Create and return a block signature based on
-    ///    the contents of the transaction
-    /// prev: get_signature
-    pub fn calc_signature(&self, wallet: &Wallet) -> BlockSignature {
-        wallet.sign_block(&self.id())
-    }
-    /// Set the signature for the block
-    fn set_signature(&mut self, signature: BlockSignature) {
-        self.signature = Some(signature);
-    }
-    /// Add the signature to the block body in place.
-    ///
-    /// 1) Sign the block hash
-    /// 2) Add signature to `Block` body
-    /// 3) Return signature
-    pub fn sign(&mut self, wallet: &Wallet) -> BlockSignature {
-        let signature = self.calc_signature(wallet);
-        self.set_signature(signature.clone());
 
-        signature
-    }
+    ////////////////////////////// SETTERS //////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    /////////////////////////////// UTILS ///////////////////////////////
+    /////////////////////////////// UTILS ///////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    ///////////////////////////// VALIDATION ////////////////////////////
+
     pub fn is_signature_valid(&self, wallet: &Wallet) -> Option<bool> {
         let secp = Secp256k1::new();
         match secp.verify_ecdsa(
@@ -184,4 +211,7 @@ impl Block {
             Err(e) => panic!("Signature validation: {}", e),
         }
     }
+
+    ///////////////////////////// VALIDATION ////////////////////////////
+    /////////////////////////////////////////////////////////////////////
 }

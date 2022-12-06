@@ -2,6 +2,7 @@
 // local
 use posbc::ledger::blockchain::Blockchain;
 
+pub mod accounts;
 pub mod common;
 use common::{init_users, UsersInfo};
 

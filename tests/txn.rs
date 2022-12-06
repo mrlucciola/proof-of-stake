@@ -3,6 +3,7 @@ use secp256k1::{Message, Secp256k1};
 // local
 use posbc::{
     ledger::txn::Txn,
+    accounts,
     utils::{hash::BlakeHash, signature::TxnSignature},
 };
 pub mod common;
