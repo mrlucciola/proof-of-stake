@@ -85,8 +85,16 @@ fn is_signature_valid_pass() {
     let leader = main.pbkey();
     let mut block = Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight);
 
-    assert_eq!(block.is_signature_valid(&main.wallet), None, "{:?}", block);
-    
+    assert_eq!(
+        block.is_signature_valid(&main.wallet).unwrap(),
+        None,
+        "{block:?}",
+    );
+
     block.sign(&main.wallet);
-    assert_eq!(block.is_signature_valid(&main.wallet), Some(true), "{:?}", block);
+    assert_eq!(
+        block.is_signature_valid(&main.wallet).unwrap(),
+        Some(true),
+        "{block:?}",
+    );
 }

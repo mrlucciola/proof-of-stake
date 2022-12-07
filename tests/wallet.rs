@@ -2,10 +2,6 @@
 use secp256k1::{Message, Secp256k1};
 use std::str::FromStr;
 // local
-use posbc::{
-    ledger::{txn::Txn, wallet::Wallet},
-    utils::signature::TxnSignature,
-};
 pub mod common;
 use common::{create_transfer_txn, init_send_recv};
 
@@ -17,7 +13,7 @@ fn verify_txn_signature_pass() {
     let mut txn = create_transfer_txn();
 
     // sign with txn+wallet method
-    let txn_sig_arr: TxnSignature = txn.sign(&send.wallet).into();
+    let txn_sig_arr = txn.sign(&send.wallet).serialize_compact();
 
     // get signature
     let secp = Secp256k1::new();
@@ -32,7 +28,7 @@ fn verify_txn_signature_pass() {
 
     // as array
     let answer_arr = answer_secp.serialize_compact();
-    // assert_eq!(answer_arr, txn_sig_arr, "{txn_sig_arr:?}");
+    assert_eq!(answer_arr, txn_sig_arr, "{txn_sig_arr:?}");
 
     // using the wallet fxn
     // assert!(
