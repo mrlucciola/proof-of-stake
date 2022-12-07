@@ -1,8 +1,8 @@
 use arrayvec::ArrayString;
 use base64::display::Base64Display;
-use blake3::OUT_LEN;
+use blake3::{Hash, OUT_LEN};
 use serde::{Serialize, Serializer};
-use std::convert::{From, Into};
+use std::convert::From;
 use std::fmt;
 
 pub type BlakeHex = ArrayString<{ 2 * OUT_LEN }>;
@@ -10,9 +10,15 @@ pub type BlakeHex = ArrayString<{ 2 * OUT_LEN }>;
 #[derive(Clone, Copy, Hash, Serialize)]
 pub struct BlakeHash([u8; OUT_LEN]);
 
-impl Into<BlakeHash> for blake3::Hash {
-    fn into(self) -> BlakeHash {
-        BlakeHash(*self.as_bytes())
+impl From<blake3::Hash> for BlakeHash {
+    fn from(t: blake3::Hash) -> Self {
+        BlakeHash(*t.as_bytes())
+    }
+}
+impl From<ArrayString<{ 2 * OUT_LEN }>> for BlakeHash {
+    fn from(t: ArrayString<{ 2 * OUT_LEN }>) -> Self {
+        let hash = Hash::from_hex(t.as_bytes()).unwrap();
+        BlakeHash::from(hash)
     }
 }
 // Convert bytes to blake hash type
@@ -23,7 +29,8 @@ impl From<[u8; OUT_LEN]> for BlakeHash {
     }
 }
 impl BlakeHash {
-    pub fn from_bytes(bytes: [u8; 32]) -> Self {
+    pub fn from_bytes(bytes: [u8; OUT_LEN]) -> Self {
+        // BlakeHash::clone(&self)
         Self(bytes)
     }
     /// The raw bytes of the `Hash`. Note that byte arrays don't provide

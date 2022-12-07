@@ -2,7 +2,6 @@
 use std::collections::BTreeMap;
 // local
 use super::account::{Account, AccountId, AccountMapkey};
-use crate::ledger::general::Result;
 
 type AccountMap = BTreeMap<AccountMapkey, Account>;
 
@@ -11,35 +10,45 @@ pub struct Accounts {
 }
 
 impl Accounts {
-    /// Constructor
-    pub fn new() {}
-    /// TODO: add safeguards
-    pub fn add_acct(&mut self, account: Account) {
-        self.accounts.entry(account.id_key()).or_insert(account);
-    }
-    pub fn update_acct(&mut self) {}
-    /// How to handle empty accounts?
-    ///
-    /// Either add to the account map and take up space that may never get used or just return a blank account.
-    /// When attempting to retrieve the account, there should be proper error handling
-    pub fn get_acct(&self, acct_id: AccountId) -> Result<Account> {
-        // TODO: check if pubkey is on curve
-        let acct = self.accounts.get(&acct_id.to_string());
+    /// Constructor. Creates a data structure (BTreeMap) instance which contains all `Account`s for the blockchain.
+    pub fn new() -> Self {
+        let accounts = AccountMap::new();
 
-        match acct {
-            Some(a) => Ok(*a),
-            // Create a new account, clone lasts as long as acct_id
-            None => Ok(Account::new(acct_id, None)),
-        }
+        Self { accounts }
     }
 
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// GETTERS //////////////////////////////
+
+    /// Retrieve account from account map.
+    ///
+    /// In null case, this returns a blank account with the pubkey of the inputted id
+    ///
+    /// Either add to the account map and take up space that may never get used or just return a blank account.
+    /// When attempting to retrieve the account, there should be proper error handling
+    pub fn get_acct(&self, acct_id: AccountId) -> Account {
+        // TODO: check if pubkey is on curve
+        let acct = self.accounts.get(&acct_id.to_string());
+
+        match acct {
+            Some(a) => *a,
+            // Create a new account, clone lasts as long as acct_id
+            None => Account::new(acct_id, None),
+        }
+    }
+
     ////////////////////////////// GETTERS //////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
+
+    /// TODO: add safeguards
+    pub fn add_acct(&mut self, account: Account) {
+        self.accounts.entry(account.id_key()).or_insert(account);
+    }
+    pub fn update_acct(&mut self) {}
+
     ////////////////////////////// SETTERS //////////////////////////////
     /////////////////////////////////////////////////////////////////////
 

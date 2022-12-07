@@ -74,6 +74,7 @@ impl Blockchain {
         );
         // replace blockheight
         genesis_block.blockheight = 0;
+        genesis_block.system_time = 0;
         // replace id/hash
         genesis_block.set_id();
 
@@ -90,9 +91,14 @@ impl Blockchain {
         self.blocks.values().last().unwrap().blockheight
             == (self.blocks().len() - 1).try_into().unwrap()
     }
+    /// This assoc. fxn is on the `Blockchain` struct (rather than `Block`) to
+    /// reduce clutter on the `Block` struct. This fxn will be called relatively
+    /// infrequently and the functionality is relevant enough to the `Blockchain` class.
     pub fn is_genesis_block(block: &Block) -> bool {
         let block_id = Block::calc_id(block);
-        block_id == [0u8; 32] && block.id() == [0u8; 32]
+        let genesis_hash_str = "444cb81543bd99399e390d2565091b87f38149436e2d6db6d2df3bf5cc970e2c";
+
+        block_id.to_string() == genesis_hash_str && block.id().to_string() == genesis_hash_str
     }
 
     ///////////////////////////// VALIDATION ////////////////////////////

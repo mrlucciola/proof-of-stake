@@ -18,6 +18,8 @@ use crate::{
     },
 };
 
+use super::general::Result;
+
 // export types
 pub type BlockId = BlakeHash;
 
@@ -75,7 +77,7 @@ impl Block {
         block
     }
     /// Convert to bytes - NOT id/hash/message/digest
-    /// TODO: replace `Vec<u8>` - don't allocate
+    /// TODO: replace `Vec<u8>` - don't allocate if possible
     pub fn as_bytes(&self) -> Vec<u8> {
         // serialize to a byte vector
         serde_json::to_vec(&self).expect("Error serializing block")
@@ -97,7 +99,6 @@ impl Block {
 
     /// Create and return a block signature based on
     ///    the contents of the transaction
-    /// prev: get_signature
     pub fn calc_signature(&self, wallet: &Wallet) -> BlockSignature {
         wallet.sign_block(&self.id())
     }
@@ -177,11 +178,7 @@ impl Block {
     ///
     /// Since we are updating the state of the block, we update the block id (hash) here.
     pub fn add_txn(&mut self, new_txn: Txn) {
-        // TODO: change to Txn.key()
-        self.txns
-            // .entry(new_txn.key())
-            .entry(new_txn.id_str())
-            .or_insert(new_txn);
+        self.txns.entry(new_txn.id_key()).or_insert(new_txn);
         // update block hash since the transactions map has been updated
         self.set_id();
     }
@@ -197,21 +194,76 @@ impl Block {
     /////////////////////////////////////////////////////////////////////
     ///////////////////////////// VALIDATION ////////////////////////////
 
-    pub fn is_signature_valid(&self, wallet: &Wallet) -> Option<bool> {
+    /// Check if signature is valid.
+    ///
+    /// 1. Assert there is a signature
+    /// 1. Assert signature is valid
+    ///
+    /// Return is a Result of an Option to handle non-existant signatures
+    ///   - `Some()` indicates a signature exists and its valid/invalid
+    ///   - `None` indicates there is no signature
+    ///   - `Error` is for error handling
+    pub fn is_signature_valid(&self, wallet: &Wallet) -> Result<Option<bool>> {
+        // init
         let secp = Secp256k1::new();
+
+        // 1) check if signature exists
+        if let None = self.signature() {
+            return Ok(None);
+        }
+
+        // 2) check if signature is valid
         match secp.verify_ecdsa(
-            // &secp256k1::Message::from_slice(self.id().id().as_bytes()).unwrap(),
             &secp256k1::Message::from_slice(self.id().as_bytes()).unwrap(),
-            // TODO: fix this
-            &self.signature()?.0 .0,
+            self.signature().unwrap(),
             &wallet.pbkey(),
         ) {
-            Ok(_) => Some(true),
-            Err(SecpError::IncorrectSignature) => Some(false),
-            Err(e) => panic!("Signature validation: {}", e),
+            Ok(_) => Ok(Some(true)),
+            Err(SecpError::IncorrectSignature) => Ok(Some(false)),
+            Err(e) => Err(e.into()),
         }
+    }
+
+    /// Check if block is valid.
+    ///
+    /// Valid criteria:
+    ///   - all struct properties are not `None`
+    ///   - hash is valid
+    ///   - signature is valid
+    pub fn is_valid(&self, wallet: &Wallet) -> Result<bool> {
+        // validate fields
+        if let None = self.signature {
+            return Err(BlockError::EmptySignature.into());
+        }
+        if let None = self.id {
+            return Err(BlockError::EmptyId.into());
+        };
+
+        // validate hash
+        // TODO: decide - we can validate the id-hash (fast) or recalculate the hash and compare (slow). Is there a major performance hit?
+        if self.calc_id() != self.id() {
+            return Err(BlockError::IncorrectId.into());
+        }
+
+        // validate signature
+        self.is_signature_valid(wallet)?;
+
+        Ok(true)
     }
 
     ///////////////////////////// VALIDATION ////////////////////////////
     /////////////////////////////////////////////////////////////////////
+}
+
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum BlockError {
+    // EmptySignature(#[repr(C)] anyhow::Error),
+    #[error("Invalid block: No signature")]
+    EmptySignature,
+    #[error("Invalid block: No ID")]
+    EmptyId,
+    #[error("Incorrect ID")]
+    IncorrectId,
 }

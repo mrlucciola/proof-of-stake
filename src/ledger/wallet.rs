@@ -45,15 +45,35 @@ impl Wallet {
             keypair: keypair.clone(),
         }
     }
+
+    pub fn msg_from_id_txn(txn_id: &TxnId) -> Message {
+        secp256k1::Message::from_slice(txn_id.as_bytes()).unwrap()
+    }
+    pub fn msg_from_id_block(block_id: &BlockId) -> Message {
+        secp256k1::Message::from_slice(block_id.as_bytes()).unwrap()
+    }
     /// Return the signature for a given txn id/hash.
     ///
     /// Take in id/hash digest, sign digest with current wallet's key, return signature.
     pub fn sign_txn(&self, txn_id: &TxnId) -> TxnSignature {
         // convert to correct message type
-        TxnSignature::sign_id(txn_id, &self.keypair.secret_key())
+        self.sign_id_txn(txn_id)
     }
     pub fn sign_block(&self, block_id: &BlockId) -> BlockSignature {
-        BlockSignature::sign_id(block_id, &self.keypair.secret_key())
+        self.sign_id_block(block_id)
+    }
+
+    pub fn sign_id_txn(&self, txn_id: &TxnId) -> TxnSignature {
+        let msg = Self::msg_from_id_txn(txn_id);
+        self.sign_msg(msg)
+    }
+    pub fn sign_id_block(&self, block_id: &BlockId) -> BlockSignature {
+        let msg = Self::msg_from_id_block(block_id);
+        self.sign_msg(msg)
+    }
+    pub fn sign_msg(&self, msg: Message) -> TxnSignature {
+        let secp = Secp256k1::new();
+        secp.sign_ecdsa(&msg, &self.keypair.secret_key())
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -109,7 +129,7 @@ impl Wallet {
         let secp = Secp256k1::new();
         let is_valid =
             // TODO: fix the signature field
-            match secp.verify_ecdsa(&Message::from_slice(txn.id().as_bytes()).unwrap(), &signature.0.0, pbkey) {
+            match secp.verify_ecdsa(&Message::from_slice(txn.id().as_bytes()).unwrap(), &signature, pbkey) {
                 Ok(_) => true,
                 Err(SecpError::IncorrectSignature) => false,
                 Err(e) => panic!("Signature validation: {}", e),
