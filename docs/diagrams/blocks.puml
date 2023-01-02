@@ -3,10 +3,32 @@ allowmixing
 
 ' `-`: private, `#`: protected, `~`: package private, `+`: public
 class "Block" as bl {
-  +transactions: ""BTreeMap<TxnId, Txn>""
-  +prev_blockhash: TxnHash
-  +leader: PbKey
-  +block_ct: u128
+  ..Properties..
+  - transactions: ""BlockTxnMap : BTreeMap<TxnMapKey, Txn>""
+  + leader: ""PbKey""
+  + prev_block_id: ""BlockId""
+  + blockheight: ""u128""
+  + system_time: ""u64""
+  + id: ""Option<BlockId>""
+  + signature: ""Option<BlockSignature>""
+  ..Assoc. Fxns..
+  + new(txns, leader, prev_block_id, prev_blockheight) -> ""Self""
+  ..Methods..
+  + as_bytes(&self) -> ""Vec<u8>""
+  + calc_id(&self) -> ""BlockId""
+  + calc_signature(&self, wallet: &Wallet) -> ""BlockSignature""
+  - set_signature(&mut self, signature: BlockSignature)
+  + sign(&mut self, wallet: &Wallet) -> ""BlockSignature""
+  + set_id(&mut self) -> ""BlockId""
+  + add_txn(&mut self, new_txn: Txn)
+  + is_signature_valid(&self, wallet: &Wallet) -> ""Result<Option<bool>>""
+  + is_valid(&self, wallet: &Wallet) -> ""Result<bool>""
 }
+
+
+
+bl::field1 --> Bar::field3 : foo
+bl::field2 --> Bar::field4 : bar
+
 
 @enduml
