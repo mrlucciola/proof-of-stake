@@ -39,6 +39,9 @@ impl Blockchain {
     pub fn blocks(&self) -> &BlockMap {
         &self.blocks
     }
+    pub fn block(&self, key: &String) -> Option<&Block> {
+        self.blocks.get(key)
+    }
 
     ////////////////////////////// GETTERS //////////////////////////////
     /////////////////////////////////////////////////////////////////////

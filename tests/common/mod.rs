@@ -8,6 +8,7 @@ use posbc::ledger::{
     wallet::Wallet,
 };
 pub mod constants;
+pub mod fxns;
 use constants::*;
 
 fn create_keypair_from_file(filepath: &String) -> KP {
