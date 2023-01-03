@@ -1,5 +1,6 @@
 // imports
 use secp256k1::PublicKey;
+use serde::Serialize;
 
 use crate::ledger::{
     general::Result,
@@ -10,7 +11,7 @@ use crate::ledger::{
 /// Representation of a single on-chain account.
 ///
 /// TODO: add `rent`
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub struct Account {
     /// ID: An on-chain account's public identifier, as its represented throughout the rest of the repositories. Abstract class, derives public key
     id: AccountId,

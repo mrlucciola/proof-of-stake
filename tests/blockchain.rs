@@ -5,7 +5,7 @@ use posbc::ledger::{blockchain::Blockchain, general::Result, txn::Txn};
 pub mod accounts;
 pub mod common;
 use common::{
-    fxns::{create_block, get_first_acct, init_accounts_map},
+    fxns::{create_block, get_first_acct, init_account_map},
     init_users, UsersInfo,
 };
 
@@ -83,11 +83,18 @@ fn add_block_to_blockchain_pass() {
 fn execute_txn_via_blockchain_pass() -> Result<()> {
     use posbc::ledger::txn::TxnType;
     // init
-    let (users, _blockchain) = init_blockchain();
-    let mut accounts = init_accounts_map();
-    let send = accounts.accounts().values().next().unwrap();
+    let (users, mut blockchain) = init_blockchain();
+
+    init_account_map(&mut blockchain);
+    assert!(
+        blockchain.accounts.accounts().len() == 1,
+        "length: {}",
+        blockchain.account_map().len()
+    );
+
+    let send = blockchain.accounts.accounts().values().next().unwrap();
     println!("sender pre: {}", send.balance());
-    
+
     let amt_to_send = 1;
     let pbkey_recv = users.recv.pbkey();
 
@@ -110,7 +117,7 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
     // checks are built in to fxn
     // Blockchain::process_txn(&mut accounts, &txn_to_add)?;
 
-    let send = accounts.accounts().values().next().unwrap();
+    let send = blockchain.accounts.accounts().values().next().unwrap();
     println!("sender post: {}", send.balance());
 
     assert!(send.balance() == 1, "Balance != 1. {}", send.balance());

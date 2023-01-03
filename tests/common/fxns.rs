@@ -37,16 +37,13 @@ fn get_last_block(blockchain: &Blockchain) -> Option<&Block> {
     blockchain.blocks().values().next_back()
 }
 
-pub fn init_accounts_map() -> Accounts {
+/// ## Initialize account map
+pub fn init_account_map(blockchain: &mut Blockchain) {
     // init
     let users = init_users();
     let send_acct = Account::new(users.send.pbkey(), Some(1000));
 
-    let mut accounts = Accounts::new();
-
-    accounts.add_acct(send_acct);
-
-    accounts
+    blockchain.accounts.add_acct(send_acct);
 }
 
 /// Get first account in account map.
