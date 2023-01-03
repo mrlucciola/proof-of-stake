@@ -18,13 +18,15 @@ use crate::{
     },
 };
 
-use super::general::Result;
+use super::{general::Result, txn_pool::TxnMap};
 
 // export types
 pub type BlockId = BlakeHash;
 
-// TODO: add condition that this map cant have more than _ number of txns
-pub type BlockTxnMap = BTreeMap<TxnMapKey, Txn>;
+/// This is TxnMap with added functionality.
+///
+/// @todo add condition that this map cant have more than _ number of txns.
+pub type BlockTxnMap = TxnMap;
 
 /// Info contained within a block
 #[derive(Debug, Clone, Serialize)]
@@ -52,6 +54,7 @@ impl Block {
     ///
     /// transactions: List of transactions (`Txn`) to be included in the block\
     /// TODO: add `blockchain` as param - use it to get block count
+    /// @todo allow `None` input for `txns` to default to a new block txn map
     pub fn new(
         txns: BlockTxnMap,
         leader: PbKey,
