@@ -19,6 +19,7 @@ pub type BlockMap = BTreeMap<BlockMapKey, Block>;
 #[derive(Debug, Serialize)]
 pub struct Blockchain {
     blocks: BlockMap,
+    pub accounts: Accounts,
 }
 impl Blockchain {
     /// Create new `Blockchain` instance
@@ -28,7 +29,9 @@ impl Blockchain {
     /// The first block in a blockchain is the genesis block.
     pub fn new() -> Self {
         let blocks = BlockMap::new();
-        let mut blockchain = Self { blocks };
+        let accounts = Accounts::new();
+
+        let mut blockchain = Self { blocks, accounts };
 
         // Create the genesis block
         blockchain.genesis();
@@ -45,6 +48,13 @@ impl Blockchain {
     }
     pub fn block(&self, key: &String) -> Option<&Block> {
         self.blocks.get(key)
+    }
+    /// Getter for `accounts`
+    pub fn accounts(&self) -> &Accounts {
+        &self.accounts
+    }
+    pub fn account_map(&self) -> &AccountMap {
+        &self.accounts.accounts()
     }
 
     ////////////////////////////// GETTERS //////////////////////////////
@@ -118,7 +128,7 @@ impl Blockchain {
 }
 
 // @todo move to separate error component
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 enum BlockchainError {
     /// @todo move to `Txn`
     #[error("Total balance before and after transaction do not match.")]
