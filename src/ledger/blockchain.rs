@@ -49,7 +49,12 @@ impl Blockchain {
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
 
-    /// Add a new block to the blockchain.
+    /// ## Add a prospective block to the blockchain.
+    ///
+    /// Block must be signed and pass validation
+    ///
+    /// @todo validate signature. Add error `InvalidBlockSignature` response.
+    /// @todo validate previous block's: 1) height; 2) id. Add error responses for each (InvalidBlockHeight & InvalidBlockId, respectively).
     pub fn add_block(&mut self, block: Block) -> &mut Block {
         // check if block is valid
         // check if block is signed
