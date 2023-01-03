@@ -1,0 +1,93 @@
+@startuml
+allowmixing
+
+namespace "new()" as new {
+
+  namespace new.state {
+    class "Block" as bs1<State 1> {
+      - <font color="green">transactions: [Txn1, Txn2, ...]
+      + <font color="green">leader: 0xodjsf8f39283hr
+      + <font color="green">prev_block_id: 0x8eu0s81l297xn5
+      + <font color="green">blockheight: 202938
+      + <font color="green">system_time: 1590884903
+      + <font color="red">id: null
+      + <font color="red">signature: null
+    }
+
+    class "Block" as bs2<State 2> {
+      - transactions: [Txn1, Txn2, ...]
+      + leader: 0xodjsf8f39283hr
+      + prev_block_id: 0x8eu0s81l297xn5
+      + blockheight: 202938
+      + system_time: 1590884903
+      + <font color="green">id: 0x5d23ph92hl93csu01m
+      + <font color="red">signature: null
+    }
+    bs1 -down-> bs2
+
+    note as nSignature
+    Signature set by ""Block.set_signature()""
+    end note
+    nSignature .u. new.state.bs2
+  }
+
+  namespace new.logic {
+    namespace new.logic.one {
+      class Params {
+        + txns
+        + leader
+        + prev_block_id
+        + prev_blockheight
+      }
+      class Local {
+        * blockheight
+        * system_time
+      }
+    }
+    namespace new.logic.two {
+      usecase """block.set_id()""" as setId
+      setId -> new.state.bs2
+    }
+    new.logic.one -[hidden]down- new.logic.two
+
+    new.logic.one.Params -[#DarkGreen]right-> new.state.bs1
+    new.logic.one.Params -[#DarkGreen]right-> new.state.bs1
+    new.logic.one.Params -[#DarkGreen]right-> new.state.bs1
+    new.logic.one.Local -[#DarkGreen]right-> new.state.bs1
+    new.logic.one.Local -[#DarkGreen]right-> new.state.bs1
+    new.logic.two.setId -[#DarkGreen]right-> new.state.bs2
+  }
+}
+
+namespace "calc_id()" as calcId {
+  namespace calcId.output {
+    class "blockId" as id1<pre> {
+      hash: null
+    }
+    class "blockId" as id2<post> {
+      hash: ey8d0i29xizkdu8n36dgd3gsd42fs31z563
+    }
+
+    id1 -down-> id2
+  }
+
+  namespace calcId.logic {
+    class "Block" as block<input> {
+      - transactions: [Txn1, Txn2, ...]
+      + leader: 0xodjsf8f39283hr
+      + prev_block_id: 0x8eu0s81l297xn5
+      + blockheight: 202938
+      + system_time: 1590884903
+    }
+    usecase "Blake3\nHash Fxn" as hasher
+    usecase "block-v0" as seed
+
+    hasher <-up- block
+    hasher <-up- seed
+  }
+
+  calcId.logic -[hidden]> calcId.output
+  calcId.logic.hasher -> calcId.output.id2
+}
+
+@enduml
