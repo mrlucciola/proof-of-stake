@@ -3,14 +3,14 @@ use secp256k1::{Message, Secp256k1};
 use std::str::FromStr;
 // local
 pub mod common;
-use common::{create_transfer_txn, init_send_recv};
+use common::{create_transfer_txn_default, init_send_recv};
 
 #[test]
 fn verify_txn_signature_pass() {
     // init
     let answer_str = "304402203277d88a0cc247efb4677b7e8617f5fbb71d9150d13b45fc578664777b611740022044f62b8748cb3a5e6d7a1fe60f65670a51943605ee5b6961c1fdb88e661f5550";
     let (send, _recv) = init_send_recv();
-    let mut txn = create_transfer_txn();
+    let mut txn = create_transfer_txn_default();
 
     // sign with txn+wallet method
     let txn_sig_arr = txn.sign(&send.wallet).serialize_compact();

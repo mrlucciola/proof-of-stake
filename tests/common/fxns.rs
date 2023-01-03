@@ -1,10 +1,13 @@
-use posbc::ledger::{
-    blockchain::Blockchain,
-    blocks::{Block, BlockTxnMap},
-    txn::TxnId,
+use posbc::{
+    accounts::{account::Account, accounts::{Accounts, AccountMap}},
+    ledger::{
+        blockchain::Blockchain,
+        blocks::{Block, BlockTxnMap},
+        txn::TxnId,
+    },
 };
 
-use super::UserInfo;
+use super::{init_users, UserInfo};
 
 /// Creates an empty block using the leader and previous block.
 ///
@@ -32,4 +35,22 @@ pub fn create_block(leader: UserInfo, blockchain: &Blockchain) -> Block {
 /// @todo make this a getter method on `Blockchain`
 fn get_last_block(blockchain: &Blockchain) -> Option<&Block> {
     blockchain.blocks().values().next_back()
+}
+
+pub fn init_accounts_map() -> Accounts {
+    // init
+    let users = init_users();
+    let send_acct = Account::new(users.send.pbkey(), Some(1000));
+
+    let mut accounts = Accounts::new();
+
+    accounts.add_acct(send_acct);
+
+    accounts
+}
+
+/// Get first account in account map.
+pub fn get_first_acct(accounts: &Accounts) -> Option<&Account> {
+    let accts: &AccountMap = accounts.accounts();
+    accts.values().next()
 }

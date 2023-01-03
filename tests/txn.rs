@@ -5,12 +5,12 @@ use secp256k1::{Message, Secp256k1};
 // local
 use posbc::utils::{hash::BlakeHash, signature::TxnSignature};
 pub mod common;
-use common::{create_transfer_txn, init_send_recv};
+use common::{create_transfer_txn_default, init_send_recv};
 
 #[test]
 fn create_unsigned_txn_pass() {
     let id_answer = "d324f1341ed803640717d669a5113c9ef3596728a473982fc8b70bb7d78cc00e";
-    let txn = create_transfer_txn();
+    let txn = create_transfer_txn_default();
     let id_str = txn.id_str();
 
     assert!(id_str == id_answer, "{:?}", id_str);
@@ -19,7 +19,7 @@ fn create_unsigned_txn_pass() {
 #[test]
 fn create_signed_txn_pass() {
     let (send, _recv) = init_send_recv();
-    let txn = create_transfer_txn();
+    let txn = create_transfer_txn_default();
 
     // get signature
     let secp = Secp256k1::new();

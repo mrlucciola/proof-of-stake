@@ -1,12 +1,16 @@
 // imports
+use anyhow::ensure;
 use serde::Serialize;
 use std::collections::BTreeMap;
+use thiserror::Error;
 // local
 use super::{
     blocks::{Block, BlockId, BlockTxnMap},
-    general::PbKey,
+    general::{PbKey, Result},
+    txn::{Txn, TxnType},
     wallet::Wallet,
 };
+use crate::accounts::accounts::{AccountMap, Accounts};
 
 /// Lookup type for the `blocks` map a string
 pub type BlockMapKey = String; // TODO: change to hex
@@ -51,9 +55,9 @@ impl Blockchain {
 
     /// ## Add a prospective block to the blockchain.
     ///
-    /// Block must be signed and pass validation
+    /// Block must be signed and pass validation.
     ///
-    /// @todo validate signature. Add error `InvalidBlockSignature` response.
+    /// @todo #60 - validate signature. Add error `InvalidBlockSignature` response.
     /// @todo validate previous block's: 1) height; 2) id. Add error responses for each (InvalidBlockHeight & InvalidBlockId, respectively).
     pub fn add_block(&mut self, block: Block) -> &mut Block {
         // check if block is valid
@@ -111,4 +115,15 @@ impl Blockchain {
 
     ///////////////////////////// VALIDATION ////////////////////////////
     /////////////////////////////////////////////////////////////////////
+}
+
+// @todo move to separate error component
+#[derive(Error, Debug)]
+enum BlockchainError {
+    /// @todo move to `Txn`
+    #[error("Total balance before and after transaction do not match.")]
+    TransactionBalanceMismatch,
+    /// @todo move to `Txn`
+    #[error("Account balance does not change by amount determined by txn.")]
+    AccountBalanceChangeMismatch,
 }
