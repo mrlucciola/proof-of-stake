@@ -21,6 +21,9 @@ fn add_sample_txns_to_block(num_txns: u8, block: &mut Block) {
         main: _,
         send,
         recv,
+        test1: _,
+        test2: _,
+        test3: _,
     } = init_users();
     // logic to create sample txn > add txn to map
     for x in 0..num_txns {
@@ -39,6 +42,9 @@ fn create_empty_block_pass() {
         main,
         send: _,
         recv: _,
+        test1: _,
+        test2: _,
+        test3: _,
     } = init_users();
 
     // genesis
@@ -59,6 +65,9 @@ fn create_full_block_pass() {
         main,
         send: _,
         recv: _,
+        test1: _,
+        test2: _,
+        test3: _,
     } = init_users();
 
     // genesis
@@ -78,6 +87,9 @@ fn is_signature_valid_pass() {
         main,
         send: _,
         recv: _,
+        test1: _,
+        test2: _,
+        test3: _,
     } = init_users();
 
     let prev_block_id: TxnId = BlakeHash::from_bytes([0u8; 32]);

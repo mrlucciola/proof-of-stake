@@ -26,17 +26,14 @@ impl Accounts {
     ///
     /// Either add to the account map and take up space that may never get used or just return a blank account.
     /// When attempting to retrieve the account, there should be proper error handling
-    pub fn get_acct(&self, acct_id: AccountId) -> Account {
+    pub fn get_acct(&self, acct_id: &AccountId) -> Option<&Account> {
         // TODO: check if pubkey is on curve
-        let acct = self.accounts.get(&acct_id.to_string());
-
-        match acct {
-            Some(a) => *a,
-            // Create a new account, clone lasts as long as acct_id
-            None => Account::new(acct_id, None),
-        }
+        let acct = self.accounts.get(&acct_id.to_string()).to_owned();
+        acct
     }
-
+    pub fn len(&self) -> usize {
+        self.accounts.len()
+    }
     ////////////////////////////// GETTERS //////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
