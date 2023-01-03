@@ -13,13 +13,17 @@ use crate::{
 // exported types
 pub type TxnId = BlakeHash;
 
-#[derive(Serialize, Debug, Clone, Copy)]
+#[derive(Serialize, Debug, Clone, Copy, PartialEq)]
 pub enum TxnType {
     Transfer = 1,
 }
 
-/// Serializable body of the transaction
+/// ## Transfer transaction.
 ///
+/// Serializable body of the transaction.
+///
+/// @todo generalize this and abstract all separate types.\
+/// @todo make fields private and add getters.
 #[derive(Serialize, Debug, Clone)]
 pub struct Txn {
     pub amt: u128,

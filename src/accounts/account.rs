@@ -1,5 +1,10 @@
 // imports
 use secp256k1::PublicKey;
+
+use crate::ledger::{
+    general::Result,
+    txn::{Txn, TxnType},
+};
 // local
 
 /// Representation of a single on-chain account.
@@ -15,7 +20,7 @@ pub struct Account {
 
 pub type AccountId = PublicKey;
 pub type AccountPbkey = PublicKey;
-pub type AccountMapkey = String;
+pub type AccountMapKey = String;
 
 impl Account {
     /// Constructor: Create instance of an on-chain account.
@@ -44,19 +49,56 @@ impl Account {
         self.id().to_string()
     }
     /// Get the lookup key for Account ID in hash maps throughout the application.
-    pub fn id_key(&self) -> AccountMapkey {
+    pub fn id_key(&self) -> AccountMapKey {
         self.id_str()
     }
-    pub fn balance(&self) -> &u128 {
-        &self.balance
+    pub fn balance(&self) -> u128 {
+        self.balance
     }
     ////////////////////////////// GETTERS //////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
-    pub fn set_id(&mut self, new_acct_id: AccountId) {
-        self.id = new_acct_id;
+    // fn set_id(&mut self, new_acct_id: AccountId) {
+    //     self.id = new_acct_id;
+    // }
+
+    /// ## Increase balance by set amount.
+    ///
+    /// New balance must be greater than original balance.
+    ///
+    /// Balance must be above 0.
+    ///
+    /// Should only execute if transfer txn or coinbase txn.
+    pub fn increase_balance(&mut self, txn: &Txn) -> Result<u128> {
+        // @todo add coinbase validation + error
+        if txn.txn_type != TxnType::Transfer {
+            panic!("Only allowing transfer transactions.");
+        }
+
+        let amt_to_incr = txn.amt;
+        self.balance += amt_to_incr;
+
+        Ok(self.balance)
+    }
+    /// ## Decrease balance by set amount.
+    ///
+    /// New balance must be less than original balance.
+    ///
+    /// Balance must be above 0.
+    ///
+    /// Should only execute if transfer txn or fee txn.
+    pub fn decrease_balance(&mut self, txn: &Txn) -> Result<u128> {
+        // @todo add fee validation + error
+        if txn.txn_type != TxnType::Transfer {
+            panic!("Only allowing transfer transactions.");
+        }
+
+        let amt_to_decr = txn.amt;
+        self.balance -= amt_to_decr;
+
+        Ok(self.balance)
     }
     ////////////////////////////// SETTERS //////////////////////////////
     /////////////////////////////////////////////////////////////////////
