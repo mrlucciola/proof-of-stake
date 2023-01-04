@@ -37,7 +37,7 @@ fn create_accounts_pass() {
     let accounts = Accounts::new();
 
     assert_eq!(accounts.len(), 0);
-    let null_acct = accounts.get_acct(acct1.id());
+    let null_acct = accounts.get_acct(&acct1.id_key());
     assert!(null_acct.is_none());
 }
 
@@ -63,7 +63,7 @@ fn add_new_account_to_accounts_pass() {
     // 2) check if the length is correct
     assert_eq!(accounts_len_post, accounts_len_pre + 1);
     // 3) get account from map
-    let acct_to_add = accounts.get_acct(acct_to_add.id());
+    let acct_to_add = accounts.get_acct(&acct_to_add.id_key());
     assert!(acct_to_add.is_some())
 }
 

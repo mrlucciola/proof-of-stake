@@ -76,6 +76,23 @@ impl Blockchain {
         self.blocks.entry(block.id_key()).or_insert(block)
     }
 
+    /// ## Context:
+    ///
+    /// - Leader has grouped several txns into a prospective block
+    /// - They execute each txn in serial, updating the accounts in order
+    pub fn process_transfer_txn(&mut self, txn: &Txn) -> Result<()> {
+        // look up `send` account, decrease their balance
+        let map_key_send = &txn.pbkey_send.to_string();
+        let acct_send = self.accounts.get_acct_mut(&map_key_send).unwrap();
+        acct_send.decrease_balance(&txn)?;
+
+        // look up `recv` account, increase their balance
+        let acct_recv = self.accounts.get_or_init_acct(&txn.pbkey_recv);
+        acct_recv.increase_balance(&txn)?;
+
+        Ok(())
+    }
+
     /// Create and add the genesis block.
     ///
     /// The genesis block is the initial/seed block for the entire blockchain.

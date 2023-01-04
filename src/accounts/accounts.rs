@@ -25,6 +25,9 @@ impl Accounts {
     pub fn accounts(&self) -> &AccountMap {
         &self.accounts
     }
+    pub fn accounts_mut(&mut self) -> &mut AccountMap {
+        &mut self.accounts
+    }
 
     /// Retrieve account from account map.
     ///
@@ -32,11 +35,18 @@ impl Accounts {
     ///
     /// In null case, this returns a blank account with the pubkey of the inputted id.\
     /// Either add to the account map and take up space that may never get used or just return a blank account.
-    pub fn get_acct(&self, acct_id: &AccountId) -> Option<&Account> {
+    pub fn get_acct(&self, acct_map_key: &AccountMapKey) -> Option<&Account> {
         // TODO: check if pubkey is on curve
-        self.accounts.get(&acct_id.to_string())
+        self.accounts.get(acct_map_key)
     }
-    pub fn get_acct_mut(&mut self, acct_id: &AccountId) -> Option<&mut Account> {
+    /// Returns zero if none
+    pub fn acct_balance(&self, acct_map_key: &AccountMapKey) -> u128 {
+        match self.get_acct(acct_map_key) {
+            Some(a) => a.balance(),
+            None => 0u128,
+        }
+    }
+    pub fn get_acct_mut(&mut self, acct_id: &AccountMapKey) -> Option<&mut Account> {
         // TODO: check if pubkey is on curve
         let acct = self.accounts.get_mut(&acct_id.to_string());
 
