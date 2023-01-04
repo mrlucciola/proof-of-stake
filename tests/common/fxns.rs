@@ -10,7 +10,7 @@ use posbc::{
     },
 };
 
-use super::{init_users, UserInfo};
+use super::{init_users, UserInfo, UsersInfo};
 
 /// Creates an empty block using the leader and previous block.
 ///
@@ -51,7 +51,18 @@ pub fn init_account_map(blockchain: &mut Blockchain) {
 
     blockchain.accounts.add_acct(send_acct);
 }
+pub fn init_blockchain() -> (UsersInfo, Blockchain) {
+    let users = init_users();
+    let blockchain = Blockchain::new();
 
+    (users, blockchain)
+}
+pub fn init_blockchain_and_accounts() -> (UsersInfo, Blockchain) {
+    let (users, mut blockchain) = init_blockchain();
+    init_account_map(&mut blockchain);
+
+    (users, blockchain)
+}
 /// Get first account in account map.
 pub fn get_first_acct(accounts: &Accounts) -> Option<&Account> {
     let accts: &AccountMap = accounts.accounts();

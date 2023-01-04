@@ -8,6 +8,7 @@ use super::{
     blocks::{Block, BlockId, BlockTxnMap},
     general::{PbKey, Result},
     txn::{Txn, TxnType},
+    txn_pool::TxnMap,
     wallet::Wallet,
 };
 use crate::accounts::accounts::{AccountMap, Accounts};
@@ -46,8 +47,15 @@ impl Blockchain {
     pub fn blocks(&self) -> &BlockMap {
         &self.blocks
     }
-    pub fn block(&self, key: &String) -> Option<&Block> {
+    /// ## Get block by key
+    pub fn block(&self, key: &BlockMapKey) -> Option<&Block> {
         self.blocks.get(key)
+    }
+    /// ## Get most recently committed block
+    ///
+    /// We unwrap because blockchain should never be empty, representing an undefined state.
+    pub fn last_block(&self) -> &Block {
+        self.blocks.values().next_back().unwrap()
     }
     /// Getter for `accounts`
     pub fn accounts(&self) -> &Accounts {
@@ -76,6 +84,7 @@ impl Blockchain {
         self.blocks.entry(block.id_key()).or_insert(block)
     }
 
+    /// @todo Validate txn, then process
     /// ## Context:
     ///
     /// - Leader has grouped several txns into a prospective block
@@ -90,6 +99,22 @@ impl Blockchain {
         let acct_recv = self.accounts.get_or_init_acct(&txn.pbkey_recv);
         acct_recv.increase_balance(&txn)?;
 
+        Ok(())
+    }
+    /// Take txns from an arbitrary list of txns and execute them one by one,
+    /// applying the state changes to the accounts and placing these transactions
+    /// in the specified block.
+    ///
+
+    ///
+    /// @todo optimize by changing txns to preallocated array of hashes (ultimately &str-s)
+    /// - This would allow us a set a ceiling limit on the # of txns in a given block
+    /// @todo remove txn from mem-pool as they are executed
+    pub fn process_transfer_txns(&mut self, txns: &TxnMap, block: &mut Block) -> Result<()> {
+        for (_k, txn) in txns.iter() {
+            self.process_transfer_txn(txn)?;
+            block.add_txn(txn.to_owned())
+        }
         Ok(())
     }
 

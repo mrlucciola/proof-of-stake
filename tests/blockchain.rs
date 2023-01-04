@@ -1,25 +1,17 @@
 // imports
 // local
-use posbc::{
-    accounts::account::Account,
-    ledger::{blockchain::Blockchain, general::Result, txn::Txn},
+use posbc::ledger::{
+    blockchain::Blockchain,
+    blocks::{Block, BlockTxnMap},
+    general::Result,
+    txn::{Txn, TxnType},
+    txn_pool::TxnMap,
 };
-
 pub mod accounts;
 pub mod common;
-use common::{
-    fxns::{create_block, get_first_acct, init_account_map},
-    init_users, UsersInfo,
-};
+use common::fxns::{create_block, init_blockchain, init_blockchain_and_accounts};
 
 // tests:
-
-fn init_blockchain() -> (UsersInfo, Blockchain) {
-    let users = init_users();
-    let blockchain = Blockchain::new();
-
-    (users, blockchain)
-}
 
 #[test]
 fn create_blockchain_pass() {
@@ -88,13 +80,10 @@ fn add_block_to_blockchain_pass() {
 /// send ending balance should be 999=1000-1 (init - amt to send)
 #[test]
 fn execute_txn_via_blockchain_pass() -> Result<()> {
-    use posbc::ledger::txn::TxnType;
     // init
-    let (users, mut blockchain) = init_blockchain();
+    let (users, mut blockchain) = init_blockchain_and_accounts();
 
     let amt_to_send = 1;
-
-    init_account_map(&mut blockchain);
     assert!(
         blockchain.accounts.accounts().len() == 1,
         "length: {}",
@@ -145,6 +134,59 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
         amt_to_send,
         "Recv final balance did not increase by correct amount."
     );
+
+    Ok(())
+}
+
+#[test]
+fn process_transfer_txns_pass() -> Result<()> {
+    let (users, mut blockchain) = init_blockchain_and_accounts();
+    let amt_to_send = 1;
+    let pbkey_recv = users.recv.pbkey();
+    let txn_type = TxnType::Transfer;
+    let txn_ct = 5;
+
+    let mut temp_txn_map = TxnMap::new();
+
+    // create txns and add them to the map
+    use std::{thread, time};
+    let ten_millis = time::Duration::from_millis(10);
+    for _ in 0..txn_ct {
+        thread::sleep(ten_millis);
+        let txn: Txn = Txn::new_signed(&users.send.wallet, pbkey_recv, amt_to_send, txn_type);
+
+        if let Some(_) = temp_txn_map.insert(txn.id_key(), txn) {
+            panic!("Txn already exists in temp map.")
+        }
+    }
+    assert!(temp_txn_map.len() == 5, "Txn map isnt 5");
+
+    // add txns to block as they are processed
+    // get the genesis block
+    let prev_block = blockchain.last_block();
+    let mut new_block = Block::new(
+        BlockTxnMap::new(),
+        users.main.pbkey(),
+        prev_block.id(),
+        prev_block.blockheight,
+    );
+
+    // PROCESS ALL TRANSACTIONS
+    blockchain.process_transfer_txns(&temp_txn_map, &mut new_block)?;
+
+    // assert that the block has all of the txns to be added
+    assert!(
+        new_block.txns().len() == txn_ct,
+        "Block has incorrect number of txns."
+    );
+
+    // assert that the txn IDs match between the block txn and temp txn maps
+    // @todo assert that the txn map IDs have been removed from the mempool
+    for (_key, txn) in temp_txn_map.iter() {
+        if let None = new_block.txns().get(&txn.id_key()) {
+            panic!("Txn doesn't exist in new block.");
+        }
+    }
 
     Ok(())
 }
