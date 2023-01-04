@@ -26,8 +26,6 @@ pub type AccountMapKey = String;
 impl Account {
     /// Constructor: Create instance of an on-chain account.
     ///
-    /// This assoc. fxn does NOT create an account on chain.
-    ///
     /// Load account info from the blockchain.
     pub fn new(id: PublicKey, balance: Option<u128>) -> Self {
         // set default balance value

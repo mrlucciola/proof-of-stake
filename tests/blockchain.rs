@@ -1,6 +1,9 @@
 // imports
 // local
-use posbc::ledger::{blockchain::Blockchain, general::Result, txn::Txn};
+use posbc::{
+    accounts::account::Account,
+    ledger::{blockchain::Blockchain, general::Result, txn::Txn},
+};
 
 pub mod accounts;
 pub mod common;
@@ -79,11 +82,17 @@ fn add_block_to_blockchain_pass() {
 ///   1. Taking txns from mempool and grouping into prospective block
 ///   1. Execute txns/state updates
 ///   1. Handle failure cases
+///
+/// In this test, recv account should not exist at the start, should be created during the process transfer txn call
+/// recv ending balance should be 1 (amt to send)
+/// send ending balance should be 999=1000-1 (init - amt to send)
 #[test]
 fn execute_txn_via_blockchain_pass() -> Result<()> {
     use posbc::ledger::txn::TxnType;
     // init
     let (users, mut blockchain) = init_blockchain();
+
+    let amt_to_send = 1;
 
     init_account_map(&mut blockchain);
     assert!(
@@ -92,35 +101,50 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
         blockchain.account_map().len()
     );
 
-    let send = blockchain.accounts.accounts().values().next().unwrap();
-    println!("sender pre: {}", send.balance());
-
-    let amt_to_send = 1;
-    let pbkey_recv = users.recv.pbkey();
-
-    // create a new block to add to the blockchain
-    // let block_to_add = create_block(main, &blockchain);
-    assert!(
-        send.balance() >= 1,
-        "Balance is not gte 1. {}",
-        send.balance()
-    );
+    let bal_send_pre = blockchain
+        .accounts
+        .acct_balance(&users.send.pbkey().to_string());
+    let bal_recv_pre = blockchain
+        .accounts
+        .acct_balance(&users.recv.pbkey().to_string());
 
     // populate the block with a transaction
     let txn_to_add = Txn::new_signed(
         &users.send.wallet,
-        pbkey_recv,
+        users.recv.pbkey(),
         amt_to_send,
         TxnType::Transfer,
     );
+    blockchain.process_transfer_txn(&txn_to_add)?;
 
-    // checks are built in to fxn
-    // Blockchain::process_txn(&mut accounts, &txn_to_add)?;
+    // Verify account length increased to 2
+    assert!(
+        blockchain.accounts.accounts().len() == 2,
+        "length: {}",
+        blockchain.account_map().len()
+    );
 
-    let send = blockchain.accounts.accounts().values().next().unwrap();
-    println!("sender post: {}", send.balance());
-
-    assert!(send.balance() == 1, "Balance != 1. {}", send.balance());
+    let bal_send_post = blockchain
+        .accounts
+        .acct_balance(&users.send.pbkey().to_string());
+    let bal_recv_post = blockchain
+        .accounts
+        .acct_balance(&users.recv.pbkey().to_string());
+    assert_eq!(
+        bal_send_pre + bal_recv_pre,
+        bal_send_post + bal_recv_post,
+        "Starting and ending balances are not equal"
+    );
+    assert_eq!(
+        bal_send_pre - bal_send_post,
+        amt_to_send,
+        "Send final balance did not decrease by correct amount."
+    );
+    assert_eq!(
+        bal_recv_post - bal_recv_pre,
+        amt_to_send,
+        "Recv final balance did not increase by correct amount."
+    );
 
     Ok(())
 }

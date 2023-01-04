@@ -1,5 +1,8 @@
 use posbc::{
-    accounts::{account::Account, accounts::{Accounts, AccountMap}},
+    accounts::{
+        account::Account,
+        accounts::{AccountMap, Accounts},
+    },
     ledger::{
         blockchain::Blockchain,
         blocks::{Block, BlockTxnMap},
@@ -37,7 +40,10 @@ fn get_last_block(blockchain: &Blockchain) -> Option<&Block> {
     blockchain.blocks().values().next_back()
 }
 
-/// ## Initialize account map
+/// ## Initialize account map.
+///
+/// Add sender account as first account to the chain.\
+/// Sender account has balance of 1000.
 pub fn init_account_map(blockchain: &mut Blockchain) {
     // init
     let users = init_users();
@@ -49,5 +55,6 @@ pub fn init_account_map(blockchain: &mut Blockchain) {
 /// Get first account in account map.
 pub fn get_first_acct(accounts: &Accounts) -> Option<&Account> {
     let accts: &AccountMap = accounts.accounts();
+
     accts.values().next()
 }
