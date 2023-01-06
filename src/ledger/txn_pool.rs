@@ -1,3 +1,4 @@
+use anyhow::ensure;
 // import
 use serde::Serialize;
 use std::collections::BTreeMap;
@@ -12,7 +13,7 @@ pub type TxnMap = BTreeMap<TxnMapKey, Txn>;
 #[derive(Debug, Serialize)]
 pub struct TxnPool {
     // Array of transactions
-    txns: TxnMap,
+    values: TxnMap,
 }
 impl TxnPool {
     /// Initializer for Transaction Pool
@@ -21,13 +22,13 @@ impl TxnPool {
     pub fn new() -> Self {
         let txns = TxnMap::new();
 
-        Self { txns }
+        Self { values: txns }
     }
     /// Check if a transaction exists in the txn pool (#7)
     ///
     /// Use txn id to query the pool, return true if it exists
     pub fn does_txn_exist(&self, txn: &Txn) -> bool {
-        match self.txns.get(&txn.id_key()) {
+        match self.values.get(&txn.id_key()) {
             Some(_) => true,
             None => false,
         }
@@ -38,10 +39,13 @@ impl TxnPool {
     ///
     /// This should be completed by any RPC/relayer
     pub fn add_txn(&mut self, txn: Txn) -> Result<()> {
-        // TODO: verify the requesting node is authorized
+        // @todo verify the requesting node is authorized
+        // @todo validate signature
 
         // add txn to pool
-        self.txns.entry(txn.id_key()).or_insert(txn);
+        if let Some(_) = self.values.insert(txn.id_key(), txn) {
+            panic!("Txn already exists in pool.");
+        }
 
         Ok(())
     }
@@ -51,11 +55,11 @@ impl TxnPool {
 
     /// Getter
     pub fn txns(&self) -> &TxnMap {
-        &self.txns
+        &self.values
     }
-    /// Convenience function
+    /// ## Get the number of transactions in the pool.
     pub fn txn_ct(&self) -> usize {
-        self.txns.len()
+        self.values.len()
     }
 
     ////////////////////////////// GETTERS //////////////////////////////
@@ -69,10 +73,20 @@ impl TxnPool {
     /// Calls remove_txn
     pub fn remove_txn(&mut self, txn: &Txn) -> Result<Txn> {
         // TODO: verify the requesting node is authorized
-        match self.txns.remove(&txn.id_key()) {
+        match self.values.remove(&txn.id_key()) {
             Some(txn) => Ok(txn),
             None => Err(anyhow::format_err!("NoTxn")), // TODO: create proper txn error
         }
+    }
+    /// ## Retrieve the transaction and remove from pool.
+    pub fn pop_txn(&mut self, txn_key: &TxnMapKey) -> Txn {
+        // @todo handle error (in comments below)
+        self.values.remove_entry(txn_key).unwrap().1
+        // ensure!(d)
+        // match self.values.remove_entry(txn_key) {
+        //     Some(k) => {return },
+        //     None => Err(anyhow::Error"No transaction")
+        // }
     }
 
     ////////////////////////////// SETTERS //////////////////////////////

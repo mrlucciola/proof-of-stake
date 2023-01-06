@@ -1,5 +1,4 @@
 // imports
-use anyhow::ensure;
 use serde::Serialize;
 use std::collections::BTreeMap;
 use thiserror::Error;
@@ -7,8 +6,8 @@ use thiserror::Error;
 use super::{
     blocks::{Block, BlockId, BlockTxnMap},
     general::{PbKey, Result},
-    txn::{Txn, TxnType},
-    txn_pool::TxnMap,
+    txn::Txn,
+    txn_pool::{TxnMap, TxnPool},
     wallet::Wallet,
 };
 use crate::accounts::accounts::{AccountMap, Accounts};
@@ -101,18 +100,28 @@ impl Blockchain {
 
         Ok(())
     }
+    /// ## Process a set of `transfer` txns.
+    ///
     /// Take txns from an arbitrary list of txns and execute them one by one,
     /// applying the state changes to the accounts and placing these transactions
     /// in the specified block.
     ///
-
-    ///
     /// @todo optimize by changing txns to preallocated array of hashes (ultimately &str-s)
     /// - This would allow us a set a ceiling limit on the # of txns in a given block
     /// @todo remove txn from mem-pool as they are executed
-    pub fn process_transfer_txns(&mut self, txns: &TxnMap, block: &mut Block) -> Result<()> {
-        for (_k, txn) in txns.iter() {
+    pub fn process_transfer_txns(
+        &mut self,
+        txns_to_add: &TxnMap,
+        block: &mut Block,
+        txn_pool: &mut TxnPool,
+    ) -> Result<()> {
+        for (_k, txn) in txns_to_add.iter() {
+            // #64: remove from txn pool
+            let txns = txn_pool.txns();
+            // validate and update account states
             self.process_transfer_txn(txn)?;
+
+            // add to prospective block
             block.add_txn(txn.to_owned())
         }
         Ok(())
