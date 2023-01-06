@@ -5,7 +5,7 @@ use posbc::ledger::{
     blocks::{Block, BlockTxnMap},
     general::Result,
     txn::{Txn, TxnType},
-    txn_pool::TxnMap,
+    txn_pool::{TxnMap, TxnPool},
 };
 pub mod accounts;
 pub mod common;
@@ -146,6 +146,9 @@ fn process_transfer_txns_pass() -> Result<()> {
     let txn_type = TxnType::Transfer;
     let txn_ct = 5;
 
+    // create txn pool
+    let mut txn_pool = TxnPool::new();
+    // create txn map
     let mut temp_txn_map = TxnMap::new();
 
     // create txns and add them to the map
@@ -155,10 +158,13 @@ fn process_transfer_txns_pass() -> Result<()> {
         thread::sleep(ten_millis);
         let txn: Txn = Txn::new_signed(&users.send.wallet, pbkey_recv, amt_to_send, txn_type);
 
+        txn_pool.add_txn(txn.clone())?;
+        // @todo only add txn id, not whole txn
         if let Some(_) = temp_txn_map.insert(txn.id_key(), txn) {
-            panic!("Txn already exists in temp map.")
+            panic!("Txn already exists in temp map.");
         }
     }
+    assert!(txn_pool.txn_ct() == 5, "Txn pool isnt 5");
     assert!(temp_txn_map.len() == 5, "Txn map isnt 5");
 
     // add txns to block as they are processed
@@ -172,7 +178,7 @@ fn process_transfer_txns_pass() -> Result<()> {
     );
 
     // PROCESS ALL TRANSACTIONS
-    blockchain.process_transfer_txns(&temp_txn_map, &mut new_block)?;
+    blockchain.process_transfer_txns(&temp_txn_map, &mut new_block, &mut txn_pool)?;
 
     // assert that the block has all of the txns to be added
     assert!(
