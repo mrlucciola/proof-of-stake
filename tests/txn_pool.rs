@@ -46,9 +46,13 @@ fn add_txn_fail_dup() -> Result<()> {
     let txn_1_copy = txn_1.clone();
     // add to pool
     txn_pool.add_txn(txn_1)?;
+    assert_eq!(txn_pool.txn_ct(), 1);
+
     // should fail
-    txn_pool.add_txn(txn_1_copy)?;
-    assert_ne!(txn_pool.txn_ct(), 2);
+    if let Ok(_) = txn_pool.add_txn(txn_1_copy) {
+        panic!("Adding duplicate txn should fail.")
+    };
+
     assert_eq!(txn_pool.txn_ct(), 1);
 
     Ok(())

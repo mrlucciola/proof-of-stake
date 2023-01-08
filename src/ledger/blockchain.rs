@@ -117,13 +117,14 @@ impl Blockchain {
     ) -> Result<()> {
         for (_k, txn) in txns_to_add.iter() {
             // #64: remove from txn pool
-            let txns = txn_pool.txns();
+            let txn = txn_pool.remove_txn(&txn)?;
             // validate and update account states
-            self.process_transfer_txn(txn)?;
+            self.process_transfer_txn(&txn)?;
 
             // add to prospective block
-            block.add_txn(txn.to_owned())
+            block.add_txn(txn);
         }
+
         Ok(())
     }
 

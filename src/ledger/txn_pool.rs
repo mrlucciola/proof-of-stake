@@ -1,7 +1,7 @@
 use anyhow::ensure;
 // import
 use serde::Serialize;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, error};
 // local
 use crate::ledger::{general::Result, txn::Txn};
 
@@ -42,9 +42,10 @@ impl TxnPool {
         // @todo verify the requesting node is authorized
         // @todo validate signature
 
+        println!("txnnn_id: {:?}", txn);
         // add txn to pool
-        if let Some(_) = self.values.insert(txn.id_key(), txn) {
-            panic!("Txn already exists in pool.");
+        if let Some(_txn) = self.values.insert(txn.id_key(), txn) {
+            return Err(TxnPoolError::DuplicateTxn.into());
         }
 
         Ok(())
@@ -68,25 +69,18 @@ impl TxnPool {
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
 
-    /// Remove a transaction from the pool by its id (hash)
+    /// ## Remove and return a transaction from pool.
     ///
-    /// Calls remove_txn
+    /// Use the Txn Map Key to look up the transaction in the transaction pool.
+    ///
+    /// Calls `BTreeMap.remove()`
     pub fn remove_txn(&mut self, txn: &Txn) -> Result<Txn> {
         // TODO: verify the requesting node is authorized
         match self.values.remove(&txn.id_key()) {
             Some(txn) => Ok(txn),
+            // @todo handle error (in comments below)
             None => Err(anyhow::format_err!("NoTxn")), // TODO: create proper txn error
         }
-    }
-    /// ## Retrieve the transaction and remove from pool.
-    pub fn pop_txn(&mut self, txn_key: &TxnMapKey) -> Txn {
-        // @todo handle error (in comments below)
-        self.values.remove_entry(txn_key).unwrap().1
-        // ensure!(d)
-        // match self.values.remove_entry(txn_key) {
-        //     Some(k) => {return },
-        //     None => Err(anyhow::Error"No transaction")
-        // }
     }
 
     ////////////////////////////// SETTERS //////////////////////////////
@@ -102,4 +96,11 @@ impl TxnPool {
     ///////////////////////////// VALIDATION ////////////////////////////
     ///////////////////////////// VALIDATION ////////////////////////////
     /////////////////////////////////////////////////////////////////////
+}
+
+use thiserror::Error;
+#[derive(Error, Debug)]
+pub enum TxnPoolError {
+    #[error("Attempting to add duplicate txn.")]
+    DuplicateTxn,
 }
