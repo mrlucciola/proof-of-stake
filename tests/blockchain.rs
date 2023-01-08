@@ -160,7 +160,7 @@ fn process_transfer_txns_pass() -> Result<()> {
 
         txn_pool.add_txn(txn.clone())?;
         // @todo only add txn id, not whole txn
-        if let Some(_) = temp_txn_map.insert(txn.id_key(), txn) {
+        if let Some(_) = temp_txn_map.insert(txn.clone().id_key(), txn.clone()) {
             panic!("Txn already exists in temp map.");
         }
     }
@@ -183,15 +183,19 @@ fn process_transfer_txns_pass() -> Result<()> {
     // assert that the block has all of the txns to be added
     assert!(
         new_block.txns().len() == txn_ct,
-        "Block has incorrect number of txns."
+        "Block has incorrect number of txns. Should have {}, currently has {} transactions.",
+        txn_ct,
+        new_block.txns().len()
+    );
+    assert!(
+        txn_pool.txn_ct() == 0,
+        "Transaction pool has incorrect number of txns. Should have 0, currently has {} transactions.",
+        txn_pool.txn_ct()
     );
 
     // assert that the txn IDs match between the block txn and temp txn maps
-    // @todo assert that the txn map IDs have been removed from the mempool
     for (_key, txn) in temp_txn_map.iter() {
-        if let None = new_block.txns().get(&txn.id_key()) {
-            panic!("Txn doesn't exist in new block.");
-        }
+        assert!(!new_block.txns().get(&txn.id_key()).is_none());
     }
 
     Ok(())
