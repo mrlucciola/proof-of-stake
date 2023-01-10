@@ -1,7 +1,6 @@
 // imports
 use serde::Serialize;
 use std::collections::BTreeMap;
-use thiserror::Error;
 // local
 use super::{
     blocks::{Block, BlockId, BlockTxnMap},
@@ -15,16 +14,19 @@ use crate::accounts::accounts::{AccountMap, Accounts};
 /// Lookup type for the `blocks` map a string
 pub type BlockMapKey = String; // TODO: change to hex
 pub type BlockMap = BTreeMap<BlockMapKey, Block>;
+
 /// Data structure, contains list of sequential block
 #[derive(Debug, Serialize)]
 pub struct Blockchain {
+    /// Ordered lookup collection of blocks.
     blocks: BlockMap,
+    /// Ordered lookup collection of accounts, wrapped with methods.
     pub accounts: Accounts,
 }
 impl Blockchain {
-    /// Create new `Blockchain` instance
+    /// ## Create new `Blockchain` instance.
     ///
-    /// Contains list (BTreeMap) of blocks in sequence, queriable by their ID, in string form
+    /// Contains list (BTreeMap) of blocks in sequence, queriable by their ID, in string form.
     ///
     /// The first block in a blockchain is the genesis block.
     pub fn new() -> Self {
@@ -42,21 +44,21 @@ impl Blockchain {
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// GETTERS //////////////////////////////
 
-    /// Getter for `blocks`
+    /// ### Getter for `blocks` map
     pub fn blocks(&self) -> &BlockMap {
         &self.blocks
     }
-    /// ## Get block by key
+    /// ### Get block by key
     pub fn block(&self, key: &BlockMapKey) -> Option<&Block> {
         self.blocks.get(key)
     }
-    /// ## Get most recently committed block
+    /// ### Get most recently committed block
     ///
     /// We unwrap because blockchain should never be empty, representing an undefined state.
     pub fn last_block(&self) -> &Block {
         self.blocks.values().next_back().unwrap()
     }
-    /// Getter for `accounts`
+    /// ### Getter for `accounts`
     pub fn accounts(&self) -> &Accounts {
         &self.accounts
     }
@@ -128,7 +130,7 @@ impl Blockchain {
         Ok(())
     }
 
-    /// Create and add the genesis block.
+    /// ## Create and add the genesis block.
     ///
     /// The genesis block is the initial/seed block for the entire blockchain.
     fn genesis(&mut self) {
@@ -165,6 +167,7 @@ impl Blockchain {
         self.blocks.values().last().unwrap().blockheight
             == (self.blocks().len() - 1).try_into().unwrap()
     }
+
     /// This assoc. fxn is on the `Blockchain` struct (rather than `Block`) to
     /// reduce clutter on the `Block` struct. This fxn will be called relatively
     /// infrequently and the functionality is relevant enough to the `Blockchain` class.
@@ -180,12 +183,12 @@ impl Blockchain {
 }
 
 // @todo move to separate error component
-#[derive(Debug, Error)]
-enum BlockchainError {
-    /// @todo move to `Txn`
-    #[error("Total balance before and after transaction do not match.")]
-    TransactionBalanceMismatch,
-    /// @todo move to `Txn`
-    #[error("Account balance does not change by amount determined by txn.")]
-    AccountBalanceChangeMismatch,
-}
+// #[derive(Debug, Error)]
+// enum BlockchainError {
+//     /// @todo move to `Txn`
+//     #[error("Total balance before and after transaction do not match.")]
+//     TransactionBalanceMismatch,
+//     /// @todo move to `Txn`
+//     #[error("Account balance does not change by amount determined by txn.")]
+//     AccountBalanceChangeMismatch,
+// }

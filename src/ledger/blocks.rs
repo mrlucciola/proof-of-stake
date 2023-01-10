@@ -2,14 +2,12 @@
 use chrono::prelude::*;
 use secp256k1::Secp256k1;
 use serde::Serialize;
-use std::collections::BTreeMap;
 // local
 use crate::{
     ledger::{
         blockchain::BlockMapKey,
         general::{PbKey, SecpError},
         txn::Txn,
-        txn_pool::TxnMapKey,
         wallet::Wallet,
     },
     utils::{
