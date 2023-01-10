@@ -203,13 +203,13 @@ impl Block {
     ///   - `Some()` indicates a signature exists and its valid/invalid
     ///   - `None` indicates there is no signature
     ///   - `Error` is for error handling
-    pub fn is_signature_valid(&self, signer_pbkey: &PbKey) -> Result<Option<bool>> {
+    pub fn is_signature_valid(&self, signer_pbkey: &PbKey) -> Result<()> {
         // init
         let secp = Secp256k1::new();
 
         // 1) check if signature exists
         if let None = self.signature() {
-            return Ok(None);
+            return Err(BlockError::EmptySignature.into());
         }
 
         // 2) check if signature is valid
@@ -218,8 +218,8 @@ impl Block {
             self.signature().unwrap(),
             signer_pbkey,
         ) {
-            Ok(_) => Ok(Some(true)),
-            Err(SecpError::IncorrectSignature) => Ok(Some(false)),
+            Ok(_) => Ok(()),
+            Err(SecpError::IncorrectSignature) => Err(SecpError::IncorrectSignature.into()),
             Err(e) => Err(e.into()),
         }
     }
@@ -230,7 +230,7 @@ impl Block {
     ///   - all struct properties are not `None`
     ///   - hash is valid
     ///   - signature is valid
-    pub fn is_valid(&self, signer_pbkey: &PbKey) -> Result<bool> {
+    pub fn is_valid(&self, signer_pbkey: &PbKey) -> Result<()> {
         // validate fields
         if let None = self.signature {
             return Err(BlockError::EmptySignature.into());
@@ -248,7 +248,7 @@ impl Block {
         // validate signature
         self.is_signature_valid(&signer_pbkey)?;
 
-        Ok(true)
+        Ok(())
     }
 
     ///////////////////////////// VALIDATION ////////////////////////////
