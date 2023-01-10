@@ -35,8 +35,8 @@ impl Blockchain {
 
         let mut blockchain = Self { blocks, accounts };
 
-        // Create the genesis block
-        blockchain.genesis();
+        // Create the genesis block - panic if unexpected behavior
+        blockchain.genesis().unwrap();
 
         blockchain
     }
@@ -76,13 +76,13 @@ impl Blockchain {
     ///
     /// Block must be signed and pass validation.
     ///
-    /// @todo #60 - validate signature. Add error `InvalidBlockSignature` response.
     /// @todo validate previous block's: 1) height; 2) id. Add error responses for each (InvalidBlockHeight & InvalidBlockId, respectively).
-    pub fn add_block(&mut self, block: Block) -> &mut Block {
+    pub fn add_block(&mut self, block: Block) -> Result<&mut Block> {
         // check if block is valid
+        block.is_valid(&block.leader)?;
         // check if block is signed
         // check if entry exists -> if not, then insert
-        self.blocks.entry(block.id_key()).or_insert(block)
+        Ok(self.blocks.entry(block.id_key()).or_insert(block))
     }
 
     /// @todo Validate txn, then process
@@ -133,7 +133,11 @@ impl Blockchain {
     /// ## Create and add the genesis block.
     ///
     /// The genesis block is the initial/seed block for the entire blockchain.
-    fn genesis(&mut self) {
+    ///
+    /// Notes:
+    /// - Validates that no prior blocks exist.
+    /// - Manually assigns a blocktime (0 = 1/1/1970 00:00).
+    fn genesis(&mut self) -> Result<()> {
         if !self.blocks().is_empty() {
             panic!("Blockchain needs to be empty")
         }
@@ -141,24 +145,27 @@ impl Blockchain {
         let leader_wallet = Wallet::new_from_file(&"hidden/master_key.json".to_string());
         let leader: PbKey = leader_wallet.pbkey();
 
-        // creates a new block using the `Block` constructor - we need to replace the blockheight, id, and signature
+        // create a new block using the `Block` constructor - we need to replace the blockheight, id, and signature
         let mut genesis_block = Block::new(
             BlockTxnMap::new(),
             leader,
             BlockId::from_bytes([0u8; 32]),
             0,
         );
-        // replace blockheight
+        // replace blockheight & time
         genesis_block.blockheight = 0;
         genesis_block.system_time = 0;
         // replace id/hash
         genesis_block.set_id();
 
-        self.add_block(genesis_block);
+        self.add_block(genesis_block)?;
+
+        Ok(())
     }
 
     ////////////////////////////// SETTERS //////////////////////////////
     /////////////////////////////////////////////////////////////////////
+
     /////////////////////////////////////////////////////////////////////
     ///////////////////////////// VALIDATION ////////////////////////////
 

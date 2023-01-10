@@ -27,7 +27,7 @@ fn create_blockchain_pass() {
 
     genesis.sign(&users.main.wallet);
 
-    let is_valid = genesis.is_valid(&users.main.wallet).unwrap();
+    let is_valid = genesis.is_valid(&users.main.wallet.pbkey()).is_ok();
     assert!(is_valid, "Invalid genesis block: {:?}", is_valid);
 
     // block must be genesis
@@ -51,7 +51,7 @@ fn add_block_to_blockchain_pass() {
     // add a block to the chain
     let new_block_to_add = create_block(users.main, &blockchain);
     let key = new_block_to_add.id_key();
-    blockchain.add_block(new_block_to_add);
+    blockchain.add_block(new_block_to_add).unwrap(); // dont worry about error handling
     let blocks_len_post = blockchain.blocks().len();
 
     // check
