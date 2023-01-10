@@ -1,7 +1,6 @@
-use anyhow::ensure;
 // import
 use serde::Serialize;
-use std::{collections::BTreeMap, error};
+use std::collections::BTreeMap;
 // local
 use crate::ledger::{general::Result, txn::Txn};
 
