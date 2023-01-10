@@ -107,33 +107,32 @@ impl Block {
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// GETTERS //////////////////////////////
 
-    /// Getter for `Block` `id` property.
+    /// ### Get `Block.id` property.
     pub fn id(&self) -> BlockId {
         self.id.unwrap()
     }
-    /// Get Block Id in `String` form.
+    /// ### Get `Block.id` in `String` form.
     pub fn id_str(&self) -> String {
         self.id().to_string()
     }
-    /// Get Block Id in `hex` form.
+    /// ### Get `Block.id` in `hex` form.
     pub fn id_hex(&self) -> BlakeHex {
         self.id().to_hex()
     }
-    /// Get Block Id Hex in `String` form.
+    /// ### Get `Block.id` Hex in `String` form.
     pub fn id_hex_string(&self) -> String {
         self.id().to_hex().to_string()
     }
-    /// Get `BlockMap` key type (derived from BlockId)
+    /// ### Get `Block.id` in type used as a key for `BlockMap`.
     pub fn id_key(&self) -> BlockMapKey {
         self.id_hex_string()
     }
-    /// Getter for `transactions` mapping.
-    ///
-    /// There should be no direct access to the `transactions` map.
+    /// ### Get `Block.transactions` included in this `Block`.
     pub fn txns(&self) -> &BlockTxnMap {
         &self.txns
     }
-    /// Getter for `signature` property.
+    /// ### Get `Block.signature` property.
+    /// Can return `None` if not yet signed.
     pub fn signature(&self) -> Option<&BlockSignature> {
         self.signature.as_ref()
     }
@@ -144,12 +143,12 @@ impl Block {
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
 
-    /// Set the signature for the block
+    /// ## Set the signature for the block.
     fn set_signature(&mut self, signature: BlockSignature) {
         self.signature = Some(signature);
     }
 
-    /// Add the signature to the block body in place.
+    /// ## Add the signature to the block body in place.
     ///
     /// 1) Sign the block hash
     /// 2) Add signature to `Block` body
@@ -161,7 +160,7 @@ impl Block {
         signature
     }
 
-    /// Calculate and set the id for a `Block`.
+    /// ## Calculate and set the id for a `Block`.
     ///
     /// Returns id
     /// set_id() -> BlockId
@@ -175,7 +174,7 @@ impl Block {
         id
     }
 
-    /// Add a transaction to the block.
+    /// ## Add a transaction to the block.
     ///
     /// Since we are updating the state of the block, we update the block id (hash) here.
     pub fn add_txn(&mut self, new_txn: Txn) {
@@ -195,7 +194,7 @@ impl Block {
     /////////////////////////////////////////////////////////////////////
     ///////////////////////////// VALIDATION ////////////////////////////
 
-    /// Check if signature is valid.
+    /// ## Check if signature is valid.
     ///
     /// 1. Assert there is a signature
     /// 1. Assert signature is valid
@@ -225,7 +224,7 @@ impl Block {
         }
     }
 
-    /// Check if block is valid.
+    /// ## Check if block is valid.
     ///
     /// Valid criteria:
     ///   - all struct properties are not `None`
