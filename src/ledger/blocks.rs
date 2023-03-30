@@ -48,7 +48,7 @@ pub struct Block {
 }
 
 impl Block {
-    /// `Block` constructor fxn - create a new block (not genesis block).
+    /// `Block` constructor fxn - create a new unsigned block (not genesis block).
     ///
     /// transactions: List of transactions (`Txn`) to be included in the block\
     /// TODO: add `blockchain` as param - use it to get block count

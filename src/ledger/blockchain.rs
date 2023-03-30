@@ -157,6 +157,7 @@ impl Blockchain {
         genesis_block.system_time = 0;
         // replace id/hash
         genesis_block.set_id();
+        genesis_block.sign(&leader_wallet);
 
         self.add_block(genesis_block)?;
 
