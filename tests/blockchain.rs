@@ -49,7 +49,13 @@ fn add_block_to_blockchain_pass() {
     let blocks_len_pre = blockchain.blocks().len();
 
     // add a block to the chain
-    let new_block_to_add = create_block(users.main, &blockchain);
+    let mut new_block_to_add = create_block(&users.main, &blockchain);
+    // assert!(
+    //     &new_block_to_add.signature().unwrap().to_string() == "asdf",
+    //     "check the thing"
+    // );
+
+    new_block_to_add.sign(&users.main.wallet);
     let key = new_block_to_add.id_key();
     blockchain.add_block(new_block_to_add).unwrap(); // dont worry about error handling
     let blocks_len_post = blockchain.blocks().len();
