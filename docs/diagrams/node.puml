@@ -1,0 +1,49 @@
+@startuml
+
+' user sends txn to node
+rectangle rest as "REST" {
+    usecase node0 as "Node" <<node>>
+    actor user0 as "User"
+    cloud txnpool0 as "Transaction Pool"
+
+    user0 --> node0: send signed\ntransaction\nvia REST
+    node0 --> txnpool0: add txn\nto pool
+}
+
+' p2p
+rectangle p2p {
+    usecase nodep2p1 as "Node" <<node>>
+    usecase nodep2p2 as "Node" <<node>>
+    cloud txnpoolp2p1 as "Transaction Pool"
+    cloud txnpoolp2p2 as "Transaction Pool"
+
+    nodep2p1 -> txnpoolp2p1
+    nodep2p2 -> txnpoolp2p2
+    nodep2p1 --> nodep2p2: request txnpool\nfrom peer node
+}
+
+' node creates block
+rectangle createblock as "Create Block" {
+    usecase node1 as "Node" <<node>>
+    cloud txnpool1 as "Transaction Pool"
+    rectangle newBlock1 as "New Block" <<block>>
+
+    node1 --> txnpool1
+    txnpool1 --> newBlock1: create new\nblock
+}
+
+' block is added to blockchain
+rectangle addblock as "Add Block to Blockchain" {
+    usecase node2 as "Node" <<node>>
+    rectangle newBlock2 as "New Block" <<block>>
+    cloud blockchain2 as "Blockchain"
+
+    newBlock2 .. node2
+    node2 --> blockchain2: add block\nto blockchain
+}
+
+rest -[hidden]-> p2p
+p2p -[hidden]-> createblock
+createblock -[hidden]-> addblock
+
+@enduml
