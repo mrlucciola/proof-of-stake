@@ -5,9 +5,8 @@ use posbc::ledger::{
     txn::{Txn, TxnType},
     txn_pool::TxnPool,
 };
-
-pub mod common;
-use common::init_send_recv;
+// test
+use crate::common::init_send_recv;
 
 // TODO: create a fail case
 #[test]

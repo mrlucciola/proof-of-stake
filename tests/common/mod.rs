@@ -1,4 +1,4 @@
-// import
+// imports
 use secp256k1::Secp256k1;
 use std::{fs::File, io::BufReader};
 // local
@@ -7,10 +7,11 @@ use posbc::ledger::{
     txn::{Txn, TxnType},
     wallet::Wallet,
 };
+// test
+use constants::*;
+// mods
 pub mod constants;
 pub mod fxns;
-pub use fxns::*;
-use constants::*;
 
 fn create_keypair_from_file(filepath: &String) -> KP {
     let f = File::open(filepath).unwrap();

@@ -2,8 +2,8 @@
 use secp256k1::{Message, Secp256k1};
 use std::str::FromStr;
 // local
-pub mod common;
-use common::{create_transfer_txn_default, init_send_recv};
+// test
+use crate::common::{create_transfer_txn_default, init_send_recv};
 
 #[test]
 fn verify_txn_signature_pass() {
