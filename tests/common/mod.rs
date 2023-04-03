@@ -9,6 +9,7 @@ use posbc::ledger::{
 };
 pub mod constants;
 pub mod fxns;
+pub use fxns::*;
 use constants::*;
 
 fn create_keypair_from_file(filepath: &String) -> KP {
@@ -25,6 +26,7 @@ fn create_keypair_from_file(filepath: &String) -> KP {
 pub struct UserInfo {
     pub kp: KP,
     pub wallet: Wallet,
+    pub filepath: String,
 }
 impl UserInfo {
     pub fn pbkey(&self) -> PbKey {
@@ -34,7 +36,11 @@ impl UserInfo {
 fn get_user_info(key_str: &String) -> UserInfo {
     let kp = create_keypair_from_file(key_str);
     let wallet = Wallet::new_from_kp(&kp);
-    UserInfo { kp, wallet }
+    UserInfo {
+        kp,
+        wallet,
+        filepath: key_str.to_owned(),
+    }
 }
 pub struct UsersInfo {
     pub main: UserInfo,

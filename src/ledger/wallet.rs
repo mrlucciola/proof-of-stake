@@ -18,6 +18,7 @@ use crate::{
     utils::signature::{BlockSignature, TxnSignature},
 };
 
+#[derive(Debug)]
 pub struct Wallet {
     keypair: KeyPair,
 }
