@@ -41,7 +41,6 @@ impl TxnPool {
         // @todo verify the requesting node is authorized
         // @todo validate signature
 
-        println!("txnnn_id: {:?}", txn);
         // add txn to pool
         if let Some(_txn) = self.values.insert(txn.id_key(), txn) {
             return Err(TxnPoolError::DuplicateTxn.into());
@@ -97,8 +96,7 @@ impl TxnPool {
     /////////////////////////////////////////////////////////////////////
 }
 
-use thiserror::Error;
-#[derive(Error, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum TxnPoolError {
     #[error("Attempting to add duplicate txn.")]
     DuplicateTxn,
