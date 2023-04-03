@@ -1,0 +1,13 @@
+@startuml
+
+cloud Nodes {
+    usecase node1
+    usecase node2
+    usecase node3
+
+    node1 <--> node2
+    node2 <--> node3
+    node1 <--> node3
+}
+
+@enduml
