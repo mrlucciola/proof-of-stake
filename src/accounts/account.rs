@@ -1,12 +1,10 @@
 // imports
-use secp256k1::PublicKey;
-use serde::Serialize;
-
+use {anyhow::ensure, secp256k1::PublicKey, serde::Serialize};
+// local
 use crate::ledger::{
     general::Result,
     txn::{Txn, TxnType},
 };
-// local
 
 /// Representation of a single on-chain account.
 ///
@@ -90,9 +88,10 @@ impl Account {
     /// Should only execute if transfer txn or fee txn.
     pub fn decrease_balance(&mut self, txn: &Txn) -> Result<u128> {
         // @todo add fee validation + error
-        if txn.txn_type != TxnType::Transfer {
-            panic!("Only allowing transfer transactions.");
-        }
+        ensure!(
+            txn.txn_type == TxnType::Transfer,
+            "Transfer is the only accepted Txn Type"
+        );
 
         let amt_to_decr = txn.amt;
         self.balance -= amt_to_decr;

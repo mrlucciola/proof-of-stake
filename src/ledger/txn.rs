@@ -1,3 +1,5 @@
+use std::fmt;
+
 // imports
 use chrono::prelude::*;
 use serde::Serialize;
@@ -16,6 +18,11 @@ pub type TxnId = BlakeHash;
 #[derive(Serialize, Debug, Clone, Copy, PartialEq)]
 pub enum TxnType {
     Transfer = 1,
+}
+impl fmt::Display for TxnType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
+    }
 }
 
 /// ## Transfer transaction.
