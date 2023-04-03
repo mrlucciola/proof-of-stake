@@ -7,9 +7,8 @@ use posbc::{
     },
     utils::hash::BlakeHash,
 };
-
-pub mod common;
-use common::{init_users, UsersInfo};
+// test
+use crate::common::{init_users, UsersInfo};
 
 // tests:
 // create a block

@@ -4,8 +4,8 @@ use blake3::OUT_LEN;
 use secp256k1::{Message, Secp256k1};
 // local
 use posbc::utils::{hash::BlakeHash, signature::TxnSignature};
-pub mod common;
-use common::{create_transfer_txn_default, init_send_recv};
+// test
+use crate::common::{create_transfer_txn_default, init_send_recv};
 
 #[test]
 fn create_unsigned_txn_pass() {

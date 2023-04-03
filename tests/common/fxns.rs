@@ -1,3 +1,5 @@
+// imports
+// local
 use posbc::{
     accounts::{
         account::Account,
@@ -9,7 +11,7 @@ use posbc::{
         txn::TxnId,
     },
 };
-
+// test
 use super::{init_users, UserInfo, UsersInfo};
 
 /// Creates an empty block using the leader and previous block.

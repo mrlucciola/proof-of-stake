@@ -7,11 +7,8 @@ use posbc::ledger::{
     txn::{Txn, TxnType},
     txn_pool::{TxnMap, TxnPool},
 };
-pub mod accounts;
-pub mod common;
-use common::fxns::{create_block, init_blockchain, init_blockchain_and_accounts};
-
-// tests:
+// test
+use crate::common::fxns::{create_block, init_blockchain, init_blockchain_and_accounts};
 
 #[test]
 fn create_blockchain_pass() {
