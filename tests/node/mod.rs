@@ -1,4 +1,5 @@
 // imports
+use std::net::{IpAddr, Ipv4Addr};
 // local
 use posbc::node::{Node, Result};
 // test
@@ -12,24 +13,35 @@ use crate::common::fxns::init_blockchain_and_accounts;
 fn init_node_pass() -> Result<()> {
     let (users, _blockchain) = init_blockchain_and_accounts();
 
-    // initialize node
+    // init node
     let mut node = Node::new();
-    // initialize wallet
+    // init wallet
     node.set_wallet_from_filepath(&users.main.filepath)?;
     assert_eq!(
         &node.wallet()?.pbkey(),
         &users.main.wallet.pbkey(),
         "Wallet values not equal"
     );
-
-    // @todo initialize p2p
+    // init p2p
+    node.set_p2p(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8898)?;
     // @todo initialize blockchain
     // @todo initialize txn pool
     Ok(())
 }
 
-// #[test]
-// #[should_panic]
-// fn init_node_fail() {
-//     let node = Node::new();
-// }
+#[test]
+fn p2p_init_connection() -> Result<()> {
+    let (users, _blockchain) = init_blockchain_and_accounts();
+
+    // init node
+    let mut node = Node::new();
+    // init wallet
+    node.set_wallet_from_filepath(&users.main.filepath)?;
+    // init p2p
+    node.set_p2p(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8898)?;
+
+    // start p2p
+    node.start_p2p();
+
+    Ok(())
+}

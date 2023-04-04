@@ -1,8 +1,13 @@
 // imports
+use std::net::IpAddr;
 // local
+use super::node::{
+    error::{NodeError, P2PError},
+    p2p::P2P,
+};
 use crate::ledger::{blockchain::Blockchain, txn_pool::TxnPool, wallet::Wallet};
 pub mod error;
-use crate::node::error::NodeError;
+pub mod p2p;
 // submodule
 pub type Result<T> = std::result::Result<T, NodeError>;
 
@@ -21,6 +26,7 @@ pub struct Node {
     wallet: Option<Wallet>,
     blockchain: Option<Blockchain>,
     txn_pool: Option<TxnPool>,
+    p2p: Option<P2P>,
 }
 
 impl Node {
@@ -31,14 +37,11 @@ impl Node {
     /// 1. Values may be updated asynchronously;
     /// 1. It may not be necessary to initialize immediately.
     pub fn new() -> Self {
-        let wallet = None;
-        let blockchain = None;
-        let txn_pool = None;
-
         Self {
-            wallet,
-            blockchain,
-            txn_pool,
+            wallet: None,
+            blockchain: None,
+            txn_pool: None,
+            p2p: None,
         }
     }
 
@@ -63,6 +66,13 @@ impl Node {
         match &self.txn_pool {
             Some(t) => Ok(&t),
             None => Err(NodeError::InitTxnPool),
+        }
+    }
+    /// ## Get ref of peer to peer connection information for this instance of the node.
+    pub fn p2p(&self) -> Result<&P2P> {
+        match &self.p2p {
+            Some(p) => Ok(&p),
+            None => Err(NodeError::P2PError(P2PError::InitP2P)),
         }
     }
     ////////////////////////////// GETTERS //////////////////////////////
@@ -112,7 +122,28 @@ impl Node {
 
         // Ok(())
     }
+    /// ## Set p2p module
+    pub fn set_p2p(&mut self, host: IpAddr, port: u16) -> Result<()> {
+        self.p2p = Some(P2P::new(host, port));
+
+        Ok(())
+    }
     ////////////////////////////// SETTERS //////////////////////////////
+    /////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////
+    ////////////////////////////// ACTIONS //////////////////////////////
+    /// ## Start the p2p connection.
+    pub fn start_p2p(&mut self) -> Result<()> {
+        // check if p2p is initialized
+        let p2p = self.p2p()?;
+
+        // start the connection
+        p2p.start_connection()?;
+
+        Ok(())
+    }
+    ////////////////////////////// ACTIONS //////////////////////////////
     /////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////
