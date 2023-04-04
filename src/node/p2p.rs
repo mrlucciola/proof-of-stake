@@ -1,6 +1,6 @@
 // imports
 use std::{
-    io,
+    io::{self, Read},
     net::{IpAddr, SocketAddr, TcpListener, TcpStream},
     time::Duration,
 };
@@ -11,14 +11,16 @@ pub type Result<T> = std::result::Result<T, P2PError>;
 
 #[derive(Debug)]
 pub struct P2P {
-    host: IpAddr,
-    port: u16,
-    socket_addr: SocketAddr,
+    pub host: IpAddr,
+    pub port: u16,
+    pub socket_addr: SocketAddr,
+    listener: TcpListener,
 }
 
-fn handle_stream(stream: TcpStream) -> std::result::Result<(), P2PError> {
+fn handle_stream(mut stream: TcpStream) -> std::result::Result<(), P2PError> {
     let mut buf = [0];
     stream.set_read_timeout(Some(Duration::from_millis(100)))?;
+
     loop {
         let _ = match stream.read(&mut buf) {
             Err(e) => match e.kind() {
@@ -28,7 +30,7 @@ fn handle_stream(stream: TcpStream) -> std::result::Result<(), P2PError> {
                 }
                 _ => panic!("Got an error"),
             },
-            Ok() => {
+            Ok(m) => {
                 println!("Received {m:?}, {buf:?}");
                 if m == 0 {
                     break;
@@ -47,18 +49,25 @@ impl P2P {
     /// Get environment information from a config file.
     pub fn new(host: IpAddr, port: u16) -> Self {
         let socket_addr = SocketAddr::new(host, port);
+        let listener = TcpListener::bind(socket_addr).unwrap();
+        listener.set_nonblocking(true).unwrap();
 
         Self {
             host,
             port,
             socket_addr,
+            listener,
         }
     }
     pub fn start_connection(&self) -> Result<()> {
-        let listener = TcpListener::bind(self.socket_addr)?;
-        for stream_res in listener.incoming() {
-            let stream = stream_res?;
-            handle_stream(stream)?;
+        for stream_res in self.listener.incoming() {
+            match stream_res {
+                Ok(s) => handle_stream(s)?,
+                Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                    break;
+                }
+                Err(e) => panic!("Unknown error: {}", e),
+            }
         }
 
         Ok(())

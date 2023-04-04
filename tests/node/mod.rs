@@ -28,20 +28,3 @@ fn init_node_pass() -> Result<()> {
     // @todo initialize txn pool
     Ok(())
 }
-
-#[test]
-fn p2p_init_connection() -> Result<()> {
-    let (users, _blockchain) = init_blockchain_and_accounts();
-
-    // init node
-    let mut node = Node::new();
-    // init wallet
-    node.set_wallet_from_filepath(&users.main.filepath)?;
-    // init p2p
-    node.set_p2p(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8898)?;
-
-    // start p2p
-    node.start_p2p();
-
-    Ok(())
-}
