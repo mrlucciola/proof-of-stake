@@ -50,7 +50,6 @@ impl P2P {
     pub fn new(host: IpAddr, port: u16) -> Self {
         let socket_addr = SocketAddr::new(host, port);
         let listener = TcpListener::bind(socket_addr).unwrap();
-        listener.set_nonblocking(true).unwrap();
 
         Self {
             host,
@@ -60,6 +59,8 @@ impl P2P {
         }
     }
     pub fn start_connection(&self) -> Result<()> {
+        // self.listener.set_nonblocking(true)?;
+
         for stream_res in self.listener.incoming() {
             match stream_res {
                 Ok(s) => handle_stream(s)?,
