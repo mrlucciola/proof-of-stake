@@ -8,6 +8,16 @@ pub enum NodeError {
     InitWallet,
     #[error("Transaction pool not initialized.")]
     InitTxnPool,
+    #[error("P2P")]
+    P2PError(#[from] P2PError),
 }
 
-// #[deprecated(note = "Replace with Txn Map")]
+#[derive(Error, Debug)]
+pub enum P2PError {
+    #[error("Misc P2P error.")]
+    P2P,
+    #[error("P2P module not initialized.")]
+    InitP2P,
+    #[error("IoError")]
+    IoError(#[from] std::io::Error),
+}
