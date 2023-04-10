@@ -15,8 +15,8 @@ impl From<blake3::Hash> for BlakeHash {
         BlakeHash(*t.as_bytes())
     }
 }
-impl From<ArrayString<{ 2 * OUT_LEN }>> for BlakeHash {
-    fn from(t: ArrayString<{ 2 * OUT_LEN }>) -> Self {
+impl From<BlakeHex> for BlakeHash {
+    fn from(t: BlakeHex) -> Self {
         let hash = Hash::from_hex(t.as_bytes()).unwrap();
         BlakeHash::from(hash)
     }
@@ -30,7 +30,6 @@ impl From<[u8; OUT_LEN]> for BlakeHash {
 }
 impl BlakeHash {
     pub fn from_bytes(bytes: [u8; OUT_LEN]) -> Self {
-        // BlakeHash::clone(&self)
         Self(bytes)
     }
     /// The raw bytes of the `Hash`. Note that byte arrays don't provide
@@ -48,7 +47,7 @@ impl BlakeHash {
     /// type.
     ///
     /// [`ArrayString`]: https://docs.rs/arrayvec/0.5.1/arrayvec/struct.ArrayString.html
-    pub fn to_hex(&self) -> ArrayString<{ 2 * OUT_LEN }> {
+    pub fn to_hex(&self) -> BlakeHex {
         let mut s = ArrayString::new();
         let table = b"0123456789abcdef";
         for &b in self.0.iter() {

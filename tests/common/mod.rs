@@ -1,9 +1,8 @@
 // imports
-use secp256k1::Secp256k1;
 use std::{fs::File, io::BufReader};
 // local
 use posbc::ledger::{
-    general::{PbKey, KP},
+    general::PbKey,
     txn::{Txn, TxnType},
     wallet::Wallet,
 };
@@ -13,30 +12,37 @@ use constants::*;
 pub mod constants;
 pub mod fxns;
 
-fn create_keypair_from_file(filepath: &String) -> KP {
+/// secp-2-ed: from get_user_info
+fn create_keypair_from_file(filepath: &String) -> ed25519_dalek::Keypair {
+    if !filepath.contains("_ed25519") {
+        panic!("Filename must have _ed25519 in it: {}", filepath);
+    };
+
     let f = File::open(filepath).unwrap();
     let reader = BufReader::new(f);
     let key_json: Vec<u8> = serde_json::from_reader(reader).unwrap();
-    let secp = Secp256k1::new();
 
-    let keypair = KP::from_seckey_slice(&secp, &key_json).unwrap();
+    // open with ed 25519 lib
+    let kp = ed25519_dalek::Keypair::from_bytes(&key_json).unwrap();
 
-    keypair
+    kp
 }
 
 pub struct UserInfo {
-    pub kp: KP,
+    pub kp: ed25519_dalek::Keypair,
     pub wallet: Wallet,
     pub filepath: String,
 }
 impl UserInfo {
     pub fn pbkey(&self) -> PbKey {
-        self.kp.public_key()
+        self.kp.public
     }
 }
+/// in progress secp-2-ed
 fn get_user_info(key_str: &String) -> UserInfo {
     let kp = create_keypair_from_file(key_str);
-    let wallet = Wallet::new_from_kp(&kp);
+    let wallet = Wallet::new_from_kp(kp);
+    let kp = create_keypair_from_file(key_str);
     UserInfo {
         kp,
         wallet,

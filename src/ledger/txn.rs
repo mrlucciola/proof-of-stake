@@ -1,8 +1,8 @@
-use std::fmt;
-
 // imports
 use chrono::prelude::*;
+use ed25519_dalek::{Digest, Sha512};
 use serde::Serialize;
+use std::fmt;
 // local
 use crate::{
     ledger::{general::PbKey, txn_pool::TxnMapKey, wallet::Wallet},
@@ -11,6 +11,7 @@ use crate::{
         signature::TxnSignature,
     },
 };
+pub const TXN_MSG_CTX: &[u8; 6] = b"txn-v0";
 
 // exported types
 pub type TxnId = BlakeHash;
@@ -34,8 +35,8 @@ impl fmt::Display for TxnType {
 #[derive(Serialize, Debug, Clone)]
 pub struct Txn {
     pub amt: u128,
-    pub pbkey_send: PbKey,
-    pub pbkey_recv: PbKey,
+    pub pbkey_send: [u8; 32],
+    pub pbkey_recv: [u8; 32],
     // The time the txn was created
     pub system_time: u64,
     /// Type of transaction - as int
@@ -64,8 +65,8 @@ impl Txn {
         let system_time: u64 = Utc::now().timestamp_millis().try_into().unwrap();
 
         let mut txn = Self {
-            pbkey_send,
-            pbkey_recv,
+            pbkey_send: pbkey_send.to_bytes(),
+            pbkey_recv: pbkey_recv.to_bytes(),
             amt,
             system_time,
             txn_type,
@@ -106,14 +107,17 @@ impl Txn {
         self.id.unwrap()
     }
     /// Get Txn Id in `String` form.
+    #[deprecated = "Using byte arrays instead of strings."]
     pub fn id_str(&self) -> String {
         self.id().to_string()
     }
     /// Get Txn Id in `hex` form.
+    #[deprecated = "Using byte arrays instead of strings."]
     pub fn id_hex(&self) -> BlakeHex {
         self.id().to_hex()
     }
     /// Get Txn Id Hex in `String` form.
+    #[deprecated = "Using byte arrays instead of strings."]
     pub fn id_hex_string(&self) -> String {
         self.id().to_hex().to_string()
     }
@@ -124,6 +128,12 @@ impl Txn {
     /// Getter for `Txn` `signature` property
     pub fn signature(&self) -> &TxnSignature {
         self.signature.as_ref().unwrap()
+    }
+    pub fn pbkey_send(&self) -> PbKey {
+        PbKey::from_bytes(&self.pbkey_send).unwrap()
+    }
+    pub fn pbkey_recv(&self) -> PbKey {
+        PbKey::from_bytes(&self.pbkey_recv).unwrap()
     }
 
     ////////////////////////////// GETTERS //////////////////////////////
@@ -152,7 +162,7 @@ impl Txn {
     /// 2) Add signature to transaction body
     /// 3) Return signature
     pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
-        let sig = self.calc_signature(wallet);
+        let sig = wallet.sign_txn(self);
         self.set_signature(sig.clone());
 
         sig
@@ -166,32 +176,41 @@ impl Txn {
 
     /// Convert transaction struct to bytes - NOT id/hash/message/digest
     /// TODO: replace `Vec<u8>` - don't allocate
-    pub fn as_bytes(&self) -> Vec<u8> {
+    pub fn to_bytes(&self) -> Vec<u8> {
         // serialize to a byte vector
         serde_json::to_vec(&self).expect("Error serializing txn")
+    }
+
+    /// Compute the id (hash digest) of the transaction.
+    ///
+    /// Converts semantic data for the txn - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
+    ///
+    /// Hashes this info and produces a digest - the ID.
+    pub fn calc_id(&self) -> TxnId {
+        let mut hasher = blake3::Hasher::new();
+        // add the txn version
+        hasher.update(TXN_MSG_CTX);
+        // add the txn bytes
+        hasher.update(&self.to_bytes());
+        // return the hash digest - the txn's id
+        hasher.finalize().into()
+    }
+    pub fn calc_id_sha512(&self) -> Sha512 {
+        // Create a hash digest object which we'll feed the message into:
+        let mut prehashed: Sha512 = Sha512::new();
+
+        // add the txn version
+        prehashed.update(TXN_MSG_CTX);
+        // add the txn bytes
+        prehashed.update(self.to_bytes());
+
+        prehashed
     }
 
     /// Create and return a message signature based on
     ///    the contents of the transaction
     pub fn calc_signature(&self, wallet: &Wallet) -> TxnSignature {
-        let msg: TxnId = self.id();
-
-        wallet.sign_txn(&msg)
-    }
-
-    /// Compute the id (hash digest) of the transaction.
-    ///
-    /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
-    ///
-    /// Hashes this info and produces a digest - the ID.
-    pub fn calc_id(&self) -> TxnId {
-        let mut hasher = blake3::Hasher::new();
-        // add the block version
-        hasher.update(b"txn-v0");
-        // add the block bytes
-        hasher.update(&self.as_bytes());
-        // return the hash digest - the block's id
-        hasher.finalize().into()
+        wallet.sign_txn(self)
     }
 
     /////////////////////////////// UTILS ///////////////////////////////

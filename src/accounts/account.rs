@@ -2,7 +2,7 @@
 use {anyhow::ensure, secp256k1::PublicKey, serde::Serialize};
 // local
 use crate::ledger::{
-    general::Result,
+    general::{PbKey, Result},
     txn::{Txn, TxnType},
 };
 
@@ -17,37 +17,40 @@ pub struct Account {
     balance: u128,
 }
 
-pub type AccountId = PublicKey;
+pub type AccountId = [u8; 32];
 pub type AccountPbkey = PublicKey;
-pub type AccountMapKey = String;
+pub type AccountMapKey = AccountId;
 
 impl Account {
     /// Constructor: Create instance of an on-chain account.
     ///
     /// Load account info from the blockchain.
-    pub fn new(id: PublicKey, balance: Option<u128>) -> Self {
+    pub fn new(id: &AccountId, balance: Option<u128>) -> Self {
         // set default balance value
         let balance = match balance {
             Some(b) => b,
             None => 0u128,
         };
 
-        Self { id, balance }
+        Self {
+            id: id.clone(),
+            balance,
+        }
     }
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// GETTERS //////////////////////////////
     pub fn id(&self) -> &AccountId {
         &self.id
     }
-    pub fn id_pbkey(&self) -> &AccountPbkey {
-        self.id()
+    pub fn id_pbkey(&self) -> PbKey {
+        PbKey::from_bytes(self.id()).unwrap()
     }
     pub fn id_str(&self) -> String {
-        self.id().to_string()
+        String::from_utf8(self.id().to_vec()).unwrap()
     }
     /// Get the lookup key for Account ID in hash maps throughout the application.
     pub fn id_key(&self) -> AccountMapKey {
-        self.id_str()
+        self.id().to_owned()
     }
     pub fn balance(&self) -> u128 {
         self.balance

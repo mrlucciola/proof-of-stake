@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 
 // local
-use super::account::{Account, AccountId, AccountMapKey};
+use super::account::{Account, AccountMapKey};
 
 pub type AccountMap = BTreeMap<AccountMapKey, Account>;
 
@@ -48,7 +48,7 @@ impl Accounts {
     }
     pub fn get_acct_mut(&mut self, acct_id: &AccountMapKey) -> Option<&mut Account> {
         // TODO: check if pubkey is on curve
-        let acct = self.accounts.get_mut(&acct_id.to_string());
+        let acct = self.accounts.get_mut(acct_id);
 
         acct
     }
@@ -59,12 +59,10 @@ impl Accounts {
     /// initialize and add one if it doesn't exist.
     ///
     /// Same logic as `add_acct()`, but with empty account as the only type of account.
-    pub fn get_or_init_acct(&mut self, acct_id: &AccountId) -> &mut Account {
-        // create the empty account here
-        let new_acct = Account::new(*acct_id, None);
-
-        // add to the accounts map and return
-        self.add_acct(new_acct)
+    pub fn get_or_init_acct(&mut self, pbkey_bytes: &AccountMapKey) -> &mut Account {
+        self.accounts
+            .entry(pbkey_bytes.to_owned())
+            .or_insert(Account::new(pbkey_bytes, None))
     }
 
     pub fn len(&self) -> usize {

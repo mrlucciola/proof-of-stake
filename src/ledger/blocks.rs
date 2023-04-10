@@ -1,25 +1,23 @@
 // imports
 use chrono::prelude::*;
-use secp256k1::Secp256k1;
+use ed25519_dalek::{Digest, Sha512};
 use serde::Serialize;
 // local
 use crate::{
     ledger::{
-        blockchain::BlockMapKey,
-        general::{PbKey, SecpError},
-        txn::Txn,
+        blockchain::BlockMapKey, general::PbKey, general::Result, txn::Txn, txn_pool::TxnMap,
         wallet::Wallet,
     },
     utils::{
         hash::{BlakeHash, BlakeHex},
-        signature::BlockSignature,
+        signature::{BlockSignature, BLOCK_SIGNATURE_CONTEXT},
     },
 };
 
-use super::{general::Result, txn_pool::TxnMap};
-
 // export types
 pub type BlockId = BlakeHash;
+pub type BlockIdSha512 = Sha512;
+pub const BLOCK_MSG_CTX: &[u8; 8] = b"block-v0";
 
 /// This is TxnMap with added functionality.
 ///
@@ -32,7 +30,7 @@ pub struct Block {
     /// list/map of all transactions to be included in the block
     txns: BlockTxnMap,
     /// public key of the current block proposer (node)
-    pub leader: PbKey,
+    pub leader: [u8; 32],
     /// Identifier of the previous block - hash digest
     pub prev_block_id: BlockId,
     /// block height - current number of blocks in blockchain + 1
@@ -65,7 +63,7 @@ impl Block {
 
         let mut block = Self {
             txns,
-            leader,
+            leader: leader.to_bytes(),
             prev_block_id,
             blockheight,
             system_time,
@@ -79,7 +77,7 @@ impl Block {
     }
     /// Convert to bytes - NOT id/hash/message/digest
     /// TODO: replace `Vec<u8>` - don't allocate if possible
-    pub fn as_bytes(&self) -> Vec<u8> {
+    pub fn to_bytes(&self) -> Vec<u8> {
         // serialize to a byte vector
         serde_json::to_vec(&self).expect("Error serializing block")
     }
@@ -91,17 +89,28 @@ impl Block {
     pub fn calc_id(&self) -> BlockId {
         let mut hasher = blake3::Hasher::new();
         // add the block version
-        hasher.update(b"block-v0");
+        hasher.update(BLOCK_MSG_CTX);
         // add the block bytes
-        hasher.update(&self.as_bytes());
+        hasher.update(&self.to_bytes());
         // return the hash digest - the block's id
         hasher.finalize().into()
+    }
+    pub fn calc_id_sha512(&self) -> Sha512 {
+        // Create a hash digest object which we'll feed the message into:
+        let mut prehashed: Sha512 = Sha512::new();
+
+        // add the block version
+        prehashed.update(BLOCK_MSG_CTX);
+        // add the block bytes
+        prehashed.update(self.to_bytes());
+        // return the hash digest - the block's id
+        prehashed
     }
 
     /// Create and return a block signature based on
     ///    the contents of the transaction
     pub fn calc_signature(&self, wallet: &Wallet) -> BlockSignature {
-        wallet.sign_block(&self.id())
+        wallet.sign_block(self)
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -204,24 +213,23 @@ impl Block {
     ///   - `None` indicates there is no signature
     ///   - `Error` is for error handling
     pub fn is_signature_valid(&self, signer_pbkey: &PbKey) -> Result<()> {
-        // init
-        let secp = Secp256k1::new();
-
         // 1) check if signature exists
         if let None = self.signature() {
             return Err(BlockError::EmptySignature.into());
         }
 
-        // 2) check if signature is valid
-        match secp.verify_ecdsa(
-            &secp256k1::Message::from_slice(self.id().as_bytes()).unwrap(),
-            self.signature().unwrap(),
-            signer_pbkey,
-        ) {
-            Ok(_) => Ok(()),
-            Err(SecpError::IncorrectSignature) => Err(SecpError::IncorrectSignature.into()),
-            Err(e) => Err(e.into()),
-        }
+        let mut prehashed_message: Sha512 = Sha512::new();
+        prehashed_message.update(BLOCK_MSG_CTX);
+        prehashed_message.update(self.to_bytes());
+
+        let block_signature = self.signature.clone().unwrap();
+        let is_verified = signer_pbkey.verify_prehashed(
+            prehashed_message,
+            Some(BLOCK_SIGNATURE_CONTEXT),
+            &block_signature.clone().into(),
+        )?;
+
+        Ok(is_verified)
     }
 
     /// ## Check if block is valid.
