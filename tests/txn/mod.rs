@@ -1,40 +1,79 @@
 // imports
-use arrayvec::ArrayString;
-use blake3::OUT_LEN;
-use secp256k1::{Message, Secp256k1};
+use ed25519_dalek::{Digest, Sha512};
 // local
-use posbc::utils::{hash::BlakeHash, signature::TxnSignature};
+use posbc::{
+    ledger::txn::TXN_MSG_CTX,
+    utils::signature::{TxnSignature, TXN_SIGNATURE_CONTEXT},
+};
 // test
 use crate::common::{create_transfer_txn_default, init_send_recv};
 
 #[test]
 fn create_unsigned_txn_pass() {
-    let id_answer = "d324f1341ed803640717d669a5113c9ef3596728a473982fc8b70bb7d78cc00e";
+    let id_answer: [u8; 64] = [
+        21, 113, 200, 54, 53, 32, 176, 56, 194, 13, 161, 151, 94, 184, 187, 170, 96, 237, 102, 8,
+        175, 16, 204, 109, 189, 112, 94, 171, 41, 194, 31, 155, 83, 195, 110, 130, 195, 63, 119,
+        239, 198, 164, 165, 175, 60, 26, 128, 114, 35, 117, 143, 156, 254, 180, 151, 93, 80, 69,
+        81, 72, 146, 143, 215, 41,
+    ];
     let txn = create_transfer_txn_default();
-    let id_str = txn.id_str();
+    let id_test: [u8; 64] = txn.calc_id_sha512().finalize().into();
 
-    assert!(id_str == id_answer, "{:?}", id_str);
+    assert!(
+        id_answer == id_test,
+        "\nanswer: {:?}\n  test: {:?}",
+        id_answer,
+        id_test,
+    );
 }
 
 #[test]
 fn create_signed_txn_pass() {
     let (send, _recv) = init_send_recv();
+    let kp_send: Vec<u8> = [send.kp.secret.to_bytes(), send.kp.public.to_bytes()].concat();
+    let kp = ed25519_dalek::Keypair::from_bytes(&kp_send).unwrap();
+
+    // calc signature manually
     let txn = create_transfer_txn_default();
+    let mut txn1 = txn.clone();
+    let txn2 = txn.clone();
+    let mut txn3 = txn.clone();
+    let txn4 = txn.clone();
 
-    // get signature
-    let secp = Secp256k1::new();
+    let msg = txn1.to_bytes();
+    // Create a hash digest object which we'll feed the message into:
+    let mut prehashed_1: Sha512 = Sha512::new();
+    // add the txn context
+    prehashed_1.update(TXN_MSG_CTX);
+    // add the txn bytes
+    prehashed_1.update(msg.clone());
 
-    let msg = Message::from_slice(txn.id().as_bytes()).unwrap();
-    let signature: TxnSignature = secp.sign_ecdsa(&msg, &send.kp.secret_key());
+    let msg_signature_manual = kp
+        .sign_prehashed(prehashed_1, Some(TXN_SIGNATURE_CONTEXT))
+        .unwrap();
 
-    let mut answer_arr_str = ArrayString::<{ 2 * OUT_LEN }>::new();
-    answer_arr_str.push_str("d324f1341ed803640717d669a5113c9ef3596728a473982fc8b70bb7d78cc00e");
+    // calc signature using methods
+    let msg_sig_txn_sign: TxnSignature = txn1.sign(&send.wallet);
+    let msg_sig_txn_calc: TxnSignature = txn2.calc_signature(&send.wallet);
+    txn3.set_signature(txn3.calc_signature(&send.wallet));
+    let msg_sig_txn_set: TxnSignature = txn3.signature().clone();
+    let msg_signature_wallet: TxnSignature = send.wallet.sign_txn(&txn4);
 
-    let answer = BlakeHash::from(answer_arr_str);
-    let msg_a = Message::from_slice(answer.as_bytes()).unwrap();
-    let answer_sig = send.wallet.sign_txn(&answer);
-    let txn_sig: TxnSignature = txn.calc_signature(&send.wallet);
-
-    assert_eq!(signature, answer_sig, "1: {msg_a:?}");
-    assert_eq!(signature, txn_sig, "2: {signature:?}");
+    assert_eq!(
+        msg_signature_manual,
+        msg_sig_txn_sign.clone().into(),
+        "0: \n{msg_signature_manual:?}\n{msg_sig_txn_sign:?}"
+    );
+    assert_eq!(
+        msg_sig_txn_sign, msg_sig_txn_calc,
+        "1: \n{msg_sig_txn_sign:?}\n{msg_sig_txn_calc:?}"
+    );
+    assert_eq!(
+        msg_sig_txn_calc, msg_sig_txn_set,
+        "2: \n{msg_sig_txn_calc:?}\n{msg_sig_txn_set:?}"
+    );
+    assert_eq!(
+        msg_sig_txn_set, msg_signature_wallet,
+        "3: \n{msg_sig_txn_set:?}\n{msg_signature_wallet:?}"
+    );
 }

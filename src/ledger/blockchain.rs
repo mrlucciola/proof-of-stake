@@ -32,7 +32,6 @@ impl Blockchain {
     pub fn new() -> Self {
         let blocks = BlockMap::new();
         let accounts = Accounts::new();
-
         let mut blockchain = Self { blocks, accounts };
 
         // Create the genesis block - panic if unexpected behavior
@@ -79,10 +78,12 @@ impl Blockchain {
     /// @todo validate previous block's: 1) height; 2) id. Add error responses for each (InvalidBlockHeight & InvalidBlockId, respectively).
     pub fn add_block(&mut self, block: Block) -> Result<&mut Block> {
         // check if block is valid
-        block.is_valid(&block.leader)?;
+        let pbkey = PbKey::from_bytes(&block.leader)?;
+        block.is_valid(&pbkey)?;
         // check if block is signed
         // check if entry exists -> if not, then insert
-        Ok(self.blocks.entry(block.id_key()).or_insert(block))
+        let asdf = Ok(self.blocks.entry(block.id_key()).or_insert(block));
+        asdf
     }
 
     /// @todo Validate txn, then process
@@ -92,12 +93,14 @@ impl Blockchain {
     /// - They execute each txn in serial, updating the accounts in order
     pub fn process_transfer_txn(&mut self, txn: &Txn) -> Result<()> {
         // look up `send` account, decrease their balance
-        let map_key_send = &txn.pbkey_send.to_string();
-        let acct_send = self.accounts.get_acct_mut(&map_key_send).unwrap();
+        let acct_send = self
+            .accounts
+            .get_acct_mut(txn.pbkey_send().as_bytes())
+            .unwrap();
         acct_send.decrease_balance(&txn)?;
 
         // look up `recv` account, increase their balance
-        let acct_recv = self.accounts.get_or_init_acct(&txn.pbkey_recv);
+        let acct_recv = self.accounts.get_or_init_acct(txn.pbkey_recv().as_bytes());
         acct_recv.increase_balance(&txn)?;
 
         Ok(())
@@ -142,7 +145,7 @@ impl Blockchain {
             panic!("Blockchain needs to be empty")
         }
 
-        let leader_wallet = Wallet::new_from_file(&"hidden/master_key.json".to_string());
+        let leader_wallet = Wallet::new_from_file(&"hidden/master_key_ed25519.json".to_string());
         let leader: PbKey = leader_wallet.pbkey();
 
         // create a new block using the `Block` constructor - we need to replace the blockheight, id, and signature
@@ -181,7 +184,7 @@ impl Blockchain {
     /// infrequently and the functionality is relevant enough to the `Blockchain` class.
     pub fn is_genesis_block(block: &Block) -> bool {
         let block_id = Block::calc_id(block);
-        let genesis_hash_str = "444cb81543bd99399e390d2565091b87f38149436e2d6db6d2df3bf5cc970e2c";
+        let genesis_hash_str = "36df223aef176ac43834f36fa063a59551ff66daa60bbabf3063fb890a242429";
 
         block_id.to_string() == genesis_hash_str && block.id().to_string() == genesis_hash_str
     }
