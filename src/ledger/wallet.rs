@@ -1,9 +1,7 @@
 // imports
 use anyhow::format_err;
-use secp256k1::{
-    rand::{rngs, SeedableRng},
-    KeyPair, Message, Secp256k1,
-};
+use ed25519_dalek::Sha512;
+use secp256k1::rand::{rngs, SeedableRng};
 use std::{
     fs::File,
     io::{BufReader, BufWriter, Write},
@@ -11,16 +9,19 @@ use std::{
 // local
 use crate::{
     ledger::{
-        blocks::BlockId,
-        general::{PbKey, Result, SecpError},
-        txn::{Txn, TxnId},
+        blocks::Block,
+        general::{PbKey, Result},
+        txn::Txn,
     },
-    utils::signature::{BlockSignature, TxnSignature},
+    utils::signature::{
+        BlockSignature, SignatureContextType, TxnSignature, BLOCK_SIGNATURE_CONTEXT,
+        TXN_SIGNATURE_CONTEXT,
+    },
 };
 
 #[derive(Debug)]
 pub struct Wallet {
-    keypair: KeyPair,
+    keypair: ed25519_dalek::Keypair,
 }
 
 impl Wallet {
@@ -28,53 +29,52 @@ impl Wallet {
     ///
     /// Load keypair from file and return wallet instance
     pub fn new_from_file(filepath: &String) -> Self {
+        if !filepath.contains("_ed25519") {
+            panic!("Filename must have _ed25519 in it: {}", filepath);
+        };
+
         // load the keypair
         let f = File::open(filepath).unwrap();
         let reader = BufReader::new(f);
         let key_json: Vec<u8> = serde_json::from_reader(reader).unwrap();
-        let secp = Secp256k1::new();
 
-        let keypair = KeyPair::from_seckey_slice(&secp, &key_json).unwrap();
+        // open with ed 25519 lib
+        let kp = ed25519_dalek::Keypair::from_bytes(&key_json).unwrap();
 
-        Self { keypair }
+        Self { keypair: kp }
     }
     /// Create a new wallet instance
     ///
     /// Load keypair and return wallet instance
-    pub fn new_from_kp(keypair: &KeyPair) -> Self {
-        Self {
-            keypair: keypair.clone(),
-        }
+    pub fn new_from_kp(keypair: ed25519_dalek::Keypair) -> Self {
+        Self { keypair }
     }
+    fn sign_msg(
+        &self,
+        prehashed_msg: Sha512,
+        sig_ctx: &SignatureContextType,
+    ) -> Result<ed25519::Signature> {
+        let msg_signature = self.keypair.sign_prehashed(prehashed_msg, Some(sig_ctx))?;
 
-    pub fn msg_from_id_txn(txn_id: &TxnId) -> Message {
-        secp256k1::Message::from_slice(txn_id.as_bytes()).unwrap()
-    }
-    pub fn msg_from_id_block(block_id: &BlockId) -> Message {
-        secp256k1::Message::from_slice(block_id.as_bytes()).unwrap()
+        Ok(msg_signature)
     }
     /// Return the signature for a given txn id/hash.
     ///
     /// Take in id/hash digest, sign digest with current wallet's key, return signature.
-    pub fn sign_txn(&self, txn_id: &TxnId) -> TxnSignature {
-        // convert to correct message type
-        self.sign_id_txn(txn_id)
-    }
-    pub fn sign_block(&self, block_id: &BlockId) -> BlockSignature {
-        self.sign_id_block(block_id)
+    pub fn sign_txn(&self, txn: &Txn) -> TxnSignature {
+        let txn_prehash = txn.calc_id_sha512();
+        let txn_sig = self.sign_msg(txn_prehash, TXN_SIGNATURE_CONTEXT).unwrap();
+
+        txn_sig.into()
     }
 
-    pub fn sign_id_txn(&self, txn_id: &TxnId) -> TxnSignature {
-        let msg = Self::msg_from_id_txn(txn_id);
-        self.sign_msg(msg)
-    }
-    pub fn sign_id_block(&self, block_id: &BlockId) -> BlockSignature {
-        let msg = Self::msg_from_id_block(block_id);
-        self.sign_msg(msg)
-    }
-    pub fn sign_msg(&self, msg: Message) -> TxnSignature {
-        let secp = Secp256k1::new();
-        secp.sign_ecdsa(&msg, &self.keypair.secret_key())
+    pub fn sign_block(&self, block: &Block) -> BlockSignature {
+        let block_prehash = block.calc_id_sha512();
+        let block_sig = self
+            .sign_msg(block_prehash, BLOCK_SIGNATURE_CONTEXT)
+            .unwrap();
+
+        block_sig.into()
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -82,7 +82,7 @@ impl Wallet {
 
     /// Get the public key for this respective wallet
     pub fn pbkey(&self) -> PbKey {
-        self.keypair.public_key()
+        self.keypair.public
     }
 
     ////////////////////////////// GETTERS //////////////////////////////
@@ -126,17 +126,12 @@ impl Wallet {
     /////////////////////////////////////////////////////////////////////
     ///////////////////////////// VALIDATION ////////////////////////////
 
-    pub fn validate_txn_signature(txn: &Txn, signature: &TxnSignature, pbkey: &PbKey) -> bool {
-        let secp = Secp256k1::new();
-        let is_valid =
-            // TODO: fix the signature field
-            match secp.verify_ecdsa(&Message::from_slice(txn.id().as_bytes()).unwrap(), &signature, pbkey) {
-                Ok(_) => true,
-                Err(SecpError::IncorrectSignature) => false,
-                Err(e) => panic!("Signature validation: {}", e),
-            };
+    /// ## Validate a message.
+    /// Intended for ed25519
+    pub fn validate_msg(&self, msg: &Vec<u8>, signature: &Vec<u8>) -> Result<()> {
+        let signature = ed25519_dalek::Signature::from_bytes(&signature).unwrap();
 
-        is_valid
+        Ok(self.keypair.verify(msg, &signature)?)
     }
 
     ///////////////////////////// VALIDATION ////////////////////////////
