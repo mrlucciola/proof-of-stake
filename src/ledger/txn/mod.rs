@@ -2,15 +2,13 @@ pub mod constants;
 pub mod getters;
 pub mod setters;
 pub mod txn_id;
+pub mod txn_signature;
 pub mod utils;
 // imports
 use {chrono::prelude::*, serde::Serialize, std::fmt};
 // local
-use crate::{
-    ledger::{general::PbKey, wallet::Wallet},
-    utils::signature::TxnSignature,
-};
-pub use {constants::*, txn_id::TxnId};
+use crate::ledger::{general::PbKey, wallet::Wallet};
+pub use {constants::*, txn_id::TxnId, txn_signature::TxnSignature};
 
 pub type TxnDigest = [u8; 64];
 pub type TxnCtxDigest = [u8; TXN_SIGNATURE_CTX.len() + TXN_DIGEST_LEN];

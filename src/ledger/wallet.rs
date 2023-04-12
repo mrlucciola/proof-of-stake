@@ -1,19 +1,21 @@
 // imports
-use anyhow::format_err;
-use ed25519_dalek::Signer;
-use secp256k1::rand::{rngs, SeedableRng};
-use std::{
-    fs::File,
-    io::{BufReader, BufWriter, Write},
+use {
+    anyhow::format_err,
+    ed25519_dalek::Signer,
+    secp256k1::rand::{rngs, SeedableRng},
+    std::{
+        fs::File,
+        io::{BufReader, BufWriter, Write},
+    },
 };
 // local
-use super::txn::{Txn, TXN_SIGNATURE_CTX};
+use super::txn::{constants::*, Txn, TxnSignature};
 use crate::{
     ledger::{
         blocks::Block,
         general::{PbKey, Result, KP},
     },
-    utils::signature::{BlockSignature, TxnSignature, BLOCK_SIGNATURE_CONTEXT},
+    utils::signature::{BlockSignature, BLOCK_SIGNATURE_CONTEXT},
 };
 
 #[derive(Debug)]
