@@ -5,10 +5,7 @@ use serde::Serialize;
 use serde_big_array::BigArray;
 // local
 use crate::{
-    ledger::{
-        blockchain::BlockMapKey, general::PbKey, general::Result, txn::Txn, txn_pool::TxnMap,
-        wallet::Wallet,
-    },
+    ledger::{blockchain::BlockMapKey, general::PbKey, txn::Txn, txn_pool::TxnMap, wallet::Wallet},
     utils::signature::{BlockSignature, BLOCK_SIGNATURE_CONTEXT},
 };
 
@@ -24,6 +21,11 @@ impl From<Sha512> for BlockId {
 impl From<[u8; 64]> for BlockId {
     fn from(value: [u8; 64]) -> Self {
         BlockId(value)
+    }
+}
+impl From<BlockId> for [u8; 64] {
+    fn from(value: BlockId) -> Self {
+        value.0
     }
 }
 impl BlockId {
@@ -211,24 +213,25 @@ impl Block {
     ///   - `Some()` indicates a signature exists and its valid/invalid
     ///   - `None` indicates there is no signature
     ///   - `Error` is for error handling
-    pub fn is_signature_valid(&self, signer_pbkey: &PbKey) -> Result<()> {
+    pub fn is_signature_valid(&self, signer_pbkey: &PbKey) -> std::result::Result<(), BlockError> {
         // 1) check if signature exists
         if let None = self.signature() {
             return Err(BlockError::EmptySignature.into());
         }
 
-        let mut prehashed_message: Sha512 = Sha512::new();
-        prehashed_message.update(BLOCK_MSG_CTX);
-        prehashed_message.update(self.to_bytes());
+        // create message for verification
+        let msg: [u8; 64] = self.calc_id().into();
+        let mut presigned_msg = BLOCK_SIGNATURE_CONTEXT.to_vec();
+        presigned_msg.append(&mut msg.to_vec());
 
+        // get the current signature
         let block_signature = self.signature.clone().unwrap();
-        let is_verified = signer_pbkey.verify_prehashed(
-            prehashed_message,
-            Some(BLOCK_SIGNATURE_CONTEXT),
-            &block_signature.clone().into(),
-        )?;
+        let sig_test = ed25519::Signature::from_bytes(&block_signature.0).unwrap();
 
-        Ok(is_verified)
+        match signer_pbkey.verify_strict(&presigned_msg, &sig_test) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(BlockError::InvalidSignature(e, sig_test)),
+        }
     }
 
     /// ## Check if block is valid.
@@ -237,19 +240,19 @@ impl Block {
     ///   - all struct properties are not `None`
     ///   - hash is valid
     ///   - signature is valid
-    pub fn is_valid(&self, signer_pbkey: &PbKey) -> Result<()> {
+    pub fn is_valid(&self, signer_pbkey: &PbKey) -> std::result::Result<(), BlockError> {
         // validate fields
         if let None = self.signature {
-            return Err(BlockError::EmptySignature.into());
+            return Err(BlockError::EmptySignature);
         }
         if let None = self.id {
-            return Err(BlockError::EmptyId.into());
+            return Err(BlockError::EmptyId);
         };
 
         // validate hash
         // TODO: decide - we can validate the id-hash (fast) or recalculate the hash and compare (slow). Is there a major performance hit?
         if self.calc_id() != self.id() {
-            return Err(BlockError::IncorrectId.into());
+            return Err(BlockError::IncorrectId);
         }
 
         // validate signature
@@ -266,10 +269,12 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum BlockError {
-    #[error("Invalid block: No signature")]
+    #[error("BlockError::EmptySignature- Invalid block: No signature")]
     EmptySignature,
-    #[error("Invalid block: No ID")]
+    #[error("BlockError::EmptyId- Invalid block: No ID")]
     EmptyId,
-    #[error("Incorrect ID")]
+    #[error("BlockError::IncorrectId- Incorrect ID")]
     IncorrectId,
+    #[error("BlockError::InvalidSignature- {0}. Testing signature:\n{1}")]
+    InvalidSignature(ed25519_dalek::SignatureError, ed25519::Signature),
 }

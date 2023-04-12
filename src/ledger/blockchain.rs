@@ -143,6 +143,7 @@ impl Blockchain {
             panic!("Blockchain needs to be empty")
         }
 
+        // @todo - this is not acceptable for production
         let leader_wallet = Wallet::new_from_file(&"hidden/master_key_ed25519.json".to_string());
         let leader: PbKey = leader_wallet.pbkey();
 
@@ -160,9 +161,10 @@ impl Blockchain {
         genesis_block.set_id();
         genesis_block.sign(&leader_wallet);
 
-        self.add_block(genesis_block)?;
-
-        Ok(())
+        match self.add_block(genesis_block) {
+            Ok(_) => Ok(()),
+            Err(e) => panic!("Error adding genesis block:\n\n{e}\n\n"),
+        }
     }
 
     ////////////////////////////// SETTERS //////////////////////////////
@@ -182,8 +184,12 @@ impl Blockchain {
     /// infrequently and the functionality is relevant enough to the `Blockchain` class.
     pub fn is_genesis_block(block: &Block) -> bool {
         let block_id = Block::calc_id(block);
-        let genesis_hash_str =
-            b"36df223aef176ac43834f36fa063a59551ff66daa60bbabf3063fb890a242429".to_owned();
+        let genesis_hash_str: [u8; 64] = [
+            66, 211, 46, 10, 157, 18, 155, 115, 197, 147, 50, 48, 80, 109, 218, 216, 188, 202, 161,
+            235, 68, 142, 200, 58, 11, 124, 141, 194, 243, 156, 238, 238, 225, 223, 134, 105, 232,
+            227, 108, 175, 35, 185, 93, 150, 181, 79, 162, 225, 11, 188, 126, 176, 115, 225, 25,
+            187, 179, 152, 208, 13, 176, 94, 192, 249,
+        ];
 
         BlockId::from(block_id) == BlockId(genesis_hash_str)
             && block.id() == BlockId(genesis_hash_str)
