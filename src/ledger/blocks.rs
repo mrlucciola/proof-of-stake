@@ -2,27 +2,34 @@
 use chrono::prelude::*;
 use ed25519_dalek::{Digest, Sha512};
 use serde::Serialize;
+use serde_big_array::BigArray;
 // local
 use crate::{
     ledger::{
         blockchain::BlockMapKey, general::PbKey, general::Result, txn::Txn, txn_pool::TxnMap,
         wallet::Wallet,
     },
-    utils::{
-        hash::BlakeHash,
-        signature::{BlockSignature, BLOCK_SIGNATURE_CONTEXT},
-    },
+    utils::signature::{BlockSignature, BLOCK_SIGNATURE_CONTEXT},
 };
 
 // export types
-pub type BlockId = BlakeHash;
+#[derive(Debug, Serialize, Clone, Copy)]
+pub struct BlockId(#[serde(with = "BigArray")] pub [u8; 64]);
+impl From<Sha512> for BlockId {
+    fn from(value: Sha512) -> Self {
+        // let mut test = Sha512;
+        let mut test: [u8; 64] = value.finalize().into();
+        BlockId(test)
+    }
+}
 pub type BlockIdSha512 = Sha512;
-pub const BLOCK_MSG_CTX: &[u8; 8] = b"block-v0";
 
 /// This is TxnMap with added functionality.
 ///
 /// @todo add condition that this map cant have more than _ number of txns.
 pub type BlockTxnMap = TxnMap;
+
+pub const BLOCK_MSG_CTX: &[u8; 8] = b"block-v0";
 
 /// Info contained within a block
 #[derive(Debug, Clone, Serialize)]
@@ -39,7 +46,7 @@ pub struct Block {
     pub system_time: u64,
     /// Identifier/ID - hash digest of the current block
     #[serde(skip_serializing)]
-    pub id: Option<BlockId>,
+    pub id: Option<BlockIdSha512>,
     /// the leader's signature for this block submission - Ecdsa signature
     #[serde(skip_serializing)]
     pub signature: Option<BlockSignature>,
@@ -81,21 +88,11 @@ impl Block {
         // serialize to a byte vector
         serde_json::to_vec(&self).expect("Error serializing block")
     }
-    /// Calculate the id (blockhash) for a `Block`.
-    ///
+    /// ## Calculate the id (blockhash) for a `Block`.
     /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
     ///
     /// Hashes this info and produces a digest - the ID.
-    pub fn calc_id(&self) -> BlockId {
-        let mut hasher = blake3::Hasher::new();
-        // add the block version
-        hasher.update(BLOCK_MSG_CTX);
-        // add the block bytes
-        hasher.update(&self.to_bytes());
-        // return the hash digest - the block's id
-        hasher.finalize().into()
-    }
-    pub fn calc_id_sha512(&self) -> Sha512 {
+    pub fn calc_id(&self) -> Sha512 {
         // Create a hash digest object which we'll feed the message into:
         let mut prehashed: Sha512 = Sha512::new();
 
@@ -118,11 +115,7 @@ impl Block {
 
     /// ### Get `Block.id` property.
     pub fn id(&self) -> BlockId {
-        self.id.unwrap()
-    }
-    /// ### Get `Block.id` in `String` form.
-    pub fn id_str(&self) -> String {
-        self.id().to_string()
+        self.id.unwrap().into()
     }
     /// ### Get `Block.id` in type used as a key for `BlockMap`.
     /// @todo change to byte array
@@ -163,13 +156,8 @@ impl Block {
     }
 
     /// ## Calculate and set the id for a `Block`.
-    ///
-    /// Returns id
-    /// set_id() -> BlockId
-    ///     calc_id() -> BlockId
-    ///         blake3::Hasher::new()
-    ///         Hasher.finalize()
-    pub fn set_id(&mut self) -> BlockId {
+    /// Returns id.
+    pub fn set_id(&mut self) -> BlockIdSha512 {
         let id = self.calc_id();
         self.id = Some(id);
 
