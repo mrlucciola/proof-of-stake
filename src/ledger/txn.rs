@@ -1,17 +1,41 @@
 // imports
 use chrono::prelude::*;
-use ed25519_dalek::{Digest, Sha512};
+use ed25519_dalek::{Digest, Sha512, Signer};
 use serde::Serialize;
+use serde_big_array::BigArray;
 use std::fmt;
 // local
 use crate::{
     ledger::{general::PbKey, txn_pool::TxnMapKey, wallet::Wallet},
-    utils::{hash::BlakeHash, signature::TxnSignature},
+    utils::signature::TxnSignature,
 };
 pub const TXN_MSG_CTX: &[u8; 6] = b"txn-v0";
 
 // exported types
-pub type TxnId = BlakeHash;
+#[derive(Debug, Serialize, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct TxnId(#[serde(with = "BigArray")] pub [u8; 64]);
+impl From<Sha512> for TxnId {
+    fn from(value: Sha512) -> Self {
+        let val: [u8; 64] = value.finalize().into();
+        TxnId(val)
+    }
+}
+impl From<[u8; 64]> for TxnId {
+    fn from(value: [u8; 64]) -> Self {
+        TxnId(value)
+    }
+}
+impl TxnId {
+    pub fn from_bytes(value: [u8; 64]) -> Self {
+        Self(value)
+    }
+}
+impl PartialEq<[u8; 64]> for TxnId {
+    #[inline]
+    fn eq(&self, other: &[u8; 64]) -> bool {
+        constant_time_eq::constant_time_eq_64(&self.0, other)
+    }
+}
 
 #[derive(Serialize, Debug, Clone, Copy, PartialEq)]
 pub enum TxnType {
@@ -47,7 +71,7 @@ pub struct Txn {
 }
 
 impl Txn {
-    /// Transaction constructor fxn
+    /// ## Transaction constructor fxn
     ///
     /// Creates a transaction `object`
     pub fn new(
@@ -67,7 +91,7 @@ impl Txn {
             amt,
             system_time,
             txn_type,
-            id: None,        //[0u8; 32],
+            id: None,        //[0u8; 64],
             signature: None, //[0u8; 64],
         };
 
@@ -99,21 +123,16 @@ impl Txn {
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// GETTERS //////////////////////////////
 
-    /// Getter
+    /// Get `Txn.id` property.
     pub fn id(&self) -> TxnId {
         self.id.unwrap()
     }
-    /// Get Txn Id in `String` form.
-    #[deprecated = "Using byte arrays instead of strings."]
-    pub fn id_str(&self) -> String {
-        self.id().to_string()
-    }
-    /// Get `TxnMap` key type (derived from TxnId)
+    /// ### Get `TxnMap` key type (derived from TxnId).
     /// @todo change to byte array
     pub fn id_key(&self) -> TxnMapKey {
-        self.id().to_hex().to_string()
+        self.id()
     }
-    /// Getter for `Txn` `signature` property
+    /// ### Getter for `Txn` `signature` property
     pub fn signature(&self) -> &TxnSignature {
         self.signature.as_ref().unwrap()
     }
@@ -169,34 +188,30 @@ impl Txn {
         serde_json::to_vec(&self).expect("Error serializing txn")
     }
 
-    /// Compute the id (hash digest) of the transaction.
-    ///
+    /// ## Compute the id (hash digest) of the transaction.
     /// Converts semantic data for the txn - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
     ///
     /// Hashes this info and produces a digest - the ID.
     pub fn calc_id(&self) -> TxnId {
-        let mut hasher = blake3::Hasher::new();
-        // add the txn version
-        hasher.update(TXN_MSG_CTX);
-        // add the txn bytes
-        hasher.update(&self.to_bytes());
-        // return the hash digest - the txn's id
-        hasher.finalize().into()
+        let prehash = self.calc_id_sha512_prehash();
+
+        // return the hash digest - the block's id
+        let digest: [u8; 64] = prehash.finalize().into();
+        TxnId(digest)
     }
-    pub fn calc_id_sha512(&self) -> ed25519_dalek::Sha512 {
+    /// ## Calculate the pre-hash struct for the id
+    pub fn calc_id_sha512_prehash(&self) -> ed25519_dalek::Sha512 {
         // Create a hash digest object which we'll feed the message into:
-        let mut prehashed: Sha512 = Sha512::new();
-
+        let mut prehash: Sha512 = Sha512::new();
         // add the txn version
-        prehashed.update(TXN_MSG_CTX);
+        prehash.update(TXN_MSG_CTX);
         // add the txn bytes
-        prehashed.update(self.to_bytes());
-
-        prehashed
+        prehash.update(self.to_bytes());
+        // return the hasher/prehash struct
+        prehash
     }
 
-    /// Create and return a message signature based on
-    ///    the contents of the transaction
+    /// ## Create and return a message signature based on the contents of the transaction
     pub fn calc_signature(&self, wallet: &Wallet) -> TxnSignature {
         wallet.sign_txn(self)
     }
