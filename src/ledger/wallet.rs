@@ -49,12 +49,8 @@ impl Wallet {
     /// ## Return the signature for a given txn id/hash.
     /// Take in id/hash digest, sign digest with current wallet's key, return signature.
     pub fn sign_txn(&self, txn: &Txn) -> TxnSignature {
-        let txn_prehash: ed25519_dalek::Sha512 = txn.calc_id_sha512();
-        let txn_sig = self
-            .keypair
-            .sign_prehashed(txn_prehash, Some(TXN_SIGNATURE_CONTEXT))
-            .unwrap();
-        txn_sig.into()
+        self.sign_msg(&mut txn.calc_id().0, TXN_SIGNATURE_CONTEXT)
+            .into()
     }
 
     /// ## Sign a block. Generate signature for block.

@@ -1,6 +1,6 @@
 // imports
 use chrono::prelude::*;
-use ed25519_dalek::{Digest, Sha512, Signer};
+use ed25519_dalek::{Digest, Sha512};
 use serde::Serialize;
 use serde_big_array::BigArray;
 use std::fmt;
@@ -149,7 +149,7 @@ impl Txn {
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
 
-    /// Get identifier (hash) for txn and set on txn object and store the output on the Txn object
+    /// ## Get identifier (hash) for txn and set on txn object and store the output on the Txn object
     ///
     /// Returns id
     pub fn set_id(&mut self) -> TxnId {
@@ -158,18 +158,18 @@ impl Txn {
 
         id
     }
-
+    /// ## Set the signature for the transaction.
     pub fn set_signature(&mut self, signature: TxnSignature) {
         self.signature = Some(signature);
     }
 
-    /// Add the signature to the transaction body in place.
+    /// ## Add the signature to the transaction body in place.
     ///
     /// 1) Sign the transaction
     /// 2) Add signature to transaction body
     /// 3) Return signature
     pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
-        let sig = wallet.sign_txn(self);
+        let sig = self.calc_signature(wallet);
         self.set_signature(sig.clone());
 
         sig
