@@ -1,6 +1,6 @@
 pub mod accounts;
+pub mod block;
 pub mod blockchain;
-pub mod blocks;
 pub mod common;
 pub mod node;
 pub mod txn;
