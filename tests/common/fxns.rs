@@ -7,8 +7,7 @@ use posbc::{
     },
     ledger::{
         blockchain::Blockchain,
-        blocks::{Block, BlockTxnMap},
-        txn::TxnId,
+        blocks::{Block, BlockTxnMap, BlockId},
     },
 };
 // test
@@ -18,7 +17,7 @@ use super::{init_users, UserInfo, UsersInfo};
 ///
 /// Does not populate with transactions.
 pub fn create_block_from_last(leader: &UserInfo, prev_block: &Block) -> Block {
-    let prev_block_id: TxnId = prev_block.id();
+    let prev_block_id: BlockId = prev_block.id();
     let prev_blockheight = prev_block.blockheight;
     let leader = leader.pbkey();
 
