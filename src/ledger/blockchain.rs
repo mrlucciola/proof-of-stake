@@ -52,7 +52,6 @@ impl Blockchain {
         self.blocks.get(key)
     }
     /// ### Get most recently committed block
-    ///
     /// We unwrap because blockchain should never be empty, representing an undefined state.
     pub fn last_block(&self) -> &Block {
         self.blocks.values().next_back().unwrap()
@@ -82,8 +81,7 @@ impl Blockchain {
         block.is_valid(&pbkey)?;
         // check if block is signed
         // check if entry exists -> if not, then insert
-        let asdf = Ok(self.blocks.entry(block.id_key()).or_insert(block));
-        asdf
+        Ok(self.blocks.entry(block.id_key()).or_insert(block))
     }
 
     /// @todo Validate txn, then process

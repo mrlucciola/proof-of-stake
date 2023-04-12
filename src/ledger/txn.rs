@@ -183,7 +183,7 @@ impl Txn {
         // return the hash digest - the txn's id
         hasher.finalize().into()
     }
-    pub fn calc_id_sha512(&self) -> Sha512 {
+    pub fn calc_id_sha512(&self) -> ed25519_dalek::Sha512 {
         // Create a hash digest object which we'll feed the message into:
         let mut prehashed: Sha512 = Sha512::new();
 

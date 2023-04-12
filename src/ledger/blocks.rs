@@ -17,9 +17,13 @@ use crate::{
 pub struct BlockId(#[serde(with = "BigArray")] pub [u8; 64]);
 impl From<Sha512> for BlockId {
     fn from(value: Sha512) -> Self {
-        // let mut test = Sha512;
         let val: [u8; 64] = value.finalize().into();
         BlockId(val)
+    }
+}
+impl From<[u8; 64]> for BlockId {
+    fn from(value: [u8; 64]) -> Self {
+        BlockId(value)
     }
 }
 impl BlockId {
@@ -33,7 +37,6 @@ impl PartialEq<[u8; 64]> for BlockId {
         constant_time_eq::constant_time_eq_64(&self.0, other)
     }
 }
-pub type BlockIdSha512 = Sha512;
 
 /// This is TxnMap with added functionality.
 ///
@@ -57,15 +60,14 @@ pub struct Block {
     pub system_time: u64,
     /// Identifier/ID - hash digest of the current block
     #[serde(skip_serializing)]
-    pub id: Option<BlockIdSha512>,
+    pub id: Option<BlockId>,
     /// the leader's signature for this block submission - Ecdsa signature
     #[serde(skip_serializing)]
     pub signature: Option<BlockSignature>,
 }
 
 impl Block {
-    /// `Block` constructor fxn - create a new unsigned block (not genesis block).
-    ///
+    /// ## `Block` constructor fxn - create a new unsigned block (not genesis block).
     /// transactions: List of transactions (`Txn`) to be included in the block\
     /// TODO: add `blockchain` as param - use it to get block count
     /// @todo allow `None` input for `txns` to default to a new block txn map
@@ -93,7 +95,7 @@ impl Block {
         block.set_id();
         block
     }
-    /// Convert to bytes - NOT id/hash/message/digest
+    /// ## Convert to bytes - NOT id/hash/message/digest
     /// TODO: replace `Vec<u8>` - don't allocate if possible
     pub fn to_bytes(&self) -> Vec<u8> {
         // serialize to a byte vector
@@ -102,21 +104,27 @@ impl Block {
     /// ## Calculate the id (blockhash) for a `Block`.
     /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
     ///
-    /// Hashes this info and produces a digest - the ID.
-    pub fn calc_id(&self) -> Sha512 {
+    /// Hashes this info and produces a hash digest - the ID.
+    pub fn calc_id(&self) -> BlockId {
+        let prehash = self.calc_id_sha512_prehash();
+
+        // return the hash digest - the block's id
+        let digest: [u8; 64] = prehash.finalize().into();
+        BlockId(digest)
+    }
+    /// ## Calculate the pre-hash struct for the id
+    pub fn calc_id_sha512_prehash(&self) -> Sha512 {
         // Create a hash digest object which we'll feed the message into:
         let mut prehashed: Sha512 = Sha512::new();
-
         // add the block version
         prehashed.update(BLOCK_MSG_CTX);
         // add the block bytes
         prehashed.update(self.to_bytes());
-        // return the hash digest - the block's id
+        // return the hasher/prehash struct
         prehashed
     }
 
-    /// Create and return a block signature based on
-    ///    the contents of the transaction
+    /// ## Create and return a block signature based on the contents of the transaction
     pub fn calc_signature(&self, wallet: &Wallet) -> BlockSignature {
         wallet.sign_block(self)
     }
@@ -126,7 +134,7 @@ impl Block {
 
     /// ### Get `Block.id` property.
     pub fn id(&self) -> BlockId {
-        BlockId::from(self.id.to_owned().unwrap())
+        self.id.unwrap()
     }
     /// ### Get `Block.id` in type used as a key for `BlockMap`.
     /// @todo change to byte array
@@ -168,7 +176,7 @@ impl Block {
 
     /// ## Calculate and set the id for a `Block`.
     /// Returns id.
-    pub fn set_id(&mut self) -> Sha512 {
+    pub fn set_id(&mut self) -> BlockId {
         let id = self.calc_id();
         self.id = Some(id.clone());
 
@@ -240,7 +248,7 @@ impl Block {
 
         // validate hash
         // TODO: decide - we can validate the id-hash (fast) or recalculate the hash and compare (slow). Is there a major performance hit?
-        if Into::<[u8; 64]>::into(self.calc_id().finalize()) != self.id().0 {
+        if self.calc_id() != self.id() {
             return Err(BlockError::IncorrectId.into());
         }
 
@@ -258,7 +266,6 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum BlockError {
-    // EmptySignature(#[repr(C)] anyhow::Error),
     #[error("Invalid block: No signature")]
     EmptySignature,
     #[error("Invalid block: No ID")]
