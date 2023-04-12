@@ -2,16 +2,12 @@ mod block_id;
 pub mod constants;
 mod getters;
 mod setters;
-// imports
-use {chrono::prelude::*, ed25519_dalek::Digest, serde::Serialize, serde_big_array::BigArray};
+mod utils;
+// external
+use {chrono::prelude::*, serde::Serialize};
 // local
 use crate::{
-    ledger::{
-        general::{PbKey, Sha512},
-        txn::Txn,
-        txn_pool::TxnMap,
-        wallet::Wallet,
-    },
+    ledger::{general::PbKey, txn_pool::TxnMap},
     utils::signature::BlockSignature,
 };
 pub use {block_id::BlockId, constants::*};
@@ -23,26 +19,26 @@ pub type BlockTxnMap = TxnMap;
 /// Info contained within a block
 #[derive(Debug, Clone, Serialize)]
 pub struct Block {
-    /// list/map of all transactions to be included in the block
+    /// List/map of all transactions to be included in the block
     txns: BlockTxnMap,
-    /// public key of the current block proposer (node)
+    /// Public key of the current block proposer (node)
     pub leader: [u8; 32],
     /// Identifier of the previous block - hash digest
     pub prev_block_id: BlockId,
-    /// block height - current number of blocks in blockchain + 1
+    /// Block height - current number of blocks in blockchain + 1
     pub blockheight: u128,
-    /// current time - unix time stamp
+    /// Current time - unix time stamp
     pub system_time: u64,
     /// Identifier/ID - hash digest of the current block
     #[serde(skip_serializing)]
     pub id: Option<BlockId>,
-    /// the leader's signature for this block submission - Ecdsa signature
+    /// The leader's signature for this block submission - Ecdsa signature
     #[serde(skip_serializing)]
     pub signature: Option<BlockSignature>,
 }
 
 impl Block {
-    /// ## `Block` constructor fxn - create a new unsigned block (not genesis block).
+    /// ### `Block` constructor fxn - create a new unsigned block (not genesis block).
     /// transactions: List of transactions (`Txn`) to be included in the block\
     /// TODO: add `blockchain` as param - use it to get block count
     /// @todo allow `None` input for `txns` to default to a new block txn map
@@ -70,44 +66,6 @@ impl Block {
         block.set_id();
         block
     }
-    /// ## Convert to bytes - NOT id/hash/message/digest
-    /// TODO: replace `Vec<u8>` - don't allocate if possible
-    pub fn to_bytes(&self) -> Vec<u8> {
-        // serialize to a byte vector
-        serde_json::to_vec(&self).expect("Error serializing block")
-    }
-    /// ## Calculate the id (blockhash) for a `Block`.
-    /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
-    ///
-    /// Hashes this info and produces a hash digest - the ID.
-    pub fn calc_id(&self) -> BlockId {
-        let prehash = self.calc_id_sha512_prehash();
-
-        // return the hash digest - the block's id
-        let digest: [u8; 64] = prehash.finalize().into();
-        BlockId(digest)
-    }
-    /// ## Calculate the pre-hash struct for the id
-    pub fn calc_id_sha512_prehash(&self) -> Sha512 {
-        // Create a hash digest object which we'll feed the message into:
-        let mut prehashed: Sha512 = Sha512::new();
-        // add the block version
-        prehashed.update(BLOCK_MSG_CTX);
-        // add the block bytes
-        prehashed.update(self.to_bytes());
-        // return the hasher/prehash struct
-        prehashed
-    }
-
-    /// ## Create and return a block signature based on the contents of the transaction
-    pub fn calc_signature(&self, wallet: &Wallet) -> BlockSignature {
-        wallet.sign_block(self)
-    }
-
-    /////////////////////////////////////////////////////////////////////
-    /////////////////////////////// UTILS ///////////////////////////////
-    /////////////////////////////// UTILS ///////////////////////////////
-    /////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////
     ///////////////////////////// VALIDATION ////////////////////////////
