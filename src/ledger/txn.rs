@@ -7,25 +7,28 @@ use std::fmt;
 // local
 use crate::{
     ledger::{general::PbKey, txn_pool::TxnMapKey, wallet::Wallet},
-    utils::signature::TxnSignature,
+    utils::signature::{TxnSignature, TXN_SIGNATURE_CONTEXT},
 };
 pub const TXN_MSG_CTX: &[u8; 6] = b"txn-v0";
+pub const TXN_DIGEST_LEN: usize = 64;
+pub type TxnDigest = [u8; 64];
+pub type TxnCtxDigest = [u8; TXN_SIGNATURE_CONTEXT.len() + TXN_DIGEST_LEN];
 
 // exported types
 #[derive(Debug, Serialize, Clone, Copy, Eq, PartialOrd, Ord)]
-pub struct TxnId(#[serde(with = "BigArray")] pub [u8; 64]);
+pub struct TxnId(#[serde(with = "BigArray")] pub TxnDigest);
 impl From<Sha512> for TxnId {
     fn from(value: Sha512) -> Self {
-        let val: [u8; 64] = value.finalize().into();
+        let val: TxnDigest = value.finalize().into();
         TxnId(val)
     }
 }
-impl From<[u8; 64]> for TxnId {
-    fn from(value: [u8; 64]) -> Self {
+impl From<TxnDigest> for TxnId {
+    fn from(value: TxnDigest) -> Self {
         TxnId(value)
     }
 }
-impl From<TxnId> for [u8; 64] {
+impl From<TxnId> for TxnDigest {
     fn from(value: TxnId) -> Self {
         value.0
     }
@@ -36,17 +39,27 @@ impl From<TxnId> for String {
     }
 }
 impl TxnId {
-    pub fn from_bytes(value: [u8; 64]) -> Self {
+    pub fn from_bytes(value: TxnDigest) -> Self {
         Self(value)
     }
+    pub fn to_presigned_digest(&self) -> TxnCtxDigest {
+        let mut digest_buffer: TxnCtxDigest = [0_u8; TXN_DIGEST_LEN + TXN_SIGNATURE_CONTEXT.len()];
+        // add context
+        digest_buffer[..TXN_SIGNATURE_CONTEXT.len()].copy_from_slice(TXN_SIGNATURE_CONTEXT);
+        // add digest
+        digest_buffer[TXN_SIGNATURE_CONTEXT.len()..self.0.len() + TXN_SIGNATURE_CONTEXT.len()]
+            .copy_from_slice(&self.0);
+
+        digest_buffer
+    }
 }
-impl PartialEq<[u8; 64]> for TxnId {
+impl PartialEq<TxnDigest> for TxnId {
     #[inline]
-    fn eq(&self, other: &[u8; 64]) -> bool {
+    fn eq(&self, other: &TxnDigest) -> bool {
         constant_time_eq::constant_time_eq_64(&self.0, &other)
     }
 }
-impl PartialEq<TxnId> for [u8; 64] {
+impl PartialEq<TxnId> for TxnDigest {
     #[inline]
     fn eq(&self, other: &TxnId) -> bool {
         constant_time_eq::constant_time_eq_64(&self, &other.0)
@@ -193,7 +206,7 @@ impl Txn {
     /// 3) Return signature
     pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
         let sig = self.calc_signature(wallet);
-        self.set_signature(sig.clone());
+        self.set_signature(sig.to_owned());
 
         sig
     }
@@ -219,7 +232,7 @@ impl Txn {
         let prehash = self.calc_id_sha512_prehash();
 
         // return the hash digest - the block's id
-        let digest: [u8; 64] = prehash.finalize().into();
+        let digest: TxnDigest = prehash.finalize().into();
         TxnId(digest)
     }
     /// ## Calculate the pre-hash struct for the id
