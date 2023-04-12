@@ -6,10 +6,7 @@ use std::fmt;
 // local
 use crate::{
     ledger::{general::PbKey, txn_pool::TxnMapKey, wallet::Wallet},
-    utils::{
-        hash::{BlakeHash, BlakeHex},
-        signature::TxnSignature,
-    },
+    utils::{hash::BlakeHash, signature::TxnSignature},
 };
 pub const TXN_MSG_CTX: &[u8; 6] = b"txn-v0";
 
@@ -111,19 +108,10 @@ impl Txn {
     pub fn id_str(&self) -> String {
         self.id().to_string()
     }
-    /// Get Txn Id in `hex` form.
-    #[deprecated = "Using byte arrays instead of strings."]
-    pub fn id_hex(&self) -> BlakeHex {
-        self.id().to_hex()
-    }
-    /// Get Txn Id Hex in `String` form.
-    #[deprecated = "Using byte arrays instead of strings."]
-    pub fn id_hex_string(&self) -> String {
-        self.id().to_hex().to_string()
-    }
     /// Get `TxnMap` key type (derived from TxnId)
+    /// @todo change to byte array
     pub fn id_key(&self) -> TxnMapKey {
-        self.id_hex_string()
+        self.id().to_hex().to_string()
     }
     /// Getter for `Txn` `signature` property
     pub fn signature(&self) -> &TxnSignature {
