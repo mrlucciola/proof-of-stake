@@ -1,12 +1,15 @@
 // imports
-use ed25519_dalek::{Digest, Sha512, Signer};
+use ed25519_dalek::{Digest, Signer};
 // local
-// test
-use crate::common::{create_transfer_txn_default, init_send_recv};
 use posbc::{
-    ledger::txn::{TxnCtxDigest, TxnDigest, TxnId, TXN_DIGEST_LEN, TXN_MSG_CTX},
+    ledger::{
+        general::Sha512,
+        txn::{TxnCtxDigest, TxnDigest, TxnId, TXN_DIGEST_LEN, TXN_MSG_CTX},
+    },
     utils::signature::TXN_SIGNATURE_CONTEXT,
 };
+// test
+use crate::common::{create_transfer_txn_default, init_send_recv};
 
 #[test]
 fn verify_txn_signature_pass() {

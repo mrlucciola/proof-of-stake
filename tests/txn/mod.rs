@@ -1,8 +1,11 @@
 // imports
-use ed25519_dalek::{Digest, Sha512, Signer};
+use ed25519_dalek::{Digest, Signer};
 // local
 use posbc::{
-    ledger::txn::{TxnCtxDigest, TxnDigest, TxnId, TXN_DIGEST_LEN, TXN_MSG_CTX},
+    ledger::{
+        general::Sha512,
+        txn::{TxnCtxDigest, TxnDigest, TxnId, TXN_DIGEST_LEN, TXN_MSG_CTX},
+    },
     utils::signature::{TxnSignature, TXN_SIGNATURE_CONTEXT},
 };
 // test

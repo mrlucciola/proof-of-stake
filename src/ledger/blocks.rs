@@ -1,11 +1,17 @@
 // imports
 use chrono::prelude::*;
-use ed25519_dalek::{Digest, Sha512};
+use ed25519_dalek::Digest;
 use serde::Serialize;
 use serde_big_array::BigArray;
 // local
 use crate::{
-    ledger::{blockchain::BlockMapKey, general::PbKey, txn::Txn, txn_pool::TxnMap, wallet::Wallet},
+    ledger::{
+        blockchain::BlockMapKey,
+        general::{PbKey, Sha512},
+        txn::Txn,
+        txn_pool::TxnMap,
+        wallet::Wallet,
+    },
     utils::signature::{BlockSignature, BLOCK_SIGNATURE_CONTEXT},
 };
 
