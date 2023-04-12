@@ -17,7 +17,7 @@ fn create_unsigned_txn_pass() {
         81, 72, 146, 143, 215, 41,
     ];
     let txn = create_transfer_txn_default();
-    let id_test: [u8; 64] = txn.calc_id_sha512().finalize().into();
+    let id_test = txn.calc_id();
 
     assert!(
         id_answer == id_test,

@@ -12,7 +12,7 @@ use crate::{
 pub const TXN_MSG_CTX: &[u8; 6] = b"txn-v0";
 
 // exported types
-#[derive(Debug, Serialize, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Serialize, Clone, Copy, Eq, PartialOrd, Ord)]
 pub struct TxnId(#[serde(with = "BigArray")] pub [u8; 64]);
 impl From<Sha512> for TxnId {
     fn from(value: Sha512) -> Self {
@@ -25,6 +25,11 @@ impl From<[u8; 64]> for TxnId {
         TxnId(value)
     }
 }
+impl From<TxnId> for [u8; 64] {
+    fn from(value: TxnId) -> Self {
+        value.0
+    }
+}
 impl TxnId {
     pub fn from_bytes(value: [u8; 64]) -> Self {
         Self(value)
@@ -33,7 +38,19 @@ impl TxnId {
 impl PartialEq<[u8; 64]> for TxnId {
     #[inline]
     fn eq(&self, other: &[u8; 64]) -> bool {
-        constant_time_eq::constant_time_eq_64(&self.0, other)
+        constant_time_eq::constant_time_eq_64(&self.0, &other)
+    }
+}
+impl PartialEq<TxnId> for [u8; 64] {
+    #[inline]
+    fn eq(&self, other: &TxnId) -> bool {
+        constant_time_eq::constant_time_eq_64(&self, &other.0)
+    }
+}
+impl PartialEq for TxnId {
+    #[inline]
+    fn eq(&self, other: &TxnId) -> bool {
+        constant_time_eq::constant_time_eq_64(&self.0, &other.0)
     }
 }
 
