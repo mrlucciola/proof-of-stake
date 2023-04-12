@@ -1,8 +1,5 @@
 // imports
-use chrono::prelude::*;
-use ed25519_dalek::Digest;
-use serde::Serialize;
-use serde_big_array::BigArray;
+use {chrono::prelude::*, ed25519_dalek::Digest, serde::Serialize, serde_big_array::BigArray};
 // local
 use crate::{
     ledger::{

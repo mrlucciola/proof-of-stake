@@ -12,7 +12,7 @@ use {
 use super::txn::{constants::*, Txn, TxnSignature};
 use crate::{
     ledger::{
-        blocks::Block,
+        block::Block,
         general::{PbKey, Result, KP},
     },
     utils::signature::{BlockSignature, BLOCK_SIGNATURE_CONTEXT},
