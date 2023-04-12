@@ -10,7 +10,3 @@ impl From<ed25519_dalek::Signature> for BlockSignature {
         BlockSignature(x.to_bytes().to_vec())
     }
 }
-
-pub type SignatureContextType = [u8; 32];
-
-pub const BLOCK_SIGNATURE_CONTEXT: &SignatureContextType = b"ed25519BlkSignatureCtx3bx029zk3c";

@@ -1,3 +1,4 @@
+pub mod constants;
 // imports
 use {chrono::prelude::*, ed25519_dalek::Digest, serde::Serialize, serde_big_array::BigArray};
 // local
@@ -9,8 +10,9 @@ use crate::{
         txn_pool::TxnMap,
         wallet::Wallet,
     },
-    utils::signature::{BlockSignature, BLOCK_SIGNATURE_CONTEXT},
+    utils::signature::BlockSignature,
 };
+use constants::*;
 
 // export types
 #[derive(Debug, Serialize, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
