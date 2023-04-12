@@ -9,7 +9,7 @@ use crate::{
         wallet::Wallet,
     },
     utils::{
-        hash::{BlakeHash, BlakeHex},
+        hash::BlakeHash,
         signature::{BlockSignature, BLOCK_SIGNATURE_CONTEXT},
     },
 };
@@ -124,17 +124,10 @@ impl Block {
     pub fn id_str(&self) -> String {
         self.id().to_string()
     }
-    /// ### Get `Block.id` in `hex` form.
-    pub fn id_hex(&self) -> BlakeHex {
-        self.id().to_hex()
-    }
-    /// ### Get `Block.id` Hex in `String` form.
-    pub fn id_hex_string(&self) -> String {
-        self.id().to_hex().to_string()
-    }
     /// ### Get `Block.id` in type used as a key for `BlockMap`.
+    /// @todo change to byte array
     pub fn id_key(&self) -> BlockMapKey {
-        self.id_hex_string()
+        self.id().to_hex().to_string()
     }
     /// ### Get `Block.transactions` included in this `Block`.
     pub fn txns(&self) -> &BlockTxnMap {
