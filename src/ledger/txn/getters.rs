@@ -1,3 +1,4 @@
+// local
 use super::{Txn, TxnId};
 use crate::{
     ledger::{general::PbKey, txn_pool::TxnMapKey},
@@ -5,7 +6,7 @@ use crate::{
 };
 
 impl Txn {
-    /// ## Get `Txn.id` property.
+    /// ### Get `Txn.id` property.
     /// Panic when accessing unset value.
     pub fn id(&self) -> TxnId {
         self.id.unwrap()
