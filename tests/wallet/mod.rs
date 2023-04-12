@@ -3,7 +3,7 @@ use ed25519_dalek::{Digest, Signer};
 // local
 use posbc::{
     ledger::{
-        general::Sha512,
+        general::{Sha512, KP},
         txn::{TxnCtxDigest, TxnDigest, TxnId, TXN_DIGEST_LEN, TXN_MSG_CTX},
     },
     utils::signature::TXN_SIGNATURE_CONTEXT,
@@ -37,7 +37,7 @@ fn verify_txn_signature_pass() {
 
     // load key and sign
     let kp_send: Vec<u8> = [send.kp.secret.to_bytes(), send.kp.public.to_bytes()].concat();
-    let kp = ed25519_dalek::Keypair::from_bytes(&kp_send).unwrap();
+    let kp = KP::from_bytes(&kp_send).unwrap();
     let msg_signature = kp.sign(&ctx_digest);
     let txn_sig_bytes_manual = msg_signature.to_bytes();
 

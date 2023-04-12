@@ -10,7 +10,7 @@ use std::{
 use crate::{
     ledger::{
         blocks::Block,
-        general::{PbKey, Result},
+        general::{PbKey, Result, KP},
         txn::Txn,
     },
     utils::signature::{
@@ -20,7 +20,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct Wallet {
-    keypair: ed25519_dalek::Keypair,
+    keypair: KP,
 }
 
 impl Wallet {
@@ -37,13 +37,13 @@ impl Wallet {
         let key_json: Vec<u8> = serde_json::from_reader(reader).unwrap();
 
         // open with ed 25519 lib
-        let kp = ed25519_dalek::Keypair::from_bytes(&key_json).unwrap();
+        let kp = KP::from_bytes(&key_json).unwrap();
 
         Self { keypair: kp }
     }
     /// ## Create a new wallet instance
     /// Load keypair and return wallet instance
-    pub fn new_from_kp(keypair: ed25519_dalek::Keypair) -> Self {
+    pub fn new_from_kp(keypair: KP) -> Self {
         Self { keypair }
     }
     /// ## Return the signature for a given txn id/hash.
