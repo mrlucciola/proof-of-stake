@@ -1,5 +1,6 @@
 mod block_id;
 pub mod constants;
+mod getters;
 // imports
 use {chrono::prelude::*, ed25519_dalek::Digest, serde::Serialize, serde_big_array::BigArray};
 // local
@@ -13,8 +14,7 @@ use crate::{
     },
     utils::signature::BlockSignature,
 };
-pub use block_id::BlockId;
-use constants::*;
+pub use {block_id::BlockId, constants::*};
 
 /// This is TxnMap with added functionality.
 ///
@@ -106,31 +106,6 @@ impl Block {
     }
 
     /////////////////////////////////////////////////////////////////////
-    ////////////////////////////// GETTERS //////////////////////////////
-
-    /// ### Get `Block.id` property.
-    pub fn id(&self) -> BlockId {
-        self.id.unwrap()
-    }
-    /// ### Get `Block.id` in type used as a key for `BlockMap`.
-    /// @todo change to byte array
-    pub fn id_key(&self) -> BlockMapKey {
-        self.id()
-    }
-    /// ### Get `Block.transactions` included in this `Block`.
-    pub fn txns(&self) -> &BlockTxnMap {
-        &self.txns
-    }
-    /// ### Get `Block.signature` property.
-    /// Can return `None` if not yet signed.
-    pub fn signature(&self) -> Option<&BlockSignature> {
-        self.signature.as_ref()
-    }
-
-    ////////////////////////////// GETTERS //////////////////////////////
-    /////////////////////////////////////////////////////////////////////
-
-    /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
 
     /// ## Set the signature for the block.
@@ -179,15 +154,15 @@ impl Block {
     /////////////////////////////////////////////////////////////////////
     ///////////////////////////// VALIDATION ////////////////////////////
 
-    /// ## Check if signature is valid.
+    /// ### Check if signature is valid.
     ///
     /// 1. Assert there is a signature
     /// 1. Assert signature is valid
     ///
     /// Return is a Result of an Option to handle non-existant signatures
-    ///   - `Some()` indicates a signature exists and its valid/invalid
-    ///   - `None` indicates there is no signature
-    ///   - `Error` is for error handling
+    /// - `Some()` indicates a signature exists and its valid/invalid
+    /// - `None` indicates there is no signature
+    /// - `Error` is for error handling
     pub fn is_signature_valid(&self, signer_pbkey: &PbKey) -> std::result::Result<(), BlockError> {
         // 1) check if signature exists
         if let None = self.signature() {
@@ -209,7 +184,7 @@ impl Block {
         }
     }
 
-    /// ## Check if block is valid.
+    /// ### Check if block is valid.
     ///
     /// Valid criteria:
     ///   - all struct properties are not `None`
