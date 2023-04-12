@@ -13,13 +13,24 @@ use crate::{
 };
 
 // export types
-#[derive(Debug, Serialize, Clone, Copy)]
+#[derive(Debug, Serialize, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BlockId(#[serde(with = "BigArray")] pub [u8; 64]);
 impl From<Sha512> for BlockId {
     fn from(value: Sha512) -> Self {
         // let mut test = Sha512;
-        let mut test: [u8; 64] = value.finalize().into();
-        BlockId(test)
+        let val: [u8; 64] = value.finalize().into();
+        BlockId(val)
+    }
+}
+impl BlockId {
+    pub fn from_bytes(value: [u8; 64]) -> Self {
+        Self(value)
+    }
+}
+impl PartialEq<[u8; 64]> for BlockId {
+    #[inline]
+    fn eq(&self, other: &[u8; 64]) -> bool {
+        constant_time_eq::constant_time_eq_64(&self.0, other)
     }
 }
 pub type BlockIdSha512 = Sha512;
@@ -115,12 +126,12 @@ impl Block {
 
     /// ### Get `Block.id` property.
     pub fn id(&self) -> BlockId {
-        self.id.unwrap().into()
+        BlockId::from(self.id.to_owned().unwrap())
     }
     /// ### Get `Block.id` in type used as a key for `BlockMap`.
     /// @todo change to byte array
     pub fn id_key(&self) -> BlockMapKey {
-        self.id().to_hex().to_string()
+        self.id()
     }
     /// ### Get `Block.transactions` included in this `Block`.
     pub fn txns(&self) -> &BlockTxnMap {
@@ -157,15 +168,14 @@ impl Block {
 
     /// ## Calculate and set the id for a `Block`.
     /// Returns id.
-    pub fn set_id(&mut self) -> BlockIdSha512 {
+    pub fn set_id(&mut self) -> Sha512 {
         let id = self.calc_id();
-        self.id = Some(id);
+        self.id = Some(id.clone());
 
         id
     }
 
     /// ## Add a transaction to the block.
-    ///
     /// Since we are updating the state of the block, we update the block id (hash) here.
     pub fn add_txn(&mut self, new_txn: Txn) {
         self.txns.entry(new_txn.id_key()).or_insert(new_txn);
@@ -230,7 +240,7 @@ impl Block {
 
         // validate hash
         // TODO: decide - we can validate the id-hash (fast) or recalculate the hash and compare (slow). Is there a major performance hit?
-        if self.calc_id() != self.id() {
+        if Into::<[u8; 64]>::into(self.calc_id().finalize()) != self.id().0 {
             return Err(BlockError::IncorrectId.into());
         }
 
