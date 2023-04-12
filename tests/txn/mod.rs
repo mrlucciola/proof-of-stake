@@ -1,8 +1,8 @@
 // imports
-use ed25519_dalek::{Digest, Sha512};
+use ed25519_dalek::{Digest, Sha512, Signer};
 // local
 use posbc::{
-    ledger::txn::TXN_MSG_CTX,
+    ledger::txn::{TxnCtxDigest, TxnDigest, TxnId, TXN_DIGEST_LEN, TXN_MSG_CTX},
     utils::signature::{TxnSignature, TXN_SIGNATURE_CONTEXT},
 };
 // test
@@ -33,24 +33,30 @@ fn create_signed_txn_pass() {
     let kp_send: Vec<u8> = [send.kp.secret.to_bytes(), send.kp.public.to_bytes()].concat();
     let kp = ed25519_dalek::Keypair::from_bytes(&kp_send).unwrap();
 
-    // calc signature manually
     let txn = create_transfer_txn_default();
     let mut txn1 = txn.clone();
     let txn2 = txn.clone();
     let mut txn3 = txn.clone();
     let txn4 = txn.clone();
 
-    let msg = txn1.to_bytes();
-    // Create a hash digest object which we'll feed the message into:
-    let mut prehashed_1: Sha512 = Sha512::new();
-    // add the txn context
-    prehashed_1.update(TXN_MSG_CTX);
+    // calc signature manually
+    let mut prehash: Sha512 = Sha512::new();
+    // add the txn version
+    prehash.update(TXN_MSG_CTX);
     // add the txn bytes
-    prehashed_1.update(msg.clone());
+    prehash.update(txn1.to_bytes());
+    // convert to byte array
+    let digest: TxnDigest = prehash.finalize().into();
+    let mut digest_buffer: TxnCtxDigest = [0_u8; TXN_DIGEST_LEN + TXN_SIGNATURE_CONTEXT.len()];
+    // add context
+    digest_buffer[..TXN_SIGNATURE_CONTEXT.len()].copy_from_slice(TXN_SIGNATURE_CONTEXT);
+    // add digest
+    digest_buffer[TXN_SIGNATURE_CONTEXT.len()..digest.len() + TXN_SIGNATURE_CONTEXT.len()]
+        .copy_from_slice(&digest);
+    let ctx_digest: TxnCtxDigest = TxnId(digest).to_presigned_digest();
 
-    let msg_signature_manual = kp
-        .sign_prehashed(prehashed_1, Some(TXN_SIGNATURE_CONTEXT))
-        .unwrap();
+    // sign msg and return signature
+    let msg_signature_manual = kp.sign(&ctx_digest);
 
     // calc signature using methods
     let msg_sig_txn_sign: TxnSignature = txn1.sign(&send.wallet);
@@ -62,18 +68,25 @@ fn create_signed_txn_pass() {
     assert_eq!(
         msg_signature_manual,
         msg_sig_txn_sign.clone().into(),
-        "0: \n{msg_signature_manual:?}\n{msg_sig_txn_sign:?}"
+        "\n0: \n{msg_signature_manual:?}\n{}",
+        msg_sig_txn_sign.to_str()
     );
     assert_eq!(
-        msg_sig_txn_sign, msg_sig_txn_calc,
-        "1: \n{msg_sig_txn_sign:?}\n{msg_sig_txn_calc:?}"
+        msg_sig_txn_sign,
+        msg_sig_txn_calc,
+        "\n1: \n{msg_sig_txn_sign:?}\n{}",
+        msg_sig_txn_calc.to_str()
     );
     assert_eq!(
-        msg_sig_txn_calc, msg_sig_txn_set,
-        "2: \n{msg_sig_txn_calc:?}\n{msg_sig_txn_set:?}"
+        msg_sig_txn_calc,
+        msg_sig_txn_set,
+        "\n2: \n{msg_sig_txn_calc:?}\n{}",
+        msg_sig_txn_set.to_str()
     );
     assert_eq!(
-        msg_sig_txn_set, msg_signature_wallet,
-        "3: \n{msg_sig_txn_set:?}\n{msg_signature_wallet:?}"
+        msg_sig_txn_set,
+        msg_signature_wallet,
+        "\n3: \n{msg_sig_txn_set:?}\n{}",
+        msg_signature_wallet.to_str()
     );
 }
