@@ -69,7 +69,7 @@ impl Wallet {
     }
 
     pub fn sign_block(&self, block: &Block) -> BlockSignature {
-        let block_prehash = block.calc_id_sha512();
+        let block_prehash = block.calc_id();
         let block_sig = self
             .sign_msg(block_prehash, BLOCK_SIGNATURE_CONTEXT)
             .unwrap();
