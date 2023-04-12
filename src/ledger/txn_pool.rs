@@ -4,10 +4,8 @@ use std::collections::BTreeMap;
 // local
 use crate::ledger::{general::Result, txn::Txn};
 
-use super::txn::TxnId;
-
 // export types
-pub type TxnMapKey = TxnId; // TODO?: change to hex
+pub type TxnMapKey = String; // TODO?: change to hex
 pub type TxnMap = BTreeMap<TxnMapKey, Txn>;
 
 /// Data structure which holds all pending transactions

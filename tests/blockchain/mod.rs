@@ -1,4 +1,5 @@
 // imports
+use std::{thread, time};
 // local
 use posbc::ledger::{
     blockchain::Blockchain,
@@ -151,7 +152,6 @@ fn process_transfer_txns_pass() -> Result<()> {
     let mut temp_txn_map = TxnMap::new();
 
     // create txns and add them to the map
-    use std::{thread, time};
     let ten_millis = time::Duration::from_millis(10);
     for _ in 0..txn_ct {
         thread::sleep(ten_millis);
