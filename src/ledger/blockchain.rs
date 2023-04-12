@@ -12,8 +12,8 @@ use super::{
 use crate::accounts::accounts::{AccountMap, Accounts};
 
 /// Lookup type for the `blocks` map a string
-pub type BlockMapKey = String; // TODO: change to hex
-pub type BlockMap = BTreeMap<BlockMapKey, Block>;
+pub type BlockMapKey = BlockId; // TODO: change to hex
+pub type BlockMap = BTreeMap<BlockId, Block>;
 
 /// Data structure, contains list of sequential block
 #[derive(Debug, Serialize)]
@@ -152,7 +152,7 @@ impl Blockchain {
         let mut genesis_block = Block::new(
             BlockTxnMap::new(),
             leader,
-            BlockId::from_bytes([0u8; 32]),
+            BlockId::from_bytes([0u8; 64]),
             0,
         );
         // replace blockheight & time
@@ -184,9 +184,11 @@ impl Blockchain {
     /// infrequently and the functionality is relevant enough to the `Blockchain` class.
     pub fn is_genesis_block(block: &Block) -> bool {
         let block_id = Block::calc_id(block);
-        let genesis_hash_str = "36df223aef176ac43834f36fa063a59551ff66daa60bbabf3063fb890a242429";
+        let genesis_hash_str =
+            b"36df223aef176ac43834f36fa063a59551ff66daa60bbabf3063fb890a242429".to_owned();
 
-        block_id.to_string() == genesis_hash_str && block.id().to_string() == genesis_hash_str
+        BlockId::from(block_id) == BlockId(genesis_hash_str)
+            && block.id() == BlockId(genesis_hash_str)
     }
 
     ///////////////////////////// VALIDATION ////////////////////////////
