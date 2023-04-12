@@ -1,4 +1,3 @@
-// imports
 // local
 use posbc::{
     accounts::{
@@ -6,15 +5,14 @@ use posbc::{
         accounts::{AccountMap, Accounts},
     },
     ledger::{
+        block::{Block, BlockId, BlockTxnMap},
         blockchain::Blockchain,
-        blocks::{Block, BlockTxnMap, BlockId},
     },
 };
 // test
 use super::{init_users, UserInfo, UsersInfo};
 
-/// Creates an empty block using the leader and previous block.
-///
+/// ### Creates an empty block using the leader and previous block.
 /// Does not populate with transactions.
 pub fn create_block_from_last(leader: &UserInfo, prev_block: &Block) -> Block {
     let prev_block_id: BlockId = prev_block.id();
@@ -24,8 +22,7 @@ pub fn create_block_from_last(leader: &UserInfo, prev_block: &Block) -> Block {
     Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight)
 }
 
-/// Creates an empty block using the leader and previous block.
-///
+/// ### Creates an empty block using the leader and previous block.
 /// Similar function to `create_block()` but gets last block automatically from the block-chain.\
 /// Does not populate with transactions.
 pub fn create_block(leader: &UserInfo, blockchain: &Blockchain) -> Block {

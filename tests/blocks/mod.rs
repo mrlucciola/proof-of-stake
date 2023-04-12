@@ -1,7 +1,6 @@
-// imports
 // local
 use posbc::ledger::{
-    blocks::{Block, BlockId, BlockTxnMap},
+    block::{Block, BlockId, BlockTxnMap},
     txn::{Txn, TxnType},
 };
 // test

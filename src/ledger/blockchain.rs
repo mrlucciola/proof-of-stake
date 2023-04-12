@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 // local
 use super::{
-    blocks::{Block, BlockId, BlockTxnMap},
+    block::{Block, BlockId, BlockTxnMap},
     general::{PbKey, Result},
     txn::Txn,
     txn_pool::{TxnMap, TxnPool},
@@ -123,7 +123,7 @@ impl Blockchain {
             let txn = txn_pool.remove_txn(&txn)?;
             // validate and update account states
             self.process_transfer_txn(&txn)?;
-            
+
             // add to prospective block
             block.add_txn(txn);
         }
