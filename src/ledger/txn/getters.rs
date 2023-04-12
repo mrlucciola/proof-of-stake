@@ -1,9 +1,6 @@
 // local
-use super::{Txn, TxnId};
-use crate::{
-    ledger::{general::PbKey, txn_pool::TxnMapKey},
-    utils::signature::TxnSignature,
-};
+use super::{Txn, TxnId, TxnSignature};
+use crate::ledger::{general::PbKey, txn_pool::TxnMapKey};
 
 impl Txn {
     /// ### Get `Txn.id` property.

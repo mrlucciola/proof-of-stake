@@ -1,11 +1,8 @@
 // imports
 use ed25519_dalek::Digest;
 // local
-use super::{Txn, TxnDigest, TxnId, TXN_MSG_CTX};
-use crate::{
-    ledger::{general::Sha512, wallet::Wallet},
-    utils::signature::TxnSignature,
-};
+use super::{Txn, TxnDigest, TxnId, TxnSignature, TXN_MSG_CTX};
+use crate::ledger::{general::Sha512, wallet::Wallet};
 
 impl Txn {
     /// ## Convert transaction struct to bytes - NOT id/hash/message/digest

@@ -1,5 +1,4 @@
-use super::{Txn, TxnId};
-use crate::utils::signature::TxnSignature;
+use super::{Txn, TxnId, TxnSignature};
 
 impl Txn {
     /// ## Get identifier (hash) for txn and set on txn object and store the output on the Txn object

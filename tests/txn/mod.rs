@@ -1,19 +1,16 @@
 // imports
 use ed25519_dalek::{Digest, Signer};
 // local
-use posbc::{
-    ledger::{
-        general::{Sha512, KP},
-        txn::{constants::*, TxnCtxDigest, TxnDigest, TxnId},
-    },
-    utils::signature::TxnSignature,
+use posbc::ledger::{
+    general::{Sha512, KP},
+    txn::{constants::*, TxnCtxDigest, TxnDigest, TxnId, TxnSignature},
 };
 // test
 use crate::common::{create_transfer_txn_default, init_send_recv};
 
 #[test]
 fn create_unsigned_txn_pass() {
-    let id_answer: [u8; 64] = [
+    let id_answer: TxnDigest = [
         21, 113, 200, 54, 53, 32, 176, 56, 194, 13, 161, 151, 94, 184, 187, 170, 96, 237, 102, 8,
         175, 16, 204, 109, 189, 112, 94, 171, 41, 194, 31, 155, 83, 195, 110, 130, 195, 63, 119,
         239, 198, 164, 165, 175, 60, 26, 128, 114, 35, 117, 143, 156, 254, 180, 151, 93, 80, 69,
