@@ -2,7 +2,7 @@
 use std::{fs::File, io::BufReader};
 // local
 use posbc::ledger::{
-    general::PbKey,
+    general::{PbKey, KP},
     txn::{Txn, TxnType},
     wallet::Wallet,
 };
@@ -13,7 +13,7 @@ pub mod constants;
 pub mod fxns;
 
 /// secp-2-ed: from get_user_info
-fn create_keypair_from_file(filepath: &String) -> ed25519_dalek::Keypair {
+fn create_keypair_from_file(filepath: &String) -> KP {
     if !filepath.contains("_ed25519") {
         panic!("Filename must have _ed25519 in it: {}", filepath);
     };
@@ -23,13 +23,13 @@ fn create_keypair_from_file(filepath: &String) -> ed25519_dalek::Keypair {
     let key_json: Vec<u8> = serde_json::from_reader(reader).unwrap();
 
     // open with ed 25519 lib
-    let kp = ed25519_dalek::Keypair::from_bytes(&key_json).unwrap();
+    let kp = KP::from_bytes(&key_json).unwrap();
 
     kp
 }
 
 pub struct UserInfo {
-    pub kp: ed25519_dalek::Keypair,
+    pub kp: KP,
     pub wallet: Wallet,
     pub filepath: String,
 }
