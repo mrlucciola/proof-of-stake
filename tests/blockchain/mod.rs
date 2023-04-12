@@ -47,10 +47,6 @@ fn add_block_to_blockchain_pass() {
 
     // add a block to the chain
     let mut new_block_to_add = create_block(&users.main, &blockchain);
-    // assert!(
-    //     &new_block_to_add.signature().unwrap().to_string() == "asdf",
-    //     "check the thing"
-    // );
 
     new_block_to_add.sign(&users.main.wallet);
     let key = new_block_to_add.id_key();
