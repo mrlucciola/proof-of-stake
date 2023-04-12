@@ -7,15 +7,13 @@ use std::{
     io::{BufReader, BufWriter, Write},
 };
 // local
+use super::txn::{Txn, TXN_SIGNATURE_CTX};
 use crate::{
     ledger::{
         blocks::Block,
         general::{PbKey, Result, KP},
-        txn::Txn,
     },
-    utils::signature::{
-        BlockSignature, TxnSignature, BLOCK_SIGNATURE_CONTEXT, TXN_SIGNATURE_CONTEXT,
-    },
+    utils::signature::{BlockSignature, TxnSignature, BLOCK_SIGNATURE_CONTEXT},
 };
 
 #[derive(Debug)]
@@ -49,7 +47,7 @@ impl Wallet {
     /// ## Return the signature for a given txn id/hash.
     /// Take in id/hash digest, sign digest with current wallet's key, return signature.
     pub fn sign_txn(&self, txn: &Txn) -> TxnSignature {
-        self.sign_msg(&mut txn.calc_id().0, TXN_SIGNATURE_CONTEXT)
+        self.sign_msg(&mut txn.calc_id().0, TXN_SIGNATURE_CTX)
             .into()
     }
 

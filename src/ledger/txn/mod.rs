@@ -1,3 +1,4 @@
+pub mod constants;
 pub mod getters;
 pub mod setters;
 pub mod txn_id;
@@ -7,14 +8,12 @@ use {chrono::prelude::*, serde::Serialize, std::fmt};
 // local
 use crate::{
     ledger::{general::PbKey, wallet::Wallet},
-    utils::signature::{TxnSignature, TXN_SIGNATURE_CONTEXT},
+    utils::signature::TxnSignature,
 };
-pub use txn_id::TxnId;
+pub use {constants::*, txn_id::TxnId};
 
-pub const TXN_MSG_CTX: &[u8; 6] = b"txn-v0";
-pub const TXN_DIGEST_LEN: usize = 64;
 pub type TxnDigest = [u8; 64];
-pub type TxnCtxDigest = [u8; TXN_SIGNATURE_CONTEXT.len() + TXN_DIGEST_LEN];
+pub type TxnCtxDigest = [u8; TXN_SIGNATURE_CTX.len() + TXN_DIGEST_LEN];
 
 // exported types
 #[derive(Serialize, Debug, Clone, Copy, PartialEq)]

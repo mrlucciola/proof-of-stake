@@ -4,9 +4,9 @@ use ed25519_dalek::{Digest, Signer};
 use posbc::{
     ledger::{
         general::{Sha512, KP},
-        txn::{TxnCtxDigest, TxnDigest, TxnId, TXN_DIGEST_LEN, TXN_MSG_CTX},
+        txn::{constants::*, TxnCtxDigest, TxnDigest, TxnId},
     },
-    utils::signature::{TxnSignature, TXN_SIGNATURE_CONTEXT},
+    utils::signature::TxnSignature,
 };
 // test
 use crate::common::{create_transfer_txn_default, init_send_recv};
@@ -50,11 +50,11 @@ fn create_signed_txn_pass() {
     prehash.update(txn1.to_bytes());
     // convert to byte array
     let digest: TxnDigest = prehash.finalize().into();
-    let mut digest_buffer: TxnCtxDigest = [0_u8; TXN_DIGEST_LEN + TXN_SIGNATURE_CONTEXT.len()];
+    let mut digest_buffer: TxnCtxDigest = [0_u8; TXN_DIGEST_LEN + TXN_SIGNATURE_CTX.len()];
     // add context
-    digest_buffer[..TXN_SIGNATURE_CONTEXT.len()].copy_from_slice(TXN_SIGNATURE_CONTEXT);
+    digest_buffer[..TXN_SIGNATURE_CTX.len()].copy_from_slice(TXN_SIGNATURE_CTX);
     // add digest
-    digest_buffer[TXN_SIGNATURE_CONTEXT.len()..digest.len() + TXN_SIGNATURE_CONTEXT.len()]
+    digest_buffer[TXN_SIGNATURE_CTX.len()..digest.len() + TXN_SIGNATURE_CTX.len()]
         .copy_from_slice(&digest);
     let ctx_digest: TxnCtxDigest = TxnId(digest).to_presigned_digest();
 
