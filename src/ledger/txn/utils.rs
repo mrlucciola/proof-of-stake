@@ -42,4 +42,15 @@ impl Txn {
     pub fn calc_signature(&self, wallet: &Wallet) -> TxnSignature {
         wallet.sign_txn(self)
     }
+
+    /// ## Add the signature to the transaction body in place.
+    /// 1) Sign the transaction
+    /// 2) Add signature to transaction body
+    /// 3) Return signature
+    pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
+        let sig = self.calc_signature(wallet);
+        self.set_signature(sig.to_owned());
+
+        sig
+    }
 }
