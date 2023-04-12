@@ -1,3 +1,4 @@
+pub mod getters;
 pub mod utils;
 // imports
 use chrono::prelude::*;
@@ -9,7 +10,6 @@ use std::fmt;
 use crate::{
     ledger::{
         general::{PbKey, Sha512},
-        txn_pool::TxnMapKey,
         wallet::Wallet,
     },
     utils::signature::{TxnSignature, TXN_SIGNATURE_CONTEXT},
@@ -158,33 +158,6 @@ impl Txn {
 
         txn
     }
-
-    /////////////////////////////////////////////////////////////////////
-    ////////////////////////////// GETTERS //////////////////////////////
-
-    /// ## Get `Txn.id` property.
-    /// Panic when accessing unset value.
-    pub fn id(&self) -> TxnId {
-        self.id.unwrap()
-    }
-    /// ### Get `TxnMap` key type (derived from TxnId).
-    /// @todo change to byte array
-    pub fn id_key(&self) -> TxnMapKey {
-        self.id().into()
-    }
-    /// ### Getter for `Txn` `signature` property
-    pub fn signature(&self) -> &TxnSignature {
-        self.signature.as_ref().unwrap()
-    }
-    pub fn pbkey_send(&self) -> PbKey {
-        PbKey::from_bytes(&self.pbkey_send).unwrap()
-    }
-    pub fn pbkey_recv(&self) -> PbKey {
-        PbKey::from_bytes(&self.pbkey_recv).unwrap()
-    }
-
-    ////////////////////////////// GETTERS //////////////////////////////
-    /////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
