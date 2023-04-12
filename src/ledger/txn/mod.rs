@@ -1,83 +1,22 @@
 pub mod getters;
 pub mod setters;
+pub mod txn_id;
 pub mod utils;
 // imports
-use chrono::prelude::*;
-use ed25519_dalek::Digest;
-use serde::Serialize;
-use serde_big_array::BigArray;
-use std::fmt;
+use {chrono::prelude::*, serde::Serialize, std::fmt};
 // local
 use crate::{
-    ledger::{
-        general::{PbKey, Sha512},
-        wallet::Wallet,
-    },
+    ledger::{general::PbKey, wallet::Wallet},
     utils::signature::{TxnSignature, TXN_SIGNATURE_CONTEXT},
 };
+pub use txn_id::TxnId;
+
 pub const TXN_MSG_CTX: &[u8; 6] = b"txn-v0";
 pub const TXN_DIGEST_LEN: usize = 64;
 pub type TxnDigest = [u8; 64];
 pub type TxnCtxDigest = [u8; TXN_SIGNATURE_CONTEXT.len() + TXN_DIGEST_LEN];
 
 // exported types
-#[derive(Debug, Serialize, Clone, Copy, Eq, PartialOrd, Ord)]
-pub struct TxnId(#[serde(with = "BigArray")] pub TxnDigest);
-impl From<Sha512> for TxnId {
-    fn from(value: Sha512) -> Self {
-        let val: TxnDigest = value.finalize().into();
-        TxnId(val)
-    }
-}
-impl From<TxnDigest> for TxnId {
-    fn from(value: TxnDigest) -> Self {
-        TxnId(value)
-    }
-}
-impl From<TxnId> for TxnDigest {
-    fn from(value: TxnId) -> Self {
-        value.0
-    }
-}
-impl From<TxnId> for String {
-    fn from(value: TxnId) -> Self {
-        hex::encode(value.0.as_ref())
-    }
-}
-impl TxnId {
-    pub fn from_bytes(value: TxnDigest) -> Self {
-        Self(value)
-    }
-    pub fn to_presigned_digest(&self) -> TxnCtxDigest {
-        let mut digest_buffer: TxnCtxDigest = [0_u8; TXN_DIGEST_LEN + TXN_SIGNATURE_CONTEXT.len()];
-        // add context
-        digest_buffer[..TXN_SIGNATURE_CONTEXT.len()].copy_from_slice(TXN_SIGNATURE_CONTEXT);
-        // add digest
-        digest_buffer[TXN_SIGNATURE_CONTEXT.len()..self.0.len() + TXN_SIGNATURE_CONTEXT.len()]
-            .copy_from_slice(&self.0);
-
-        digest_buffer
-    }
-}
-impl PartialEq<TxnDigest> for TxnId {
-    #[inline]
-    fn eq(&self, other: &TxnDigest) -> bool {
-        constant_time_eq::constant_time_eq_64(&self.0, &other)
-    }
-}
-impl PartialEq<TxnId> for TxnDigest {
-    #[inline]
-    fn eq(&self, other: &TxnId) -> bool {
-        constant_time_eq::constant_time_eq_64(&self, &other.0)
-    }
-}
-impl PartialEq for TxnId {
-    #[inline]
-    fn eq(&self, other: &TxnId) -> bool {
-        constant_time_eq::constant_time_eq_64(&self.0, &other.0)
-    }
-}
-
 #[derive(Serialize, Debug, Clone, Copy, PartialEq)]
 pub enum TxnType {
     Transfer = 1,
