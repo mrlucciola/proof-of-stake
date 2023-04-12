@@ -1,8 +1,8 @@
 // imports
 use {ed25519_dalek::Digest, serde::Serialize, serde_big_array::BigArray};
 // local
-use super::{TxnCtxDigest, TxnDigest, TXN_DIGEST_LEN};
-use crate::{ledger::general::Sha512, utils::signature::TXN_SIGNATURE_CONTEXT};
+use super::{TxnCtxDigest, TxnDigest, TXN_DIGEST_LEN, TXN_SIGNATURE_CTX};
+use crate::ledger::general::Sha512;
 
 #[derive(Debug, Serialize, Clone, Copy, Eq, PartialOrd, Ord)]
 pub struct TxnId(#[serde(with = "BigArray")] pub TxnDigest);
@@ -33,11 +33,11 @@ impl TxnId {
         Self(value)
     }
     pub fn to_presigned_digest(&self) -> TxnCtxDigest {
-        let mut digest_buffer: TxnCtxDigest = [0_u8; TXN_DIGEST_LEN + TXN_SIGNATURE_CONTEXT.len()];
+        let mut digest_buffer: TxnCtxDigest = [0_u8; TXN_DIGEST_LEN + TXN_SIGNATURE_CTX.len()];
         // add context
-        digest_buffer[..TXN_SIGNATURE_CONTEXT.len()].copy_from_slice(TXN_SIGNATURE_CONTEXT);
+        digest_buffer[..TXN_SIGNATURE_CTX.len()].copy_from_slice(TXN_SIGNATURE_CTX);
         // add digest
-        digest_buffer[TXN_SIGNATURE_CONTEXT.len()..self.0.len() + TXN_SIGNATURE_CONTEXT.len()]
+        digest_buffer[TXN_SIGNATURE_CTX.len()..self.0.len() + TXN_SIGNATURE_CTX.len()]
             .copy_from_slice(&self.0);
 
         digest_buffer

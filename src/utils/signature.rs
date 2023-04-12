@@ -44,5 +44,5 @@ impl From<ed25519_dalek::Signature> for BlockSignature {
 }
 
 pub type SignatureContextType = [u8; 32];
-pub const TXN_SIGNATURE_CONTEXT: &SignatureContextType = b"ed25519TxnSignatureCtx3bx029zk3c";
+
 pub const BLOCK_SIGNATURE_CONTEXT: &SignatureContextType = b"ed25519BlkSignatureCtx3bx029zk3c";
