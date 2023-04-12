@@ -1,6 +1,6 @@
 // imports
 use anyhow::format_err;
-use ed25519_dalek::Sha512;
+use ed25519_dalek::Signer;
 use secp256k1::rand::{rngs, SeedableRng};
 use std::{
     fs::File,
@@ -14,8 +14,7 @@ use crate::{
         txn::Txn,
     },
     utils::signature::{
-        BlockSignature, SignatureContextType, TxnSignature, BLOCK_SIGNATURE_CONTEXT,
-        TXN_SIGNATURE_CONTEXT,
+        BlockSignature, TxnSignature, BLOCK_SIGNATURE_CONTEXT, TXN_SIGNATURE_CONTEXT,
     },
 };
 
@@ -25,8 +24,7 @@ pub struct Wallet {
 }
 
 impl Wallet {
-    /// Create a new wallet instance
-    ///
+    /// ## Create a new wallet instance
     /// Load keypair from file and return wallet instance
     pub fn new_from_file(filepath: &String) -> Self {
         if !filepath.contains("_ed25519") {
@@ -43,44 +41,43 @@ impl Wallet {
 
         Self { keypair: kp }
     }
-    /// Create a new wallet instance
-    ///
+    /// ## Create a new wallet instance
     /// Load keypair and return wallet instance
     pub fn new_from_kp(keypair: ed25519_dalek::Keypair) -> Self {
         Self { keypair }
     }
-    fn sign_msg(
-        &self,
-        prehashed_msg: Sha512,
-        sig_ctx: &SignatureContextType,
-    ) -> Result<ed25519::Signature> {
-        let msg_signature = self.keypair.sign_prehashed(prehashed_msg, Some(sig_ctx))?;
-
-        Ok(msg_signature)
-    }
-    /// Return the signature for a given txn id/hash.
-    ///
+    /// ## Return the signature for a given txn id/hash.
     /// Take in id/hash digest, sign digest with current wallet's key, return signature.
     pub fn sign_txn(&self, txn: &Txn) -> TxnSignature {
-        let txn_prehash = txn.calc_id_sha512();
-        let txn_sig = self.sign_msg(txn_prehash, TXN_SIGNATURE_CONTEXT).unwrap();
-
+        let txn_prehash: ed25519_dalek::Sha512 = txn.calc_id_sha512();
+        let txn_sig = self
+            .keypair
+            .sign_prehashed(txn_prehash, Some(TXN_SIGNATURE_CONTEXT))
+            .unwrap();
         txn_sig.into()
     }
 
+    /// ## Sign a block. Generate signature for block.
+    /// We are not using the prehash Sha512 for ease of use.
+    /// Also, there may be significant or breaking changes in the future as suggested in their documentation (r.e. "bandaids").
     pub fn sign_block(&self, block: &Block) -> BlockSignature {
-        let block_prehash = block.calc_id();
-        let block_sig = self
-            .sign_msg(block_prehash, BLOCK_SIGNATURE_CONTEXT)
-            .unwrap();
+        self.sign_msg(&mut block.calc_id().0, BLOCK_SIGNATURE_CONTEXT)
+            .into()
+    }
+    /// ## Standard function for signing messages.
+    /// It is important to enforce consistency in how msgs are signed.
+    fn sign_msg(&self, msg: &mut [u8; 64], ctx: &[u8]) -> ed25519::Signature {
+        let mut vector = ctx.to_vec();
+        vector.append(&mut msg.to_vec());
 
-        block_sig.into()
+        // sign msg and return signature
+        self.keypair.sign(&vector)
     }
 
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// GETTERS //////////////////////////////
 
-    /// Get the public key for this respective wallet
+    /// ### Get the public key for this respective wallet
     pub fn pbkey(&self) -> PbKey {
         self.keypair.public
     }
