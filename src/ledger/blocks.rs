@@ -178,7 +178,7 @@ impl Block {
     /// Returns id.
     pub fn set_id(&mut self) -> BlockId {
         let id = self.calc_id();
-        self.id = Some(id.clone());
+        self.id = Some(id);
 
         id
     }
