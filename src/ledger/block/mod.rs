@@ -21,8 +21,6 @@ use constants::*;
 /// @todo add condition that this map cant have more than _ number of txns.
 pub type BlockTxnMap = TxnMap;
 
-pub const BLOCK_MSG_CTX: &[u8; 8] = b"block-v0";
-
 /// Info contained within a block
 #[derive(Debug, Clone, Serialize)]
 pub struct Block {
