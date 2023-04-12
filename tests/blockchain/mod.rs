@@ -20,7 +20,7 @@ fn create_blockchain_pass() {
     assert!(blocks.len() == 1, "Blockchain must have one block");
 
     // all blocks must be valid (no `None` fields, correct hash, signed)
-    let mut genesis = blocks.values().to_owned().next().unwrap().to_owned();
+    let mut genesis = blocks.values().next().unwrap().to_owned();
 
     genesis.sign(&users.main.wallet);
 
