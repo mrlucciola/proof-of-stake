@@ -30,6 +30,11 @@ impl From<TxnId> for [u8; 64] {
         value.0
     }
 }
+impl From<TxnId> for String {
+    fn from(value: TxnId) -> Self {
+        hex::encode(value.0.as_ref())
+    }
+}
 impl TxnId {
     pub fn from_bytes(value: [u8; 64]) -> Self {
         Self(value)
@@ -140,14 +145,15 @@ impl Txn {
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// GETTERS //////////////////////////////
 
-    /// Get `Txn.id` property.
+    /// ## Get `Txn.id` property.
+    /// Panic when accessing unset value.
     pub fn id(&self) -> TxnId {
         self.id.unwrap()
     }
     /// ### Get `TxnMap` key type (derived from TxnId).
     /// @todo change to byte array
     pub fn id_key(&self) -> TxnMapKey {
-        self.id()
+        self.id().into()
     }
     /// ### Getter for `Txn` `signature` property
     pub fn signature(&self) -> &TxnSignature {

@@ -191,6 +191,7 @@ impl Block {
         self.txns.entry(new_txn.id_key()).or_insert(new_txn);
         // update block hash since the transactions map has been updated
         self.set_id();
+        println!("holp: 33");
     }
 
     ////////////////////////////// SETTERS //////////////////////////////
