@@ -37,7 +37,7 @@ impl P2P {
     pub fn start_connection(&self) -> Result<()> {
         // self.listener.set_nonblocking(true)?;
 
-        for stream_res in self.listener.incoming() {
+        for stream_res in self.listener().incoming() {
             match stream_res {
                 Ok(s) => handle_stream(s)?,
                 Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
