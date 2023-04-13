@@ -78,10 +78,7 @@ pub fn create_transfer_txn_default() -> Txn {
     let (send, recv) = init_send_recv();
 
     // turn the raw txn into message
-    let mut txn = Txn::new(send.pbkey(), recv.pbkey(), 100, TxnType::Transfer);
-    txn.system_time = 1669699785826;
-
-    txn.set_id();
+    let txn = Txn::new(send.pbkey(), recv.pbkey(), 100, TxnType::Transfer);
 
     txn
 }
@@ -91,30 +88,24 @@ pub fn create_transfer_txn(amt_to_transfer: u128) -> Txn {
     let (send, recv) = init_send_recv();
 
     // turn the raw txn into message
-    let mut txn = Txn::new(
+    let txn = Txn::new(
         send.pbkey(),
         recv.pbkey(),
         amt_to_transfer,
         TxnType::Transfer,
     );
-    txn.system_time = 1669699785826;
-
-    txn.set_id();
 
     txn
 }
 
 pub fn create_transfer_txn_manual(send: UserInfo, recv: UserInfo, amt_to_transfer: u128) -> Txn {
     // turn the raw txn into message
-    let mut txn = Txn::new(
+    let txn = Txn::new(
         send.pbkey(),
         recv.pbkey(),
         amt_to_transfer,
         TxnType::Transfer,
     );
-    txn.system_time = 1669699785826;
-
-    txn.set_id();
 
     txn
 }

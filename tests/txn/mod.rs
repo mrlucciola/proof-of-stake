@@ -8,23 +8,16 @@ use posbc::ledger::{
 // test
 use crate::common::{create_transfer_txn_default, init_send_recv};
 
+/// Just see if it doesnt throw an error.
+/// All fields, and setters for ID and Signature are private,
+///    so we can't edit the fields so there is no way to validate a precalculated/expected id or signature.
 #[test]
 fn create_unsigned_txn_pass() {
-    let id_answer: TxnDigest = [
-        21, 113, 200, 54, 53, 32, 176, 56, 194, 13, 161, 151, 94, 184, 187, 170, 96, 237, 102, 8,
-        175, 16, 204, 109, 189, 112, 94, 171, 41, 194, 31, 155, 83, 195, 110, 130, 195, 63, 119,
-        239, 198, 164, 165, 175, 60, 26, 128, 114, 35, 117, 143, 156, 254, 180, 151, 93, 80, 69,
-        81, 72, 146, 143, 215, 41,
-    ];
+    let (send, _) = init_send_recv();
     let txn = create_transfer_txn_default();
-    let id_test = txn.calc_id();
-
-    assert!(
-        id_answer == id_test,
-        "\nanswer: {:?}\n  test: {:?}",
-        id_answer,
-        id_test,
-    );
+    // see if these dont throw errors
+    txn.calc_id();
+    txn.calc_signature(&send.wallet);
 }
 
 #[test]

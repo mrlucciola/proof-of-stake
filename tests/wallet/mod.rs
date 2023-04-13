@@ -42,24 +42,14 @@ fn verify_txn_signature_pass() {
     let txn_sig_bytes_test = txn2.sign(&send.wallet);
     let txn_sig_bytes_wallet = send.wallet.sign_txn(&txn3);
 
-    let sig_answer_str = b"72249CA1BC217322274989EC2EF7A8191472A41DBEEA889AE871291090E053AA6B5ECCFF3E40A51E96B03B7F0F1645870B6DB5FBD42A2C5B4552DE8B7FA5D30A";
-    let txn_sig_bytes_answer: TxnDigest =
-        ed25519_dalek::Signature::from_bytes(&hex::decode(sig_answer_str).unwrap())
-            .unwrap()
-            .to_bytes();
-
     assert_eq!(
         &txn_sig_bytes_test,
-        &txn_sig_bytes_answer.into(),
-        "  test-answer: \n  test: {txn_sig_bytes_test:?}\nanswer: {txn_sig_bytes_answer:?}"
+        &txn_sig_bytes_manual.into(),
+        "manual-answer: \nmanual: {txn_sig_bytes_test:?}\nanswer: {txn_sig_bytes_manual:?}"
     );
     assert_eq!(
-        &txn_sig_bytes_manual, &txn_sig_bytes_answer,
-        "manual-answer: \nmanual: {txn_sig_bytes_manual:?}\nanswer: {txn_sig_bytes_answer:?}"
-    );
-    assert_eq!(
-        &txn_sig_bytes_wallet,
-        &txn_sig_bytes_answer.into(),
-        "wallet-answer: \nwallet: {txn_sig_bytes_wallet:?}\nanswer: {txn_sig_bytes_answer:?}"
+        &txn_sig_bytes_test,
+        &txn_sig_bytes_wallet.clone().into(),
+        "wallet-answer: \nwallet: {txn_sig_bytes_wallet:?}\nanswer: {txn_sig_bytes_test:?}"
     );
 }

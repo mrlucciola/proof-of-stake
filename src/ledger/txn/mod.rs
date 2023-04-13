@@ -72,6 +72,7 @@ impl Txn {
 
         // set the id with the body
         txn.set_id();
+
         // return the txn
         txn
     }
