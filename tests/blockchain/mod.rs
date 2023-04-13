@@ -85,13 +85,13 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
 
     let amt_to_send = 1;
     assert!(
-        blockchain.accounts.accounts().len() == 1,
+        blockchain.accounts().accounts().len() == 1,
         "incorrect length: {}",
         blockchain.account_map().len()
     );
 
-    let bal_send_pre = blockchain.accounts.acct_balance(&users.send.pbkey().into());
-    let bal_recv_pre = blockchain.accounts.acct_balance(&users.recv.pbkey().into());
+    let bal_send_pre = blockchain.accounts().acct_balance(&users.send.pbkey().into());
+    let bal_recv_pre = blockchain.accounts().acct_balance(&users.recv.pbkey().into());
 
     // populate the block with a transaction
     let txn_to_add = Txn::new_signed(
@@ -104,13 +104,13 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
 
     // Verify account length increased to 2
     assert!(
-        blockchain.accounts.accounts().len() == 2,
+        blockchain.accounts().len() == 2,
         "length: {}",
         blockchain.account_map().len()
     );
 
-    let bal_send_post = blockchain.accounts.acct_balance(&users.send.pbkey().into());
-    let bal_recv_post = blockchain.accounts.acct_balance(&users.recv.pbkey().into());
+    let bal_send_post = blockchain.accounts().acct_balance(&users.send.pbkey().into());
+    let bal_recv_post = blockchain.accounts().acct_balance(&users.recv.pbkey().into());
     assert_eq!(
         bal_send_pre + bal_recv_pre,
         bal_send_post + bal_recv_post,
