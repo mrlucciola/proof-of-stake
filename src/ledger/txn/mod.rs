@@ -32,7 +32,7 @@ impl fmt::Display for TxnType {
 #[derive(Serialize, Debug, Clone)]
 pub struct Txn {
     pub amt: u128,
-    pub pbkey_send: PbKey,
+    pbkey_send: PbKey,
     pub pbkey_recv: PbKey,
     // The time the txn was created
     pub system_time: u64,

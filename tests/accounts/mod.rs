@@ -11,10 +11,10 @@ use crate::common::{create_transfer_txn, init_send_recv, init_users};
 fn util_init_accounts() -> [Account; 4] {
     let users = init_users();
 
-    let send = Account::new(users.send.pbkey().as_bytes(), None);
-    let recv = Account::new(users.recv.pbkey().as_bytes(), Some(1));
-    let test1 = Account::new(users.test1.pbkey().as_bytes(), Some(22));
-    let test2 = Account::new(users.test2.pbkey().as_bytes(), Some(999));
+    let send = Account::new(&users.send.pbkey().into(), None);
+    let recv = Account::new(&users.recv.pbkey().into(), Some(1));
+    let test1 = Account::new(&users.test1.pbkey().into(), Some(22));
+    let test2 = Account::new(&users.test2.pbkey().into(), Some(999));
 
     [send, recv, test1, test2]
 }
@@ -23,8 +23,8 @@ fn util_init_accounts() -> [Account; 4] {
 fn create_account_pass() {
     let (send, _recv) = init_send_recv();
     let init_balance = Some(10);
-    let new_acct = Account::new(send.pbkey().as_bytes(), init_balance);
-    assert_eq!(new_acct.id(), send.pbkey().as_bytes());
+    let new_acct = Account::new(&send.pbkey().into(), init_balance);
+    assert_eq!(new_acct.id(), &send.pbkey().0);
     assert_eq!(new_acct.balance(), init_balance.unwrap());
     assert_ne!(new_acct.balance(), (init_balance.unwrap() - 1));
 }
@@ -35,7 +35,7 @@ fn create_account_pass() {
 fn create_accounts_pass() {
     let (send, _recv) = init_send_recv();
     // init account
-    let acct1 = Account::new(send.pbkey().as_bytes(), None);
+    let acct1 = Account::new(&send.pbkey().into(), None);
     let accounts = Accounts::new();
 
     assert_eq!(accounts.len(), 0);

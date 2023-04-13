@@ -103,10 +103,7 @@ impl Blockchain {
     /// - They execute each txn in serial, updating the accounts in order
     pub fn process_transfer_txn(&mut self, txn: &Txn) -> Result<()> {
         // look up `send` account, decrease their balance
-        let acct_send = self
-            .accounts
-            .get_acct_mut(&txn.pbkey_send().into())
-            .unwrap();
+        let acct_send = self.accounts.get_acct_mut(&txn.pbkey_send().into()).unwrap();
         acct_send.decrease_balance(&txn)?;
 
         // look up `recv` account, increase their balance

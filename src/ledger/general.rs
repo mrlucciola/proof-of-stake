@@ -4,18 +4,13 @@ pub use secp256k1::{Error as SecpError, SecretKey as PvKey};
 use serde::Serialize;
 pub type Result<T> = std::result::Result<T, anyhow::Error>;
 
-#[derive(Debug, Serialize, Clone, Copy)]
+#[derive(Debug, Serialize, Clone, Copy, PartialEq)]
 pub struct PbKey(pub [u8; 32]);
 impl From<PbKey> for [u8; 32] {
     fn from(value: PbKey) -> Self {
         value.0
     }
 }
-// impl From<PbKey> for &'static [u8; 32] {
-//     fn from(value: PbKey) -> &'static [u8; 32] {
-//         value.0.as_ref()
-//     }
-// }
 impl From<&PbKey> for [u8; 32] {
     fn from(value: &PbKey) -> Self {
         value.0.to_owned()
