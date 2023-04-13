@@ -48,7 +48,6 @@ impl Block {
         if let None = self.id {
             return Err(BlockError::EmptyId);
         };
-
         // validate hash
         if self.calc_id() != self.id() {
             return Err(BlockError::IncorrectId);
