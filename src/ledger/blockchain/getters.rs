@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 // local
 use super::{BlockMap, BlockMapKey, Blockchain};
 use crate::{
@@ -27,6 +29,9 @@ impl Blockchain {
     /// May be more appropriate in the `node` module.
     pub fn accounts(&self) -> &Accounts {
         &self.accounts
+    }
+    pub fn accounts_mut(&mut self) -> &mut Accounts {
+        self.accounts.borrow_mut()
     }
     /// ### Get map of `accounts`.
     pub fn account_map(&self) -> &AccountMap {

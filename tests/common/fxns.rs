@@ -37,14 +37,14 @@ pub fn create_block(leader: &UserInfo, blockchain: &Blockchain) -> Block {
     create_block_from_last(leader, prev_block)
 }
 
-/// Get most recent block of the given blockchain.
+/// ### Get most recent block of the given blockchain.
 ///
 /// @todo make this a getter method on `Blockchain`
 fn get_last_block(blockchain: &Blockchain) -> Option<&Block> {
     blockchain.blocks().values().next_back()
 }
 
-/// ## Initialize account map.
+/// ### Initialize account map.
 ///
 /// Add sender account as first account to the chain.\
 /// Sender account has balance of 1000.
@@ -53,7 +53,7 @@ pub fn init_account_map(blockchain: &mut Blockchain) {
     let users = init_users();
     let send_acct = Account::new(&users.send.pbkey().into(), Some(1000));
 
-    blockchain.accounts.add_acct(send_acct);
+    blockchain.accounts_mut().add_acct(send_acct);
 }
 pub fn init_blockchain() -> (UsersInfo, Blockchain) {
     let users = init_users();
@@ -67,7 +67,7 @@ pub fn init_blockchain_and_accounts() -> (UsersInfo, Blockchain) {
 
     (users, blockchain)
 }
-/// Get first account in account map.
+/// ### Get first account in account map.
 pub fn get_first_acct(accounts: &Accounts) -> Option<&Account> {
     let accts: &AccountMap = accounts.accounts();
 

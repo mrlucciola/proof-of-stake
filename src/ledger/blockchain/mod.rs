@@ -20,7 +20,7 @@ pub struct Blockchain {
     /// Ordered lookup collection of accounts, wrapped with methods.
     /// This may be removed in the future.
     /// May be more appropriate in the `node` module.
-    pub accounts: Accounts,
+    accounts: Accounts,
     /// Pubkey of the entity used to initialize the blockchain.
     pub initializer: PbKey,
 }
