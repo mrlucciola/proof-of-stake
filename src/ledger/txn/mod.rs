@@ -3,15 +3,14 @@ mod getters;
 mod setters;
 pub mod txn_id;
 pub mod txn_signature;
+pub mod types;
 mod utils;
 // external
 use {chrono::prelude::*, serde::Serialize, std::fmt};
 // local
 use crate::ledger::{general::PbKey, wallet::Wallet};
-pub use {constants::*, txn_id::TxnId, txn_signature::TxnSignature};
-
-pub type TxnDigest = [u8; 64];
-pub type TxnCtxDigest = [u8; TXN_SIGNATURE_CTX.len() + TXN_DIGEST_LEN];
+use constants::*;
+pub use {txn_id::TxnId, txn_signature::TxnSignature, types::*};
 
 // exported types
 #[derive(Serialize, Debug, Clone, Copy, PartialEq)]
