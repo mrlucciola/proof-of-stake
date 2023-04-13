@@ -23,7 +23,6 @@ impl Txn {
     }
     /// ### Getter for `Txn.pbkey_recv` property
     pub fn pbkey_recv(&self) -> &PbKey {
-        // PbKey::from_bytes(&self.pbkey_recv).unwrap()
         &self.pbkey_recv
     }
 }
