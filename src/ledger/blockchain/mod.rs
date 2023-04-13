@@ -1,6 +1,5 @@
 // external
-use serde::Serialize;
-use std::collections::BTreeMap;
+use {serde::Serialize, std::collections::BTreeMap};
 // local
 use super::{
     block::{types::BlockDigest, Block, BlockId},
@@ -26,7 +25,7 @@ pub struct Blockchain {
     pub initializer: PbKey,
 }
 impl Blockchain {
-    /// ## Create new `Blockchain` instance.
+    /// ### Create new `Blockchain` instance.
     ///
     /// Contains list (BTreeMap) of blocks in sequence, queriable by their ID, in string form.
     ///
@@ -103,7 +102,10 @@ impl Blockchain {
     /// - They execute each txn in serial, updating the accounts in order
     pub fn process_transfer_txn(&mut self, txn: &Txn) -> Result<()> {
         // look up `send` account, decrease their balance
-        let acct_send = self.accounts.get_acct_mut(&txn.pbkey_send().into()).unwrap();
+        let acct_send = self
+            .accounts
+            .get_acct_mut(&txn.pbkey_send().into())
+            .unwrap();
         acct_send.decrease_balance(&txn)?;
 
         // look up `recv` account, increase their balance
@@ -112,7 +114,7 @@ impl Blockchain {
 
         Ok(())
     }
-    /// ## Process a set of `transfer` txns.
+    /// ### Process a set of `transfer` txns.
     ///
     /// Take txns from an arbitrary list of txns and execute them one by one,
     /// applying the state changes to the accounts and placing these transactions
