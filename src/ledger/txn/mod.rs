@@ -33,7 +33,7 @@ impl fmt::Display for TxnType {
 pub struct Txn {
     pub amt: u128,
     pbkey_send: PbKey,
-    pub pbkey_recv: PbKey,
+    pbkey_recv: PbKey,
     // The time the txn was created
     pub system_time: u64,
     /// Type of transaction - as int
