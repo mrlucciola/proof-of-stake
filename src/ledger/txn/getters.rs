@@ -17,11 +17,13 @@ impl Txn {
     pub fn signature(&self) -> &TxnSignature {
         self.signature.as_ref().unwrap()
     }
+    /// ### Getter for `Txn.pbkey_send` property
     pub fn pbkey_send(&self) -> &PbKey {
-        &self.pbkey_send.into()
+        &self.pbkey_send
     }
+    /// ### Getter for `Txn.pbkey_recv` property
     pub fn pbkey_recv(&self) -> &PbKey {
         // PbKey::from_bytes(&self.pbkey_recv).unwrap()
-        &self.pbkey_recv.into()
+        &self.pbkey_recv
     }
 }

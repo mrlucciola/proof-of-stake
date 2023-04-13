@@ -32,8 +32,8 @@ impl fmt::Display for TxnType {
 #[derive(Serialize, Debug, Clone)]
 pub struct Txn {
     pub amt: u128,
-    pub pbkey_send: [u8; 32],
-    pub pbkey_recv: [u8; 32],
+    pub pbkey_send: PbKey,
+    pub pbkey_recv: PbKey,
     // The time the txn was created
     pub system_time: u64,
     /// Type of transaction - as int
@@ -61,8 +61,8 @@ impl Txn {
         let system_time: u64 = Utc::now().timestamp_millis().try_into().unwrap();
 
         let mut txn = Self {
-            pbkey_send: pbkey_send.into(),
-            pbkey_recv: pbkey_recv.into(),
+            pbkey_send,
+            pbkey_recv,
             amt,
             system_time,
             txn_type,
