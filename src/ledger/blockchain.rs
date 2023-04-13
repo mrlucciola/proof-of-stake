@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 // local
 use super::{
     block::{types::BlockDigest, Block, BlockId},
-    general::{PbKey, PubKey, Result},
+    general::{PbKey, Result},
     txn::Txn,
     txn_pool::{TxnMap, TxnPool},
     wallet::Wallet,
@@ -23,7 +23,7 @@ pub struct Blockchain {
     /// Ordered lookup collection of accounts, wrapped with methods.
     pub accounts: Accounts,
     /// Pubkey of the entity used to initialize the blockchain.
-    pub initializer: PubKey,
+    pub initializer: PbKey,
 }
 impl Blockchain {
     /// ## Create new `Blockchain` instance.
@@ -89,7 +89,7 @@ impl Blockchain {
     /// @todo validate previous block's: 1) height; 2) id. Add error responses for each (InvalidBlockHeight & InvalidBlockId, respectively).
     pub fn add_block(&mut self, block: Block) -> Result<&mut Block> {
         // check if block is valid
-        let pbkey = PbKey::from_bytes(&block.leader)?;
+        let pbkey = block.leader();
         block.is_valid(&pbkey)?;
         // check if block is signed
         // check if entry exists -> if not, then insert
@@ -105,12 +105,12 @@ impl Blockchain {
         // look up `send` account, decrease their balance
         let acct_send = self
             .accounts
-            .get_acct_mut(txn.pbkey_send().as_bytes())
+            .get_acct_mut(&txn.pbkey_send().into())
             .unwrap();
         acct_send.decrease_balance(&txn)?;
 
         // look up `recv` account, increase their balance
-        let acct_recv = self.accounts.get_or_init_acct(txn.pbkey_recv().as_bytes());
+        let acct_recv = self.accounts.get_or_init_acct(&txn.pbkey_recv().into());
         acct_recv.increase_balance(&txn)?;
 
         Ok(())
@@ -152,8 +152,15 @@ impl Blockchain {
     /// Check if the current blockheight is valid
     /// @todo call this after block genesis creation
     pub fn is_blockheight_valid(&self) -> bool {
-        self.blocks.values().last().unwrap().blockheight()
-            == (self.blocks().len() - 1).try_into().unwrap()
+        let rh: u128 = (self.blocks().len() - 1).try_into().unwrap();
+        let lh = self
+            .blocks
+            .values()
+            .last()
+            .unwrap()
+            .blockheight()
+            .to_owned();
+        rh == lh
     }
 
     /// This assoc. fxn is on the `Blockchain` struct (rather than `Block`) to

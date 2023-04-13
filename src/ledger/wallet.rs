@@ -72,7 +72,7 @@ impl Wallet {
 
     /// ### Get the public key for this respective wallet
     pub fn pbkey(&self) -> PbKey {
-        self.keypair.public
+        self.keypair.public.into()
     }
 
     ////////////////////////////// GETTERS //////////////////////////////
