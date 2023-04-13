@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 // local
 use super::{
-    block::{Block, BlockId, BlockTxnMap},
+    block::{types::BlockTxnMap, Block, BlockId},
     general::{PbKey, Result},
     txn::Txn,
     txn_pool::{TxnMap, TxnPool},

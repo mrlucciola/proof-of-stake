@@ -2,7 +2,7 @@
 use std::{thread, time};
 // local
 use posbc::ledger::{
-    block::{Block, BlockTxnMap},
+    block::{types::BlockTxnMap, Block},
     blockchain::Blockchain,
     general::Result,
     txn::{Txn, TxnType},

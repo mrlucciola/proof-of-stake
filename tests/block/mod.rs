@@ -1,6 +1,6 @@
 // local
 use posbc::ledger::{
-    block::{Block, BlockId, BlockTxnMap},
+    block::{types::BlockTxnMap, Block, BlockId},
     txn::{Txn, TxnType},
 };
 // test
