@@ -100,7 +100,7 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
         amt_to_send,
         TxnType::Transfer,
     );
-    blockchain.process_transfer_txn(&txn_to_add)?;
+    blockchain.add_txn_to_block(&txn_to_add)?;
 
     // Verify account length increased to 2
     assert!(
@@ -131,7 +131,7 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
 }
 
 #[test]
-fn process_transfer_txns_pass() -> Result<()> {
+fn add_txn_to_blocks_pass() -> Result<()> {
     let (users, mut blockchain) = init_blockchain_and_accounts();
     let amt_to_send = 1;
     let pbkey_recv = users.recv.pbkey();
@@ -169,7 +169,7 @@ fn process_transfer_txns_pass() -> Result<()> {
     );
 
     // PROCESS ALL TRANSACTIONS
-    blockchain.process_transfer_txns(&temp_txn_map, &mut new_block, &mut txn_pool)?;
+    blockchain.add_txn_to_blocks(&temp_txn_map, &mut new_block, &mut txn_pool)?;
 
     // assert that the block has all of the txns to be added
     assert!(
