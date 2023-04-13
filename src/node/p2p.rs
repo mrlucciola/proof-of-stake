@@ -73,4 +73,11 @@ impl P2P {
 
         Ok(())
     }
+    /// ### Start the p2p connection.
+    pub fn start_p2p(&mut self) -> Result<()> {
+        // start the connection
+        self.start_connection()?;
+
+        Ok(())
+    }
 }
