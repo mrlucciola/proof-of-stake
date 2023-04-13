@@ -35,7 +35,7 @@ pub struct UserInfo {
 }
 impl UserInfo {
     pub fn pbkey(&self) -> PbKey {
-        self.kp.public
+        self.kp.public.into()
     }
 }
 /// in progress secp-2-ed

@@ -19,7 +19,12 @@ pub fn create_block_from_last(leader: &UserInfo, prev_block: &Block) -> Block {
     let prev_blockheight = prev_block.blockheight();
     let leader = leader.pbkey();
 
-    Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight)
+    Block::new(
+        BlockTxnMap::new(),
+        leader,
+        prev_block_id,
+        prev_blockheight.to_owned(),
+    )
 }
 
 /// ### Creates an empty block using the leader and previous block.
@@ -46,7 +51,7 @@ fn get_last_block(blockchain: &Blockchain) -> Option<&Block> {
 pub fn init_account_map(blockchain: &mut Blockchain) {
     // init
     let users = init_users();
-    let send_acct = Account::new(users.send.pbkey().as_bytes(), Some(1000));
+    let send_acct = Account::new(&users.send.pbkey().into(), Some(1000));
 
     blockchain.accounts.add_acct(send_acct);
 }
