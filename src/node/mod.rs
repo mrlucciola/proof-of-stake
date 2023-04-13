@@ -1,13 +1,13 @@
-// imports
+pub mod error;
+pub mod getters;
+pub mod hidden_setters;
+pub mod p2p;
+pub mod utils;
+// external
 use std::net::IpAddr;
 // local
-use super::node::{
-    error::{NodeError, P2PError},
-    p2p::P2P,
-};
 use crate::ledger::{blockchain::Blockchain, txn_pool::TxnPool, wallet::Wallet};
-pub mod error;
-pub mod p2p;
+use {error::NodeError, p2p::P2P};
 // submodule
 pub type Result<T> = std::result::Result<T, NodeError>;
 
@@ -44,39 +44,6 @@ impl Node {
             p2p: None,
         }
     }
-
-    /////////////////////////////////////////////////////////////////////
-    ////////////////////////////// GETTERS //////////////////////////////
-    /// ## Get ref of wallet for this instance of the node.
-    pub fn wallet(&self) -> Result<&Wallet> {
-        match &self.wallet {
-            Some(w) => Ok(&w),
-            None => Err(NodeError::InitWallet),
-        }
-    }
-    /// ## Get ref of blockchain for this instance of the node.
-    pub fn blockchain(&self) -> Result<&Blockchain> {
-        match &self.blockchain {
-            Some(b) => Ok(&b),
-            None => Err(NodeError::InitBlockchain),
-        }
-    }
-    /// ## Get ref of transaction pool for this instance of the node.
-    pub fn txn_pool(&self) -> Result<&TxnPool> {
-        match &self.txn_pool {
-            Some(t) => Ok(&t),
-            None => Err(NodeError::InitTxnPool),
-        }
-    }
-    /// ## Get ref of peer to peer connection information for this instance of the node.
-    pub fn p2p(&self) -> Result<&P2P> {
-        match &self.p2p {
-            Some(p) => Ok(&p),
-            None => Err(NodeError::P2PError(P2PError::InitP2P)),
-        }
-    }
-    ////////////////////////////// GETTERS //////////////////////////////
-    /////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
@@ -129,30 +96,5 @@ impl Node {
         Ok(())
     }
     ////////////////////////////// SETTERS //////////////////////////////
-    /////////////////////////////////////////////////////////////////////
-
-    /////////////////////////////////////////////////////////////////////
-    ////////////////////////////// ACTIONS //////////////////////////////
-    /// ## Start the p2p connection.
-    pub fn start_p2p(&mut self) -> Result<()> {
-        // check if p2p is initialized
-        let p2p = self.p2p()?;
-
-        // start the connection
-        p2p.start_connection()?;
-
-        Ok(())
-    }
-    ////////////////////////////// ACTIONS //////////////////////////////
-    /////////////////////////////////////////////////////////////////////
-
-    /////////////////////////////////////////////////////////////////////
-    /////////////////////////////// UTILS ///////////////////////////////
-    /////////////////////////////// UTILS ///////////////////////////////
-    /////////////////////////////////////////////////////////////////////
-
-    /////////////////////////////////////////////////////////////////////
-    ///////////////////////////// VALIDATION ////////////////////////////
-    ///////////////////////////// VALIDATION ////////////////////////////
     /////////////////////////////////////////////////////////////////////
 }
