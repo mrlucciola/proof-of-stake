@@ -3,11 +3,8 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 // local
 use super::{
-    block::{
-        types::{BlockDigest, BlockTxnMap},
-        Block, BlockId,
-    },
-    general::{PbKey, Result},
+    block::{types::BlockDigest, Block, BlockId},
+    general::{PbKey, PubKey, Result},
     txn::Txn,
     txn_pool::{TxnMap, TxnPool},
     wallet::Wallet,
@@ -25,6 +22,8 @@ pub struct Blockchain {
     blocks: BlockMap,
     /// Ordered lookup collection of accounts, wrapped with methods.
     pub accounts: Accounts,
+    /// Pubkey of the entity used to initialize the blockchain.
+    pub initializer: PubKey,
 }
 impl Blockchain {
     /// ## Create new `Blockchain` instance.
@@ -35,10 +34,19 @@ impl Blockchain {
     pub fn new() -> Self {
         let blocks = BlockMap::new();
         let accounts = Accounts::new();
-        let mut blockchain = Self { blocks, accounts };
+        // @todo - this is not acceptable for production
+        let initializer_wallet =
+            Wallet::new_from_file(&"hidden/master_key_ed25519.json".to_string());
+        let mut blockchain = Self {
+            blocks,
+            accounts,
+            initializer: initializer_wallet.pbkey().into(),
+        };
 
         // Create the genesis block - panic if unexpected behavior
-        blockchain.genesis().unwrap();
+        let mut genesis_block = Block::new_genesis(initializer_wallet.pbkey()).unwrap();
+        genesis_block.sign(&initializer_wallet);
+        blockchain.add_block(genesis_block);
 
         blockchain
     }
@@ -132,42 +140,6 @@ impl Blockchain {
         }
 
         Ok(())
-    }
-
-    /// ## Create and add the genesis block.
-    ///
-    /// The genesis block is the initial/seed block for the entire blockchain.
-    ///
-    /// Notes:
-    /// - Validates that no prior blocks exist.
-    /// - Manually assigns a blocktime (0 = 1/1/1970 00:00).
-    fn genesis(&mut self) -> Result<()> {
-        if !self.blocks().is_empty() {
-            panic!("Blockchain needs to be empty")
-        }
-
-        // @todo - this is not acceptable for production
-        let leader_wallet = Wallet::new_from_file(&"hidden/master_key_ed25519.json".to_string());
-        let leader: PbKey = leader_wallet.pbkey();
-
-        // create a new block using the `Block` constructor - we need to replace the blockheight, id, and signature
-        let mut genesis_block = Block::new(
-            BlockTxnMap::new(),
-            leader,
-            BlockId::from_bytes([0u8; 64]),
-            0,
-        );
-        // replace blockheight & time
-        genesis_block.blockheight = 0;
-        genesis_block.system_time = 0;
-        // replace id/hash
-        genesis_block.set_id();
-        genesis_block.sign(&leader_wallet);
-
-        match self.add_block(genesis_block) {
-            Ok(_) => Ok(()),
-            Err(e) => panic!("Error adding genesis block:\n\n{e}\n\n"),
-        }
     }
 
     ////////////////////////////// SETTERS //////////////////////////////
