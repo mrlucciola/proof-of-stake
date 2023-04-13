@@ -16,7 +16,7 @@ use super::{init_users, UserInfo, UsersInfo};
 /// Does not populate with transactions.
 pub fn create_block_from_last(leader: &UserInfo, prev_block: &Block) -> Block {
     let prev_block_id: BlockId = prev_block.id();
-    let prev_blockheight = prev_block.blockheight;
+    let prev_blockheight = prev_block.blockheight();
     let leader = leader.pbkey();
 
     Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight)

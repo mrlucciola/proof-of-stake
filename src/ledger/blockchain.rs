@@ -46,7 +46,8 @@ impl Blockchain {
         // Create the genesis block - panic if unexpected behavior
         let mut genesis_block = Block::new_genesis(initializer_wallet.pbkey()).unwrap();
         genesis_block.sign(&initializer_wallet);
-        blockchain.add_block(genesis_block);
+        // @todo handle error properly
+        blockchain.add_block(genesis_block).unwrap();
 
         blockchain
     }
@@ -149,8 +150,9 @@ impl Blockchain {
     ///////////////////////////// VALIDATION ////////////////////////////
 
     /// Check if the current blockheight is valid
+    /// @todo call this after block genesis creation
     pub fn is_blockheight_valid(&self) -> bool {
-        self.blocks.values().last().unwrap().blockheight
+        self.blocks.values().last().unwrap().blockheight()
             == (self.blocks().len() - 1).try_into().unwrap()
     }
 
