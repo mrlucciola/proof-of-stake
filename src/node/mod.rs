@@ -1,15 +1,13 @@
-pub mod error;
-pub mod getters;
-pub mod hidden_setters;
-pub mod p2p;
-pub mod utils;
+mod error;
+mod getters;
+mod p2p;
+pub mod types;
+mod utils;
 // external
 use std::net::IpAddr;
 // local
 use crate::ledger::{blockchain::Blockchain, txn_pool::TxnPool, wallet::Wallet};
-use {error::NodeError, p2p::P2P};
-// submodule
-pub type Result<T> = std::result::Result<T, NodeError>;
+pub use {error::NodeError, p2p::P2P, types::*};
 
 /// ## An instance of a `Node`.
 /// A node has a wallet, an instance of blockchain, and a transaction pool.
