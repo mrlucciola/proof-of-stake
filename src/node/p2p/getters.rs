@@ -4,12 +4,14 @@ use std::net::{SocketAddr, TcpListener};
 use super::P2P;
 
 impl P2P {
-    /// Get `P2P.socket_addr` property.
+    /// ### Get `P2P.socket_addr` property.
+    /// Default error behavior is to panic.
     pub fn socket_addr(&self) -> &SocketAddr {
-        &self.socket_addr
+        self.socket_addr.as_ref().unwrap()
     }
-    /// Get `P2P.listener` property.
+    /// ### Get `P2P.listener` property.
+    /// Default error behavior is to panic.
     pub fn listener(&self) -> &TcpListener {
-        &self.listener
+        self.listener.as_ref().unwrap()
     }
 }
