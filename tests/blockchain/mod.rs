@@ -173,7 +173,7 @@ fn process_transfer_txns_pass() -> Result<()> {
         BlockTxnMap::new(),
         users.main.pbkey(),
         prev_block.id(),
-        prev_block.blockheight,
+        prev_block.blockheight(),
     );
 
     // PROCESS ALL TRANSACTIONS
