@@ -1,4 +1,7 @@
+// external
 use thiserror::Error;
+// local
+use super::p2p::P2PError;
 
 #[derive(Error, Debug)]
 pub enum NodeError {
@@ -10,14 +13,4 @@ pub enum NodeError {
     InitTxnPool,
     #[error("P2P")]
     P2PError(#[from] P2PError),
-}
-
-#[derive(Error, Debug)]
-pub enum P2PError {
-    #[error("Misc P2P error.")]
-    P2P,
-    #[error("P2P module not initialized.")]
-    InitP2P,
-    #[error("IoError")]
-    IoError(#[from] std::io::Error),
 }
