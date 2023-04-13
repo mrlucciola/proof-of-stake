@@ -10,9 +10,8 @@ mod validation;
 // external
 use {chrono::prelude::*, serde::Serialize};
 // local
-use crate::ledger::general::PbKey;
-use types::*;
-pub use {block_id::BlockId, block_signature::BlockSignature};
+use crate::ledger::general::{PbKey, Result};
+pub use {block_id::BlockId, block_signature::BlockSignature, types::*};
 
 /// ### Info contained within a block
 #[derive(Debug, Clone, Serialize)]
@@ -24,7 +23,7 @@ pub struct Block {
     /// Identifier of the previous block - hash digest
     pub prev_block_id: BlockId,
     /// Block height - current number of blocks in blockchain + 1
-    pub blockheight: u128,
+    blockheight: u128,
     /// Current time - unix time stamp
     pub system_time: u64,
     /// Identifier/ID - hash digest of the current block
@@ -64,5 +63,27 @@ impl Block {
         block.set_id();
 
         block
+    }
+    /// ## Create and add the genesis block.
+    ///
+    /// The genesis block is the initial/seed block for the entire blockchain.
+    ///
+    /// Notes:
+    /// - Validates that no prior blocks exist.
+    /// - Manually assigns a blocktime (0 = 1/1/1970 00:00).
+    pub fn new_genesis(initializer: PbKey) -> Result<Block> {
+        // create a new block using the `Block` constructor - we need to replace the blockheight, id, and signature
+        let mut genesis_block = Block::new(
+            BlockTxnMap::new(),
+            initializer,
+            BlockId::from_bytes([0u8; 64]),
+            0,
+        );
+        // replace blockheight & time
+        genesis_block.blockheight = 0;
+        genesis_block.system_time = 0;
+        // replace id/hash
+        genesis_block.set_id(); // make private
+        Ok(genesis_block)
     }
 }
