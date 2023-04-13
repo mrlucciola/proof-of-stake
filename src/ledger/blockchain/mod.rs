@@ -1,7 +1,8 @@
 mod getters;
 mod setters;
+pub mod types;
 // external
-use {serde::Serialize, std::collections::BTreeMap};
+use serde::Serialize;
 // local
 use crate::{
     accounts::accounts::Accounts,
@@ -11,10 +12,7 @@ use crate::{
         wallet::Wallet,
     },
 };
-
-/// ### Lookup type for the `blocks` map a string
-pub type BlockMapKey = BlockId;
-pub type BlockMap = BTreeMap<BlockId, Block>;
+pub use types::*;
 
 /// ### Data structure, contains list of sequential block
 #[derive(Debug, Serialize)]
@@ -54,11 +52,6 @@ impl Blockchain {
 
         blockchain
     }
-
-    /////////////////////////////////////////////////////////////////////
-    ////////////////////////// PRIVATE SETTERS //////////////////////////
-    ////////////////////////// PRIVATE SETTERS //////////////////////////
-    /////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////
     ///////////////////////////// VALIDATION ////////////////////////////
