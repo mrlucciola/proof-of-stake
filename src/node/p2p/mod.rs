@@ -1,13 +1,12 @@
-// imports
+mod types;
+// external
 use std::{
     io::{self, Read},
     net::{IpAddr, SocketAddr, TcpListener, TcpStream},
     time::Duration,
 };
 // local
-use super::error::P2PError;
-// submodule
-pub type Result<T> = std::result::Result<T, P2PError>;
+use super::{error::P2PError, types::Result};
 
 #[derive(Debug)]
 pub struct P2P {
