@@ -25,13 +25,13 @@ pub struct Block {
     /// Block height - current number of blocks in blockchain + 1
     blockheight: u128,
     /// Current time - unix time stamp
-    pub system_time: u64,
+    system_time: u64,
     /// Identifier/ID - hash digest of the current block
     #[serde(skip_serializing)]
-    pub id: Option<BlockId>,
+    id: Option<BlockId>,
     /// The leader's signature for this block submission - Ecdsa signature
     #[serde(skip_serializing)]
-    pub signature: Option<BlockSignature>,
+    signature: Option<BlockSignature>,
 }
 
 impl Block {
