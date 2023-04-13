@@ -18,7 +18,9 @@ impl Block {
     /// ### Add a transaction to the block.
     /// Since we are updating the state of the block, we update the block id (hash) here.
     pub fn add_txn(&mut self, new_txn: Txn) {
-        self.txns.entry(new_txn.id_key()).or_insert(new_txn);
+        self.txns
+            .entry(new_txn.id_key().to_owned())
+            .or_insert(new_txn);
         // update block hash since the transactions map has been updated
         self.set_id();
     }

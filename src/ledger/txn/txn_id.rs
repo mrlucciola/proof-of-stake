@@ -1,4 +1,4 @@
-// imports
+// external
 use {ed25519_dalek::Digest, serde::Serialize, serde_big_array::BigArray};
 // local
 use super::{TxnCtxDigest, TxnDigest, TXN_DIGEST_LEN, TXN_SIGNATURE_CTX};
@@ -26,6 +26,11 @@ impl From<TxnId> for TxnDigest {
 impl From<TxnId> for String {
     fn from(value: TxnId) -> Self {
         hex::encode(value.0.as_ref())
+    }
+}
+impl From<&TxnId> for String {
+    fn from(value: &TxnId) -> Self {
+        hex::encode(value.0)
     }
 }
 impl TxnId {
