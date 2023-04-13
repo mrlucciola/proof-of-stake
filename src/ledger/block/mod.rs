@@ -3,7 +3,7 @@ pub mod block_signature;
 pub mod constants;
 mod error;
 mod getters;
-mod setters;
+pub mod setters;
 pub mod types;
 mod utils;
 mod validation;
@@ -83,7 +83,25 @@ impl Block {
         genesis_block.blockheight = 0;
         genesis_block.system_time = 0;
         // replace id/hash
-        genesis_block.set_id(); // make private
+        genesis_block.set_id();
+
         Ok(genesis_block)
     }
+
+    /////////////////////////////////////////////////
+    //////////////// PRIVATE SETTERS ////////////////
+    /// ### Calculate and set the id for a `Block`.
+    /// Returns id.
+    fn set_id(&mut self) -> BlockId {
+        let id = self.calc_id();
+        self.id = Some(id);
+
+        id
+    }
+    /// ### Set the signature for the block.
+    fn set_signature(&mut self, signature: BlockSignature) {
+        self.signature = Some(signature);
+    }
+    //////////////// PRIVATE SETTERS ////////////////
+    /////////////////////////////////////////////////
 }
