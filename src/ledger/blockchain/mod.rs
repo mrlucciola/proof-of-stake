@@ -1,3 +1,4 @@
+mod error;
 mod getters;
 mod setters;
 pub mod types;
@@ -50,14 +51,3 @@ impl Blockchain {
         blockchain
     }
 }
-
-// @todo move to separate error component
-// #[derive(Debug, Error)]
-// enum BlockchainError {
-//     /// @todo move to `Txn`
-//     #[error("Total balance before and after transaction do not match.")]
-//     TransactionBalanceMismatch,
-//     /// @todo move to `Txn`
-//     #[error("Account balance does not change by amount determined by txn.")]
-//     AccountBalanceChangeMismatch,
-// }
