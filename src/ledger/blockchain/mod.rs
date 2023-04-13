@@ -1,15 +1,16 @@
 mod getters;
+mod setters;
 // external
 use {serde::Serialize, std::collections::BTreeMap};
 // local
-use super::{
-    block::{types::BlockDigest, Block, BlockId},
-    general::{PbKey, Result},
-    txn::Txn,
-    txn_pool::{TxnMap, TxnPool},
-    wallet::Wallet,
+use crate::{
+    accounts::accounts::Accounts,
+    ledger::{
+        block::{types::BlockDigest, Block, BlockId},
+        general::PbKey,
+        wallet::Wallet,
+    },
 };
-use crate::accounts::accounts::Accounts;
 
 /// ### Lookup type for the `blocks` map a string
 pub type BlockMapKey = BlockId;
@@ -55,70 +56,8 @@ impl Blockchain {
     }
 
     /////////////////////////////////////////////////////////////////////
-    ////////////////////////////// SETTERS //////////////////////////////
-
-    /// ## Add a prospective block to the blockchain.
-    ///
-    /// Block must be signed and pass validation.
-    ///
-    /// @todo validate previous block's: 1) height; 2) id. Add error responses for each (InvalidBlockHeight & InvalidBlockId, respectively).
-    pub fn add_block(&mut self, block: Block) -> Result<&mut Block> {
-        // check if block is valid
-        let pbkey = block.leader();
-        block.is_valid(&pbkey)?;
-        // check if block is signed
-        // check if entry exists -> if not, then insert
-        Ok(self.blocks.entry(block.id_key()).or_insert(block))
-    }
-
-    /// @todo Validate txn, then process
-    /// ## Context:
-    ///
-    /// - Leader has grouped several txns into a prospective block
-    /// - They execute each txn in serial, updating the accounts in order
-    pub fn process_transfer_txn(&mut self, txn: &Txn) -> Result<()> {
-        // look up `send` account, decrease their balance
-        let acct_send = self
-            .accounts
-            .get_acct_mut(&txn.pbkey_send().into())
-            .unwrap();
-        acct_send.decrease_balance(&txn)?;
-
-        // look up `recv` account, increase their balance
-        let acct_recv = self.accounts.get_or_init_acct(&txn.pbkey_recv().into());
-        acct_recv.increase_balance(&txn)?;
-
-        Ok(())
-    }
-    /// ### Process a set of `transfer` txns.
-    ///
-    /// Take txns from an arbitrary list of txns and execute them one by one,
-    /// applying the state changes to the accounts and placing these transactions
-    /// in the specified block.
-    ///
-    /// @todo optimize by changing txns to preallocated array of hashes (ultimately &str-s)
-    /// - This would allow us a set a ceiling limit on the # of txns in a given block
-    /// @todo remove txn from mem-pool as they are executed
-    pub fn process_transfer_txns(
-        &mut self,
-        txns_to_add: &TxnMap,
-        block: &mut Block,
-        txn_pool: &mut TxnPool,
-    ) -> Result<()> {
-        for (_k, txn) in txns_to_add.iter() {
-            // #64: remove from txn pool
-            let txn = txn_pool.remove_txn(&txn)?;
-            // validate and update account states
-            self.process_transfer_txn(&txn)?;
-
-            // add to prospective block
-            block.add_txn(txn);
-        }
-
-        Ok(())
-    }
-
-    ////////////////////////////// SETTERS //////////////////////////////
+    ////////////////////////// PRIVATE SETTERS //////////////////////////
+    ////////////////////////// PRIVATE SETTERS //////////////////////////
     /////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////

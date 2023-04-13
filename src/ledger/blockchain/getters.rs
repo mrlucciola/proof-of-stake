@@ -2,7 +2,7 @@
 use super::{BlockMap, BlockMapKey, Blockchain};
 use crate::{
     accounts::accounts::{AccountMap, Accounts},
-    ledger::blocks::Block,
+    ledger::block::Block,
 };
 
 impl Blockchain {
