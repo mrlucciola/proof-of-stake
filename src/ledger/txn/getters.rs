@@ -17,10 +17,11 @@ impl Txn {
     pub fn signature(&self) -> &TxnSignature {
         self.signature.as_ref().unwrap()
     }
-    pub fn pbkey_send(&self) -> PbKey {
-        PbKey::from_bytes(&self.pbkey_send).unwrap()
+    pub fn pbkey_send(&self) -> &PbKey {
+        &self.pbkey_send.into()
     }
-    pub fn pbkey_recv(&self) -> PbKey {
-        PbKey::from_bytes(&self.pbkey_recv).unwrap()
+    pub fn pbkey_recv(&self) -> &PbKey {
+        // PbKey::from_bytes(&self.pbkey_recv).unwrap()
+        &self.pbkey_recv.into()
     }
 }

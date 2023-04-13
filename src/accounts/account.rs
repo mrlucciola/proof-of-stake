@@ -43,7 +43,7 @@ impl Account {
         &self.id
     }
     pub fn id_pbkey(&self) -> PbKey {
-        PbKey::from_bytes(self.id()).unwrap()
+        PbKey(self.id().to_owned())
     }
     pub fn id_str(&self) -> String {
         String::from_utf8(self.id().to_vec()).unwrap()

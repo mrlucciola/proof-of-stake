@@ -26,8 +26,9 @@ impl Block {
         // get the current signature
         let block_signature = self.signature.clone().unwrap();
         let sig_test = ed25519::Signature::from_bytes(&block_signature.0).unwrap();
+        let signer_conv: ed25519_dalek::PublicKey = signer_pbkey.into();
 
-        match signer_pbkey.verify_strict(&presigned_msg, &sig_test) {
+        match signer_conv.verify_strict(&presigned_msg, &sig_test) {
             Ok(_) => Ok(()),
             Err(e) => Err(BlockError::InvalidSignature(e, sig_test)),
         }

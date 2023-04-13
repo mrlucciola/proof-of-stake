@@ -1,6 +1,6 @@
 // local
 use super::{Block, BlockId, BlockSignature, BlockTxnMap};
-use crate::ledger::blockchain::BlockMapKey;
+use crate::ledger::{blockchain::BlockMapKey, PbKey};
 
 impl Block {
     /// ### Get `Block.id` property.
@@ -18,11 +18,15 @@ impl Block {
     }
     /// ### Get `Block.signature` property.
     /// Currently behavior is to panic if not yet signed.
-    pub fn signature(&self) -> BlockSignature {
-        self.signature.clone().unwrap()
+    pub fn signature(&self) -> &BlockSignature {
+        &self.signature.clone().unwrap()
     }
     /// ### Get `Block.blockheight` property.
-    pub fn blockheight(&self) -> u128 {
-        self.blockheight
+    pub fn blockheight(&self) -> &u128 {
+        &self.blockheight
+    }
+    /// ### Get `Block.leader` property.
+    pub fn leader(&self) -> &PbKey {
+        &self.leader
     }
 }

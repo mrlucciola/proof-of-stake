@@ -61,8 +61,8 @@ impl Txn {
         let system_time: u64 = Utc::now().timestamp_millis().try_into().unwrap();
 
         let mut txn = Self {
-            pbkey_send: pbkey_send.to_bytes(),
-            pbkey_recv: pbkey_recv.to_bytes(),
+            pbkey_send: pbkey_send.into(),
+            pbkey_recv: pbkey_recv.into(),
             amt,
             system_time,
             txn_type,
