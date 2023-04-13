@@ -1,3 +1,4 @@
+mod getters;
 // external
 use {serde::Serialize, std::collections::BTreeMap};
 // local
@@ -8,7 +9,7 @@ use super::{
     txn_pool::{TxnMap, TxnPool},
     wallet::Wallet,
 };
-use crate::accounts::accounts::{AccountMap, Accounts};
+use crate::accounts::accounts::Accounts;
 
 /// ### Lookup type for the `blocks` map a string
 pub type BlockMapKey = BlockId;
@@ -20,6 +21,8 @@ pub struct Blockchain {
     /// Ordered lookup collection of blocks.
     blocks: BlockMap,
     /// Ordered lookup collection of accounts, wrapped with methods.
+    /// This may be removed in the future.
+    /// May be more appropriate in the `node` module.
     pub accounts: Accounts,
     /// Pubkey of the entity used to initialize the blockchain.
     pub initializer: PbKey,
@@ -50,33 +53,6 @@ impl Blockchain {
 
         blockchain
     }
-
-    /////////////////////////////////////////////////////////////////////
-    ////////////////////////////// GETTERS //////////////////////////////
-
-    /// ### Getter for `blocks` map
-    pub fn blocks(&self) -> &BlockMap {
-        &self.blocks
-    }
-    /// ### Get block by key
-    pub fn block(&self, key: &BlockMapKey) -> Option<&Block> {
-        self.blocks.get(key)
-    }
-    /// ### Get most recently committed block
-    /// We unwrap because blockchain should never be empty, representing an undefined state.
-    pub fn last_block(&self) -> &Block {
-        self.blocks.values().next_back().unwrap()
-    }
-    /// ### Getter for `accounts`
-    pub fn accounts(&self) -> &Accounts {
-        &self.accounts
-    }
-    pub fn account_map(&self) -> &AccountMap {
-        &self.accounts.accounts()
-    }
-
-    ////////////////////////////// GETTERS //////////////////////////////
-    /////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////
     ////////////////////////////// SETTERS //////////////////////////////
