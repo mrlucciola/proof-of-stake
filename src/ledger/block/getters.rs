@@ -18,7 +18,7 @@ impl Block {
     }
     /// ### Get `Block.signature` property.
     /// Can return `None` if not yet signed.
-    pub fn signature(&self) -> Option<&BlockSignature> {
-        self.signature.as_ref()
+    pub fn signature(&self) -> BlockSignature {
+        self.signature.clone().unwrap()
     }
 }
