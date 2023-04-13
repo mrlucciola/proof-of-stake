@@ -1,5 +1,5 @@
 // local
-use super::{BlockSignature, Block, BlockId, BlockTxnMap};
+use super::{Block, BlockId, BlockSignature, BlockTxnMap};
 use crate::ledger::blockchain::BlockMapKey;
 
 impl Block {

@@ -1,5 +1,5 @@
 pub mod block_id;
-mod block_signature;
+pub mod block_signature;
 pub mod constants;
 mod error;
 mod getters;
@@ -11,8 +11,8 @@ mod validation;
 use {chrono::prelude::*, serde::Serialize};
 // local
 use crate::ledger::general::PbKey;
+use types::*;
 pub use {block_id::BlockId, block_signature::BlockSignature};
-use {constants::*, types::*};
 
 /// ### Info contained within a block
 #[derive(Debug, Clone, Serialize)]

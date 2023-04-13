@@ -1,9 +1,12 @@
-// imports
+// external
 use serde::Serialize;
 use std::collections::BTreeMap;
 // local
 use super::{
-    block::{types::BlockTxnMap, Block, BlockId},
+    block::{
+        types::{BlockDigest, BlockTxnMap},
+        Block, BlockId,
+    },
     general::{PbKey, Result},
     txn::Txn,
     txn_pool::{TxnMap, TxnPool},
@@ -11,11 +14,11 @@ use super::{
 };
 use crate::accounts::accounts::{AccountMap, Accounts};
 
-/// Lookup type for the `blocks` map a string
-pub type BlockMapKey = BlockId; // TODO: change to hex
+/// ### Lookup type for the `blocks` map a string
+pub type BlockMapKey = BlockId;
 pub type BlockMap = BTreeMap<BlockId, Block>;
 
-/// Data structure, contains list of sequential block
+/// ### Data structure, contains list of sequential block
 #[derive(Debug, Serialize)]
 pub struct Blockchain {
     /// Ordered lookup collection of blocks.
@@ -184,7 +187,7 @@ impl Blockchain {
     /// infrequently and the functionality is relevant enough to the `Blockchain` class.
     pub fn is_genesis_block(block: &Block) -> bool {
         let block_id = Block::calc_id(block);
-        let genesis_hash_str: [u8; 64] = [
+        let genesis_hash_str: BlockDigest = [
             66, 211, 46, 10, 157, 18, 155, 115, 197, 147, 50, 48, 80, 109, 218, 216, 188, 202, 161,
             235, 68, 142, 200, 58, 11, 124, 141, 194, 243, 156, 238, 238, 225, 223, 134, 105, 232,
             227, 108, 175, 35, 185, 93, 150, 181, 79, 162, 225, 11, 188, 126, 176, 115, 225, 25,
