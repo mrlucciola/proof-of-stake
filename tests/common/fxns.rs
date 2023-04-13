@@ -5,7 +5,7 @@ use posbc::{
         accounts::{AccountMap, Accounts},
     },
     ledger::{
-        block::{Block, BlockId, BlockTxnMap},
+        block::{types::BlockTxnMap, Block, BlockId},
         blockchain::Blockchain,
     },
 };

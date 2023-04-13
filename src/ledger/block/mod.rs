@@ -4,19 +4,17 @@ pub mod constants;
 mod error;
 mod getters;
 mod setters;
+pub mod types;
 mod utils;
 mod validation;
 // external
 use {chrono::prelude::*, serde::Serialize};
 // local
-use crate::ledger::{general::PbKey, txn_pool::TxnMap};
-pub use {block_id::BlockId, block_signature::BlockSignature, constants::*};
+use crate::ledger::general::PbKey;
+pub use {block_id::BlockId, block_signature::BlockSignature};
+use {constants::*, types::*};
 
-/// ### This is TxnMap with added functionality.
-/// @todo add condition that this map cant have more than _ number of txns.
-pub type BlockTxnMap = TxnMap;
-
-/// Info contained within a block
+/// ### Info contained within a block
 #[derive(Debug, Clone, Serialize)]
 pub struct Block {
     /// List/map of all transactions to be included in the block
@@ -64,6 +62,7 @@ impl Block {
 
         // set the id (hash) with the body
         block.set_id();
+
         block
     }
 }
