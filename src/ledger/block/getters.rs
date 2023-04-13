@@ -18,8 +18,8 @@ impl Block {
     }
     /// ### Get `Block.signature` property.
     /// Currently behavior is to panic if not yet signed.
-    pub fn signature(&self) -> &BlockSignature {
-        &self.signature.clone().unwrap()
+    pub fn signature(&self) -> BlockSignature {
+        self.signature.clone().unwrap()
     }
     /// ### Get `Block.blockheight` property.
     pub fn blockheight(&self) -> &u128 {
