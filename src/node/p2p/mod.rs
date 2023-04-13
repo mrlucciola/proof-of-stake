@@ -1,3 +1,4 @@
+pub mod error;
 mod types;
 // external
 use std::{
@@ -6,7 +7,8 @@ use std::{
     time::Duration,
 };
 // local
-use super::{error::P2PError, types::Result};
+pub use error::P2PError;
+use types::Result;
 
 #[derive(Debug)]
 pub struct P2P {

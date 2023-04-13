@@ -1,7 +1,7 @@
 // local
 use super::{
-    error::{NodeError, P2PError},
-    p2p::P2P,
+    error::NodeError,
+    p2p::{P2PError, P2P},
     types::Result,
     Node,
 };
