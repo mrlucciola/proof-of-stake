@@ -14,7 +14,7 @@ impl Block {
     /// - `Error` is for error handling
     pub fn is_signature_valid(&self, signer_pbkey: &PbKey) -> std::result::Result<(), BlockError> {
         // 1) check if signature exists
-        if let None = self.signature() {
+        if let None = &self.signature {
             return Err(BlockError::EmptySignature.into());
         }
 

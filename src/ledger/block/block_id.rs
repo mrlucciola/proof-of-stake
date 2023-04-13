@@ -6,6 +6,16 @@ use crate::ledger::general::Sha512;
 
 #[derive(Debug, Serialize, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BlockId(#[serde(with = "BigArray")] pub BlockDigest);
+
+impl BlockId {
+    pub fn from_bytes(value: BlockDigest) -> Self {
+        Self(value)
+    }
+    pub fn to_str(&self) -> String {
+        hex::encode(self.0)
+    }
+}
+
 impl From<Sha512> for BlockId {
     fn from(value: Sha512) -> Self {
         let val: BlockDigest = value.finalize().into();
@@ -20,11 +30,6 @@ impl From<BlockDigest> for BlockId {
 impl From<BlockId> for BlockDigest {
     fn from(value: BlockId) -> Self {
         value.0
-    }
-}
-impl BlockId {
-    pub fn from_bytes(value: BlockDigest) -> Self {
-        Self(value)
     }
 }
 impl PartialEq<BlockDigest> for BlockId {
