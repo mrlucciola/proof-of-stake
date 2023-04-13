@@ -1,4 +1,5 @@
-mod block_id;
+pub mod block_id;
+mod block_signature;
 pub mod constants;
 mod error;
 mod getters;
@@ -8,11 +9,8 @@ mod validation;
 // external
 use {chrono::prelude::*, serde::Serialize};
 // local
-use crate::{
-    ledger::{general::PbKey, txn_pool::TxnMap},
-    utils::signature::BlockSignature,
-};
-pub use {block_id::BlockId, constants::*};
+use crate::ledger::{general::PbKey, txn_pool::TxnMap};
+pub use {block_id::BlockId, block_signature::BlockSignature, constants::*};
 
 /// ### This is TxnMap with added functionality.
 /// @todo add condition that this map cant have more than _ number of txns.

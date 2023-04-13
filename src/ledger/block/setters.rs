@@ -1,9 +1,6 @@
 // local
-use super::{Block, BlockId};
-use crate::{
-    ledger::{txn::Txn, wallet::Wallet},
-    utils::signature::BlockSignature,
-};
+use super::{Block, BlockId, BlockSignature};
+use crate::ledger::{txn::Txn, wallet::Wallet};
 
 impl Block {
     /// ### Set the signature for the block.

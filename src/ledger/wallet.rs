@@ -9,13 +9,10 @@ use {
     },
 };
 // local
-use crate::{
-    ledger::{
-        block::{constants::*, Block},
-        general::{PbKey, Result, KP},
-        txn::{constants::*, Txn, TxnSignature},
-    },
-    utils::signature::BlockSignature,
+use crate::ledger::{
+    block::{constants::*, Block, BlockSignature},
+    general::{PbKey, Result, KP},
+    txn::{constants::*, Txn, TxnSignature},
 };
 
 #[derive(Debug)]
