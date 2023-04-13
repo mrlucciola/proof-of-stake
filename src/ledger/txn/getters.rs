@@ -14,8 +14,8 @@ impl Txn {
         self.id().into()
     }
     /// ### Getter for `Txn` `signature` property
-    pub fn signature(&self) -> &TxnSignature {
-        self.signature.as_ref().unwrap()
+    pub fn signature(&self) -> TxnSignature {
+        self.signature.clone().unwrap()
     }
     /// ### Getter for `Txn.pbkey_send` property
     pub fn pbkey_send(&self) -> &PbKey {

@@ -1,4 +1,4 @@
-use super::{Txn, TxnId, TxnSignature};
+use super::{Txn, TxnId};
 
 impl Txn {
     /// ## Get identifier (hash) for txn and set on txn object and store the output on the Txn object
@@ -8,9 +8,5 @@ impl Txn {
         self.id = Some(id);
 
         id
-    }
-    /// ## Set the signature for the transaction.
-    pub fn set_signature(&mut self, signature: TxnSignature) {
-        self.signature = Some(signature);
     }
 }

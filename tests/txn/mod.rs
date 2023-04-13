@@ -36,8 +36,7 @@ fn create_signed_txn_pass() {
     let txn = create_transfer_txn_default();
     let mut txn1 = txn.clone();
     let txn2 = txn.clone();
-    let mut txn3 = txn.clone();
-    let txn4 = txn.clone();
+    let txn3 = txn.clone();
 
     // calc signature manually
     let mut prehash: Sha512 = Sha512::new();
@@ -61,9 +60,7 @@ fn create_signed_txn_pass() {
     // calc signature using methods
     let msg_sig_txn_sign: TxnSignature = txn1.sign(&send.wallet);
     let msg_sig_txn_calc: TxnSignature = txn2.calc_signature(&send.wallet);
-    txn3.set_signature(txn3.calc_signature(&send.wallet));
-    let msg_sig_txn_set: TxnSignature = txn3.signature().clone();
-    let msg_signature_wallet: TxnSignature = send.wallet.sign_txn(&txn4);
+    let msg_signature_wallet: TxnSignature = send.wallet.sign_txn(&txn3);
 
     assert_eq!(
         msg_signature_manual,
@@ -79,14 +76,8 @@ fn create_signed_txn_pass() {
     );
     assert_eq!(
         msg_sig_txn_calc,
-        msg_sig_txn_set,
-        "\n2: \n{msg_sig_txn_calc:?}\n{}",
-        msg_sig_txn_set.to_str()
-    );
-    assert_eq!(
-        msg_sig_txn_set,
         msg_signature_wallet,
-        "\n3: \n{msg_sig_txn_set:?}\n{}",
+        "\n2: \n{msg_sig_txn_calc:?}\n{}",
         msg_signature_wallet.to_str()
     );
 }

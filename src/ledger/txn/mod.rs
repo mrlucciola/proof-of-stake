@@ -94,4 +94,13 @@ impl Txn {
 
         txn
     }
+
+    /////////////////////////////////////////////////
+    //////////////// PRIVATE SETTERS ////////////////
+    /// ## Set the signature for the transaction.
+    fn set_signature(&mut self, signature: TxnSignature) {
+        self.signature = Some(signature);
+    }
+    //////////////// PRIVATE SETTERS ////////////////
+    /////////////////////////////////////////////////
 }
