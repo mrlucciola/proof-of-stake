@@ -22,7 +22,7 @@ pub struct Blockchain {
     /// May be more appropriate in the `node` module.
     accounts: Accounts,
     /// Pubkey of the entity used to initialize the blockchain.
-    pub initializer: PbKey,
+    initializer: PbKey,
 }
 impl Blockchain {
     /// ### Create new `Blockchain` instance.

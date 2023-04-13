@@ -1,10 +1,10 @@
+// external
 use std::borrow::BorrowMut;
-
 // local
 use super::{BlockMap, BlockMapKey, Blockchain};
 use crate::{
     accounts::accounts::{AccountMap, Accounts},
-    ledger::block::Block,
+    ledger::{block::Block, PbKey},
 };
 
 impl Blockchain {
@@ -36,5 +36,9 @@ impl Blockchain {
     /// ### Get map of `accounts`.
     pub fn account_map(&self) -> &AccountMap {
         &self.accounts.accounts()
+    }
+    /// ### Get `Blockchain.initializer` property.
+    pub fn initializer(&self) -> &PbKey {
+        &self.initializer
     }
 }
