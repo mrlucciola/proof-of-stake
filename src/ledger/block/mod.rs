@@ -11,6 +11,8 @@ mod validation;
 use {chrono::prelude::*, serde::Serialize};
 // local
 use crate::ledger::general::{PbKey, Result};
+
+use super::PubKey;
 pub use {block_id::BlockId, block_signature::BlockSignature, types::*};
 
 /// ### Info contained within a block
@@ -19,7 +21,7 @@ pub struct Block {
     /// List/map of all transactions to be included in the block
     txns: BlockTxnMap,
     /// Public key of the current block proposer (node)
-    pub leader: [u8; 32],
+    leader: PubKey,
     /// Identifier of the previous block - hash digest
     pub prev_block_id: BlockId,
     /// Block height - current number of blocks in blockchain + 1
