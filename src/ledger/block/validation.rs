@@ -1,5 +1,5 @@
 // local
-use super::{error::BlockError, Block, BLOCK_SIGNATURE_CONTEXT};
+use super::{constants::BLOCK_SIGNATURE_CTX, error::BlockError, types::BlockDigest, Block};
 use crate::ledger::general::PbKey;
 
 impl Block {
@@ -19,8 +19,8 @@ impl Block {
         }
 
         // create message for verification
-        let msg: [u8; 64] = self.calc_id().into();
-        let mut presigned_msg = BLOCK_SIGNATURE_CONTEXT.to_vec();
+        let msg: BlockDigest = self.calc_id().into();
+        let mut presigned_msg = BLOCK_SIGNATURE_CTX.to_vec();
         presigned_msg.append(&mut msg.to_vec());
 
         // get the current signature

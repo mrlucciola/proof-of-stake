@@ -54,7 +54,7 @@ impl Wallet {
     /// We are not using the prehash Sha512 for consistency, modularity and ease of use.\
     /// Also, there may be significant or breaking changes in the future as suggested in their documentation (r.e. "bandaids").
     pub fn sign_block(&self, block: &Block) -> BlockSignature {
-        self.sign_msg(&mut block.calc_id().0, BLOCK_SIGNATURE_CONTEXT)
+        self.sign_msg(&mut block.calc_id().0, BLOCK_SIGNATURE_CTX)
             .into()
     }
     /// ## Standard function for signing messages.

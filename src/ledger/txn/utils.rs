@@ -21,6 +21,7 @@ impl Txn {
 
         // return the hash digest - the block's id
         let digest: TxnDigest = prehash.finalize().into();
+
         TxnId(digest)
     }
     /// ### Calculate the pre-hash struct for the id

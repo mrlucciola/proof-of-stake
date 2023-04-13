@@ -43,7 +43,7 @@ fn verify_txn_signature_pass() {
     let txn_sig_bytes_wallet = send.wallet.sign_txn(&txn3);
 
     let sig_answer_str = b"72249CA1BC217322274989EC2EF7A8191472A41DBEEA889AE871291090E053AA6B5ECCFF3E40A51E96B03B7F0F1645870B6DB5FBD42A2C5B4552DE8B7FA5D30A";
-    let txn_sig_bytes_answer: [u8; 64] =
+    let txn_sig_bytes_answer: TxnDigest =
         ed25519_dalek::Signature::from_bytes(&hex::decode(sig_answer_str).unwrap())
             .unwrap()
             .to_bytes();

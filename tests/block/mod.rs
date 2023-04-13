@@ -61,41 +61,29 @@ fn create_empty_block_pass() {
 
 #[test]
 fn create_full_block_pass() {
-    let UsersInfo {
-        main,
-        send: _,
-        recv: _,
-        test1: _,
-        test2: _,
-        test3: _,
-    } = init_users();
+    let users: UsersInfo = init_users();
+    let main = users.main;
 
     // genesis
     let prev_block_id = BlockId::from_bytes([0u8; 64]);
     let prev_blockheight = 0;
     let leader = main.pbkey();
     let mut block = Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight);
+
     // create txn map
     add_sample_txns_to_block(3, &mut block);
+    let block_id_test = BlockId::from(block.calc_id());
+    let block_id_answer = block.id();
+
+    // sign
 
     // check if hashes line up
-    assert_eq!(
-        block.id(),
-        BlockId::from(block.calc_id()),
-        "{:?}",
-        block.id()
-    );
+    assert_eq!(block_id_test, block_id_answer, "{block_id_answer:?}");
 }
 #[test]
 fn is_signature_valid_pass() {
-    let UsersInfo {
-        main,
-        send: _,
-        recv: _,
-        test1: _,
-        test2: _,
-        test3: _,
-    } = init_users();
+    let users: UsersInfo = init_users();
+    let main = users.main;
 
     let prev_block_id = BlockId::from_bytes([0u8; 64]);
     let prev_blockheight = 0;
