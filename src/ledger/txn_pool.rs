@@ -42,7 +42,7 @@ impl TxnPool {
         // @todo validate signature
 
         // add txn to pool
-        if let Some(_txn) = self.values.insert(txn.id_key(), txn) {
+        if let Some(_txn) = self.values.insert(txn.id_key().to_owned(), txn) {
             return Err(TxnPoolError::DuplicateTxn.into());
         }
 
