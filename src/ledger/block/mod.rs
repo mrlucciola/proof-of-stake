@@ -21,7 +21,7 @@ pub struct Block {
     /// Public key of the current block proposer (node)
     leader: PbKey,
     /// Identifier of the previous block - hash digest
-    pub prev_block_id: BlockId,
+    prev_block_id: BlockId,
     /// Block height - current number of blocks in blockchain + 1
     blockheight: u128,
     /// Current time - unix time stamp
