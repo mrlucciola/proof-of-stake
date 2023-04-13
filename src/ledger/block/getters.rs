@@ -1,6 +1,6 @@
 // local
-use super::{Block, BlockId, BlockTxnMap};
-use crate::{ledger::blockchain::BlockMapKey, utils::signature::BlockSignature};
+use super::{BlockSignature, Block, BlockId, BlockTxnMap};
+use crate::ledger::blockchain::BlockMapKey;
 
 impl Block {
     /// ### Get `Block.id` property.

@@ -1,11 +1,8 @@
 // external
 use ed25519_dalek::Digest;
 // local
-use super::{Block, BlockId, BLOCK_MSG_CTX};
-use crate::{
-    ledger::{general::Sha512, wallet::Wallet},
-    utils::signature::BlockSignature,
-};
+use super::{Block, BlockId, BlockSignature, BLOCK_MSG_CTX};
+use crate::ledger::{general::Sha512, wallet::Wallet};
 
 impl Block {
     /// ### Convert to bytes - NOT id/hash/message/digest

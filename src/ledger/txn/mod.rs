@@ -1,10 +1,10 @@
 pub mod constants;
-pub mod getters;
-pub mod setters;
+mod getters;
+mod setters;
 pub mod txn_id;
 pub mod txn_signature;
-pub mod utils;
-// imports
+mod utils;
+// external
 use {chrono::prelude::*, serde::Serialize, std::fmt};
 // local
 use crate::ledger::{general::PbKey, wallet::Wallet};
