@@ -1,6 +1,11 @@
 {
   "name": "proof-of-stake",
   "version": "0.0.0",
+  "packageManager": "yarn@1.22.19",
+  "engines": {
+    "node": ">=18.15.0",
+    "yarn": "^1.22.19"
+  },
   "description": "Proof of stake implementation in Rust",
   "main": "./",
   "repository": {
