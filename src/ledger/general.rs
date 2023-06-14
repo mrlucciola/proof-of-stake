@@ -37,3 +37,22 @@ impl From<&PbKey> for ed25519_dalek::PublicKey {
         ed25519_dalek::PublicKey::from_bytes(&value.0).unwrap()
     }
 }
+
+impl From<PbKey> for libp2p::identity::PublicKey {
+    fn from(value: PbKey) -> Self {
+        let pk = libp2p::identity::ed25519::PublicKey::decode(&value.0).unwrap();
+        let pk: libp2p::identity::PublicKey = libp2p::identity::PublicKey::Ed25519(pk);
+
+        pk
+    }
+}
+
+impl From<libp2p::identity::PublicKey> for PbKey {
+    fn from(value: libp2p::identity::PublicKey) -> Self {
+        let pk = match value {
+            libp2p::identity::PublicKey::Ed25519(pk) => pk,
+            _ => panic!("Unsupported public key type"),
+        };
+        Self(pk.encode())
+    }
+}
