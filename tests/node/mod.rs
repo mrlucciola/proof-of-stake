@@ -6,9 +6,10 @@ use posbc::node::{p2p::P2P, types::Result, Node};
 use crate::common::fxns::init_blockchain_and_accounts;
 
 /// Test if the node is correctly using its environment to:
-/// 1. Connect to the peer to peer network
-/// 1. Load wallet correctly
-/// 1. Initialize its values correctly (blockchain, txn pool, wallet)
+/// 1. Check if node1 is running;
+/// 1. Instantiate new node (node2, load wallet);
+/// 1. Connect to the peer to peer network (node1);
+/// 1. Check if node1's `peerId` exists;
 #[test]
 fn init_node_pass() -> Result<()> {
     let (users, _blockchain) = init_blockchain_and_accounts();

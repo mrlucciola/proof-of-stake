@@ -22,3 +22,12 @@ brew install protobuf
 
 Run tests with:
 `cargo test`
+
+### Running multi-node tests
+
+Open separate terminal tab (tab 2);
+(In tab 2) Run binary from `p2p.rs` to spin up node at `localhost:8898`;
+`cargo run --bin p2p`
+
+With node at port `8898` running, run node test;
+`cargo test node`
