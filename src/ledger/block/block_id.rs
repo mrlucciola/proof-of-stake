@@ -5,8 +5,7 @@ use {
     serde_big_array::BigArray,
 };
 // local
-use super::types::BlockDigest;
-use crate::ledger::general::Sha512;
+use crate::ledger::{block::types::BlockDigest, general::Sha512};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct BlockId(#[serde(with = "BigArray")] pub BlockDigest);

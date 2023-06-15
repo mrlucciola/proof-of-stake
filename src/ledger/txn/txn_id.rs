@@ -4,10 +4,11 @@ use {
     serde::{Deserialize, Serialize},
     serde_big_array::BigArray,
 };
-
 // local
-use super::{TxnCtxDigest, TxnDigest, TXN_DIGEST_LEN, TXN_SIGNATURE_CTX};
-use crate::ledger::general::Sha512;
+use crate::ledger::{
+    general::Sha512,
+    txn::{TxnCtxDigest, TxnDigest, TXN_DIGEST_LEN, TXN_SIGNATURE_CTX},
+};
 
 #[derive(Debug, Clone, Copy, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct TxnId(#[serde(with = "BigArray")] pub TxnDigest);

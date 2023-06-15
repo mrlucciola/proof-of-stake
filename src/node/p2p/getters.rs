@@ -1,7 +1,7 @@
 // external
-use std::net::{SocketAddr, TcpListener};
+use {libp2p::PeerId, std::net::SocketAddr};
 // local
-use super::P2P;
+use crate::{ledger::general::PbKey, node::p2p::P2P};
 
 impl P2P {
     /// ### Get property `P2P.socket_addr`.
@@ -9,9 +9,12 @@ impl P2P {
     pub fn socket_addr(&self) -> &SocketAddr {
         &self.socket_addr
     }
-    /// ### Get property `P2P.listener`.
-    /// Default error behavior is to panic.
-    pub fn listener(&self) -> &TcpListener {
-        &self.listener
+    /// ### Get `P2P.pbkey` property.
+    pub fn pbkey(&self) -> &PbKey {
+        &self.kp.public.into()
+    }
+    /// ### Get `P2P.peer_id` property.
+    pub fn peer_id(&self) -> PeerId {
+        PeerId::from_public_key(&self.pbkey().to_owned().into())
     }
 }
