@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use super::TxnDigest;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TxnSignature(pub Vec<u8>);
 impl From<TxnSignature> for ed25519_dalek::Signature {
     fn from(x: TxnSignature) -> ed25519::Signature {

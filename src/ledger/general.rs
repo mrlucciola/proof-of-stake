@@ -1,11 +1,11 @@
 // external
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 // aliased types
 /// General reference regardless of which lib we use
 pub use ed25519_dalek::{Keypair as KP, Sha512};
 pub type Result<T> = std::result::Result<T, anyhow::Error>;
 
-#[derive(Debug, Serialize, Clone, Copy, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub struct PbKey(pub [u8; 32]);
 impl From<PbKey> for [u8; 32] {
     fn from(value: PbKey) -> Self {

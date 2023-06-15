@@ -1,4 +1,6 @@
-#[derive(Debug, Clone)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BlockSignature(pub Vec<u8>);
 impl BlockSignature {
     pub fn to_str(&self) -> String {
