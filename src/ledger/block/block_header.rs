@@ -1,7 +1,9 @@
 // external
-use chrono::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::borrow::BorrowMut;
+use {
+    chrono::prelude::*,
+    serde::{Deserialize, Serialize},
+    std::borrow::BorrowMut,
+};
 // local
 pub use crate::ledger::{
     block::{block_id::BlockId, block_signature::BlockSignature, types::*},

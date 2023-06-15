@@ -13,9 +13,12 @@ use {
     std::fmt,
 };
 // local
-use crate::ledger::{general::PbKey, wallet::Wallet};
-pub use {
-    constants::*, txn_header::TxnHeader, txn_id::TxnId, txn_signature::TxnSignature, types::*,
+use crate::ledger::{
+    general::PbKey,
+    txn::{
+        constants::*, txn_header::TxnHeader, txn_id::TxnId, txn_signature::TxnSignature, types::*,
+    },
+    wallet::Wallet,
 };
 
 // exported types

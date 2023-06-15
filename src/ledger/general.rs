@@ -48,6 +48,7 @@ impl From<PbKey> for libp2p::identity::PublicKey {
 }
 
 impl From<libp2p::identity::PublicKey> for PbKey {
+    #[allow(unreachable_patterns)]
     fn from(value: libp2p::identity::PublicKey) -> Self {
         let pk = match value {
             libp2p::identity::PublicKey::Ed25519(pk) => pk,

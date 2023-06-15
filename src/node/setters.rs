@@ -1,5 +1,5 @@
 // local
-pub use super::{types::Result, Node};
+use crate::node::{types::Result, Node};
 
 impl Node {
     //////////////////////////////////////////////////

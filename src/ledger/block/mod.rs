@@ -22,9 +22,8 @@ use super::wallet::Wallet;
 
 /// ## Info contained within a block
 ///
-/// @todo create a `BlockHeader` struct to hold all fields except `txns` and `signature`;\
 /// @todo create method to check if block is over gas limit (create gas value for each `Txn` type);
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Block {
     header: BlockHeader,
     /// Identifier/ID - hash digest of the current block
@@ -36,7 +35,7 @@ pub struct Block {
 impl Block {
     /// ### `Block` constructor fxn - create a new unsigned block (not genesis block).
     /// transactions: List of transactions (`Txn`) to be included in the block\
-    /// TODO: add `blockchain` as param - use it to get block count
+    /// @todo add `blockchain` as param - use it to get block count
     /// @todo allow `None` input for `txns` to default to a new block txn map
     pub fn new(
         txns: BlockTxnMap,
