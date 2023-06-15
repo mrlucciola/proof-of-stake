@@ -8,13 +8,18 @@ pub mod types;
 mod utils;
 mod validation;
 // external
+use serde::Deserialize;
 use {chrono::prelude::*, serde::Serialize};
+
 // local
 use crate::ledger::general::{PbKey, Result};
 pub use {block_id::BlockId, block_signature::BlockSignature, types::*};
 
-/// ### Info contained within a block
-#[derive(Debug, Clone, Serialize)]
+/// ## Info contained within a block
+///
+/// @todo create a `BlockHeader` struct to hold all fields except `txns` and `signature`;\
+/// @todo create method to check if block is over gas limit (create gas value for each `Txn` type);
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Block {
     /// List/map of all transactions to be included in the block
     txns: BlockTxnMap,
@@ -27,10 +32,8 @@ pub struct Block {
     /// Current time - unix time stamp
     system_time: u64,
     /// Identifier/ID - hash digest of the current block
-    #[serde(skip_serializing)]
     id: Option<BlockId>,
     /// The leader's signature for this block submission - Ecdsa signature
-    #[serde(skip_serializing)]
     signature: Option<BlockSignature>,
 }
 

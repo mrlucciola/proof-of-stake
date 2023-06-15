@@ -1,10 +1,14 @@
 // external
-use {ed25519_dalek::Digest, serde::Serialize, serde_big_array::BigArray};
+use {
+    ed25519_dalek::Digest,
+    serde::{Deserialize, Serialize},
+    serde_big_array::BigArray,
+};
 // local
 use super::types::BlockDigest;
 use crate::ledger::general::Sha512;
 
-#[derive(Debug, Serialize, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct BlockId(#[serde(with = "BigArray")] pub BlockDigest);
 
 impl BlockId {

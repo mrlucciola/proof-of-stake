@@ -6,14 +6,18 @@ pub mod txn_signature;
 pub mod types;
 mod utils;
 // external
-use {chrono::prelude::*, serde::Serialize, std::fmt};
+use {
+    chrono::prelude::*,
+    serde::{Deserialize, Serialize},
+    std::fmt,
+};
 // local
 use crate::ledger::{general::PbKey, wallet::Wallet};
 use constants::*;
 pub use {txn_id::TxnId, txn_signature::TxnSignature, types::*};
 
 // exported types
-#[derive(Serialize, Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum TxnType {
     Transfer = 1,
 }
@@ -25,11 +29,25 @@ impl fmt::Display for TxnType {
 
 /// ## Transfer transaction.
 ///
-/// Serializable body of the transaction.
+/// This struct represents all information pertaining to a single transfer transaction\
+/// along with methods to manipulate it for several usecases throughout the repo.\
+/// Transactions are stored in `Block`s and `TxnPool`s.
 ///
-/// @todo generalize this and abstract all separate types.\
-/// @todo make fields private and add getters.
-#[derive(Serialize, Debug, Clone)]
+/// ### Flow for creating a transaction:
+/// 1. Transaction is instantiatiated by creator `Node` with `Txn.new()`;
+/// 1. `Node` (transaction creator, using its keypair via `Wallet`) signs transaction;
+/// 1. Transaction is submitted to the `TxnPool`;
+/// 1. `Leader` (`Node` chosen to append a `Block` to the `Blockchain`) pulls\
+///     transaction (along with 0 or more others) from `TxnPool`;
+///     - @todo in future version after mempool is removed:\
+///       `Forwarder` (`Node` that has received a transaction) submits transaction to `Leader`;
+/// 1. `Leader` `Node` signs block;
+///
+/// @todo make all fields private, making all accessible fields available thru getter methods.;\
+/// @todo generalize this and abstract all separate types.;\
+/// @todo create lookup enum for `gas_value` for each `Txn` type;\
+/// @todo create `TxnHeader` struct to hold all fields except `id` and `signature`;
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Txn {
     pub amt: u128,
     pbkey_send: PbKey,
@@ -39,10 +57,8 @@ pub struct Txn {
     /// Type of transaction - as int
     pub txn_type: TxnType,
     /// Transaction identifier: Blake3 hash (currently as byte array)
-    #[serde(skip_serializing)]
     id: Option<TxnId>,
     /// Ecdsa signature as byte array
-    #[serde(skip_serializing)]
     signature: Option<TxnSignature>,
 }
 

@@ -1,10 +1,15 @@
 // external
-use {ed25519_dalek::Digest, serde::Serialize, serde_big_array::BigArray};
+use {
+    ed25519_dalek::Digest,
+    serde::{Deserialize, Serialize},
+    serde_big_array::BigArray,
+};
+
 // local
 use super::{TxnCtxDigest, TxnDigest, TXN_DIGEST_LEN, TXN_SIGNATURE_CTX};
 use crate::ledger::general::Sha512;
 
-#[derive(Debug, Serialize, Clone, Copy, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct TxnId(#[serde(with = "BigArray")] pub TxnDigest);
 
 impl From<Sha512> for TxnId {

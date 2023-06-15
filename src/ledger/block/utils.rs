@@ -24,7 +24,7 @@ impl Block {
         BlockId(digest)
     }
     /// ### Calculate the pre-hash struct for the id
-    pub fn calc_id_sha512_prehash(&self) -> Sha512 {
+    fn calc_id_sha512_prehash(&self) -> Sha512 {
         // Create a hash digest object which we'll feed the message into:
         let mut prehash: Sha512 = Sha512::new();
         // add the block version
