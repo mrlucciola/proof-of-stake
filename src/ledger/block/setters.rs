@@ -3,7 +3,7 @@ use super::{Block, BlockSignature};
 use crate::ledger::{txn::Txn, wallet::Wallet};
 
 impl Block {
-    /// ## Add the signature to the block body in place.
+    /// ### Add the signature to the block body in place.
     ///
     /// 1) Sign the block hash
     /// 2) Add signature to `Block` body
@@ -12,15 +12,10 @@ impl Block {
         let signature = self.calc_signature(wallet);
         self.set_signature(signature.clone());
 
-        // @todo hash and sign again
-        self.update_id();
-        let signature = self.calc_signature(wallet);
-        self.set_signature(signature.clone());
-
         signature
     }
 
-    /// ## Add a transaction to the block.
+    /// ### Add a transaction to the block.
     /// Since we are updating the state of the block, we update the block id (hash) here.
     pub fn add_txn(&mut self, new_txn: Txn) {
         self.txns_mut()

@@ -8,7 +8,7 @@ pub use crate::ledger::{
     general::{PbKey, Result},
 };
 
-/// Block header
+/// ## Block header
 ///
 /// Data contained within a block header.
 ///
@@ -50,23 +50,23 @@ impl BlockHeader {
         Self::new(txns, leader, BlockId::from_bytes([0u8; 64]), 0)
     }
 
-    /// ### Get `Block.transactions` included in this `Block`.
+    /// ### Get property `Block.txns`.
     pub fn txns(&self) -> &BlockTxnMap {
         &self.txns
     }
-    /// ### Get `Block.transactions` included in this `Block`.
+    /// ### Get property `Block.txns` as mutable.
     pub fn txns_mut(&mut self) -> &mut BlockTxnMap {
         self.txns.borrow_mut()
     }
-    /// ### Get `Block.leader` property.
+    /// ### Get property `Block.leader`.
     pub fn leader(&self) -> &PbKey {
         &self.leader
     }
-    /// ### Get `Block.prev_block_id` property.
+    /// ### Get property `Block.prev_block_id`.
     pub fn prev_block_id(&self) -> &BlockId {
         &self.prev_block_id
     }
-    /// ### Get `Block.blockheight` property.
+    /// ### Get property `Block.blockheight`.
     pub fn blockheight(&self) -> &u128 {
         &self.blockheight
     }

@@ -61,7 +61,7 @@ pub struct Txn {
 }
 
 impl Txn {
-    /// ## Transaction constructor fxn
+    /// ### Transaction constructor fxn
     /// Creates a transaction `object`.
     pub fn new(
         pbkey_send: PbKey,
@@ -88,7 +88,7 @@ impl Txn {
         txn
     }
 
-    /// ## Create and return a new signed transaction.
+    /// ### Create and return a new signed transaction.
     /// Receives `Wallet` instance for signing.
     ///
     /// Uses `Txn::new()` assoc fxn. to construct the txn, and signs the txn with given wallet.
@@ -109,7 +109,7 @@ impl Txn {
 
     /////////////////////////////////////////////////
     //////////////// PRIVATE SETTERS ////////////////
-    /// ## Get identifier (hash) for txn and set on txn object and store the output on the Txn object
+    /// ### Get identifier (hash) for txn and set on txn object and store the output on the Txn object
     /// Returns id.
     fn set_id(&mut self) -> TxnId {
         let id = self.calc_id();
@@ -117,7 +117,7 @@ impl Txn {
 
         id
     }
-    /// ## Set the signature for the transaction.
+    /// ### Set the signature for the transaction.
     fn set_signature(&mut self, signature: TxnSignature) {
         self.signature = Some(signature);
     }

@@ -41,7 +41,6 @@ impl Block {
         if self.calc_id() != self.id() {
             return Err(BlockError::IncorrectId);
         }
-
         // validate signature
         self.is_signature_valid(&signer_pbkey)?;
 

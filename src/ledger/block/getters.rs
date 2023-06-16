@@ -1,6 +1,9 @@
 // local
-use super::{block_header::BlockHeader, Block, BlockId, BlockSignature, BlockTxnMap};
-use crate::ledger::{blockchain::BlockMapKey, PbKey};
+use crate::ledger::{
+    block::{block_header::BlockHeader, Block, BlockId, BlockSignature, BlockTxnMap},
+    blockchain::types::*,
+    general::PbKey,
+};
 
 impl Block {
     /// ### Get property `Block.transactions` included in this `Block`.
