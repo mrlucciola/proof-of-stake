@@ -13,7 +13,7 @@ impl Block {
         self.set_signature(signature.clone());
 
         // @todo hash and sign again
-        self.set_id();
+        self.update_id();
         let signature = self.calc_signature(wallet);
         self.set_signature(signature.clone());
 
@@ -23,10 +23,10 @@ impl Block {
     /// ## Add a transaction to the block.
     /// Since we are updating the state of the block, we update the block id (hash) here.
     pub fn add_txn(&mut self, new_txn: Txn) {
-        self.txns
+        self.txns_mut()
             .entry(new_txn.id_key().to_owned())
             .or_insert(new_txn);
         // update block hash since the transactions map has been updated
-        self.set_id();
+        self.update_id();
     }
 }

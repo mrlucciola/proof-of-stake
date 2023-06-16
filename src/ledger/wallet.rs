@@ -10,7 +10,7 @@ use {
 };
 // local
 use crate::ledger::{
-    block::{constants::*, Block, BlockSignature},
+    block::{block_signature::BlockSignature, constants::*, Block},
     general::{PbKey, Result, KP},
     txn::{constants::*, Txn, TxnSignature},
 };

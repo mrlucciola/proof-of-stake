@@ -1,8 +1,11 @@
 // external
 use ed25519_dalek::Digest;
 // local
-use super::{constants::BLOCK_MSG_CTX, types::BlockDigest, Block, BlockId, BlockSignature};
-use crate::ledger::{general::Sha512, wallet::Wallet};
+use crate::ledger::{
+    block::{constants::BLOCK_MSG_CTX, types::BlockDigest, Block, BlockId, BlockSignature},
+    general::Sha512,
+    wallet::Wallet,
+};
 
 impl Block {
     /// ### Convert to bytes - NOT id/hash/message/digest
@@ -30,7 +33,7 @@ impl Block {
         // add the block version
         prehash.update(BLOCK_MSG_CTX);
         // add the block bytes
-        prehash.update(self.to_bytes());
+        prehash.update(self.header.to_bytes());
         // return the hasher/prehash struct
         prehash
     }

@@ -1,4 +1,4 @@
-use crate::ledger::block::{Block, BlockDigest, BlockId};
+use crate::ledger::block::{block_id::BlockId, types::*, Block};
 
 use super::Blockchain;
 
