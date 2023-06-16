@@ -54,13 +54,11 @@ impl Block {
 
         block
     }
-    /// ## Create and add the genesis block.
+    /// ### Create and add the genesis block.
     ///
     /// The genesis block is the initial/seed block for the entire blockchain.
     ///
-    /// Notes:
-    /// - Validates that no prior blocks exist.
-    /// - Manually assigns a blocktime (0 = 1/1/1970 00:00).
+    /// @todo validates that no prior blocks exist.
     pub fn new_genesis(initializer: PbKey) -> Result<Block> {
         // create genesis block header
         let genesis_block = BlockHeader::genesis(BlockTxnMap::new(), initializer);

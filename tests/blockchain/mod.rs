@@ -3,7 +3,6 @@ use std::{thread, time};
 // local
 use posbc::ledger::{
     block::{types::BlockTxnMap, Block},
-    blockchain::Blockchain,
     general::Result,
     txn::{Txn, TxnType},
     txn_pool::{TxnMap, TxnPool},
@@ -14,6 +13,7 @@ use crate::common::fxns::{create_block, init_blockchain, init_blockchain_and_acc
 #[test]
 fn create_blockchain_pass() {
     let (users, blockchain) = init_blockchain();
+    let main = users.main;
 
     let blocks = blockchain.blocks();
 
@@ -21,16 +21,16 @@ fn create_blockchain_pass() {
     assert!(blocks.len() == 1, "Blockchain must have one block");
 
     // all blocks must be valid (no `None` fields, correct hash, signed)
-    let mut genesis = blocks.values().next().unwrap().to_owned();
+    let genesis = blocks.values().next().unwrap().to_owned();
 
-    genesis.sign(&users.main.wallet);
+    genesis.calc_signature(&main.wallet);
 
-    let is_valid = genesis.is_valid(&users.main.wallet.pbkey()).is_ok();
+    let is_valid = genesis.is_valid(&main.wallet.pbkey()).is_ok();
     assert!(is_valid, "Invalid genesis block: {:?}", is_valid);
 
     // block must be genesis
     assert!(
-        Blockchain::is_genesis_block(&genesis),
+        blockchain.is_genesis_block(&genesis),
         "Not genesis block: {:?}",
         genesis.id()
     );
@@ -90,8 +90,12 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
         blockchain.account_map().len()
     );
 
-    let bal_send_pre = blockchain.accounts().acct_balance(&users.send.pbkey().into());
-    let bal_recv_pre = blockchain.accounts().acct_balance(&users.recv.pbkey().into());
+    let bal_send_pre = blockchain
+        .accounts()
+        .acct_balance(&users.send.pbkey().into());
+    let bal_recv_pre = blockchain
+        .accounts()
+        .acct_balance(&users.recv.pbkey().into());
 
     // populate the block with a transaction
     let txn_to_add = Txn::new_signed(
@@ -109,8 +113,12 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
         blockchain.account_map().len()
     );
 
-    let bal_send_post = blockchain.accounts().acct_balance(&users.send.pbkey().into());
-    let bal_recv_post = blockchain.accounts().acct_balance(&users.recv.pbkey().into());
+    let bal_send_post = blockchain
+        .accounts()
+        .acct_balance(&users.send.pbkey().into());
+    let bal_recv_post = blockchain
+        .accounts()
+        .acct_balance(&users.recv.pbkey().into());
     assert_eq!(
         bal_send_pre + bal_recv_pre,
         bal_send_post + bal_recv_post,

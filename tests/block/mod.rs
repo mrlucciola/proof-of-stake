@@ -60,18 +60,18 @@ fn create_full_block_pass() {
     let mut block = Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight);
 
     // sign
-    // block.sign(&main.wallet);
-    // let sig1 = block.signature().to_str();
+    block.sign(&main.wallet);
+    let sig1 = block.signature().to_str();
 
-    // // create txn map
-    // add_sample_txns_to_block(3, &mut block);
+    // create txn map
+    add_sample_txns_to_block(3, &mut block);
 
-    // // re-sign the block since we changed the state
-    // block.sign(&main.wallet);
-    // let sig2 = block.signature().to_str();
+    // re-sign the block since we changed the state
+    block.sign(&main.wallet);
+    let sig2 = block.signature().to_str();
 
-    // // should return a different signature
-    // assert_ne!(sig1, sig2, "sig1: {sig1}\nsig2: {sig2}");
+    // should return a different signature
+    assert_ne!(sig1, sig2, "sig1: {sig1}\nsig2: {sig2}");
 }
 
 #[test]
