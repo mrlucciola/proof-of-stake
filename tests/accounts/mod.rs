@@ -1,5 +1,3 @@
-// imports
-// local
 use posbc::{
     accounts::{account::Account, accounts::Accounts},
     ledger::general::Result,

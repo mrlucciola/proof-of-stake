@@ -1,4 +1,3 @@
-// local
 use crate::{
     ledger::wallet::Wallet,
     node::{types::Result, Node},

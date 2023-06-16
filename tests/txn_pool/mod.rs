@@ -1,5 +1,3 @@
-// imports
-// local
 use posbc::ledger::{
     general::Result,
     txn::{Txn, TxnType},

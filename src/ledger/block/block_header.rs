@@ -1,20 +1,17 @@
-// external
+use crate::ledger::{
+    block::{block_id::BlockId, types::*},
+    general::PbKey,
+};
 use {
     chrono::prelude::*,
     serde::{Deserialize, Serialize},
     std::borrow::BorrowMut,
 };
-// local
-pub use crate::ledger::{
-    block::{block_id::BlockId, block_signature::BlockSignature, types::*},
-    general::{PbKey, Result},
-};
 
 /// ## Block header
 ///
 /// Data contained within a block header.
-///
-/// @todo this should not hold transactions - temporary, for serialization
+/// - @todo this should not hold transactions - temporary, for serialization;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BlockHeader {
     /// List/map of all transactions to be included in the block
@@ -31,6 +28,7 @@ pub struct BlockHeader {
 
 // Add constructor and getters
 impl BlockHeader {
+    /// ### `BlockHeader` constructor fxn - create a new block header (not genesis block).
     pub fn new(
         txns: BlockTxnMap,
         leader: PbKey,
@@ -48,6 +46,7 @@ impl BlockHeader {
             system_time: Utc::now().timestamp_millis().try_into().unwrap(),
         }
     }
+    /// ### Create the genesis block header.
     pub fn genesis(leader: PbKey) -> Self {
         Self::new(
             BlockTxnMap::new(),

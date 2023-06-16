@@ -2,7 +2,11 @@ pub mod error;
 mod getters;
 mod types;
 mod utils;
-// external
+
+use crate::{
+    ledger::general::{PbKey, KP},
+    node::p2p::utils::ListResponse,
+};
 use {
     libp2p::{
         core::transport::upgrade,
@@ -13,11 +17,6 @@ use {
         tcp, PeerId, Swarm, Transport,
     },
     std::net::{IpAddr, SocketAddr},
-};
-// local
-use crate::{
-    ledger::general::{PbKey, KP},
-    node::p2p::{error::P2PError, utils::ListResponse},
 };
 
 /// ## Peer-to-peer connection.
@@ -45,7 +44,7 @@ impl P2P {
     /// 1. Connect to peer using `peer_id`
     pub fn discover_peer(&self, peer: &PbKey) {
         let _peer_id: PeerId = PeerId::from_public_key(&peer.to_owned().into());
-        let (response_sender, mut response_rcv) =
+        let (_response_sender, mut _response_rcv) =
             tokio::sync::mpsc::unbounded_channel::<ListResponse>();
 
         // set up the auth key for the transport
@@ -75,7 +74,7 @@ impl P2P {
         floodsub_behaviour.subscribe(topic.clone());
 
         // 2. discover nodes with mdns protocol - will be changed in the future
-        let mdns_behaviour = libp2p::mdns::tokio::Behaviour::new(mdns::Config::default()).unwrap();
+        let _mdns_behaviour = libp2p::mdns::tokio::Behaviour::new(mdns::Config::default()).unwrap();
 
         // 3. create `swarm` connection manager
         // this handles using the transport and executes network behavior

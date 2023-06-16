@@ -1,24 +1,22 @@
 pub mod constants;
 mod getters;
-mod setters;
 pub mod txn_header;
 pub mod txn_id;
 pub mod txn_signature;
 pub mod types;
 mod utils;
-// external
-use {
-    chrono::prelude::*,
-    serde::{Deserialize, Serialize},
-    std::fmt,
-};
-// local
+
 use crate::ledger::{
     general::PbKey,
     txn::{
         constants::*, txn_header::TxnHeader, txn_id::TxnId, txn_signature::TxnSignature, types::*,
     },
     wallet::Wallet,
+};
+use {
+    chrono::prelude::*,
+    serde::{Deserialize, Serialize},
+    std::fmt,
 };
 
 // exported types

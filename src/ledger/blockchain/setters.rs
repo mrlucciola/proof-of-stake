@@ -1,7 +1,6 @@
-// local
-use super::Blockchain;
 use crate::ledger::{
     block::Block,
+    blockchain::Blockchain,
     txn::Txn,
     txn_pool::{TxnMap, TxnPool},
     Result,

@@ -1,9 +1,7 @@
-// external
 use ed25519_dalek::{Digest, Signer};
-// local
 use posbc::ledger::{
-    general::{Sha512, KP},
-    txn::{constants::*, TxnCtxDigest, TxnDigest, TxnId, TxnSignature},
+    general::{HashAlgo, KP},
+    txn::{constants::*, txn_id::TxnId, txn_signature::TxnSignature, types::*},
 };
 // test
 use crate::common::{create_transfer_txn_default, init_send_recv};
@@ -32,7 +30,7 @@ fn create_signed_txn_pass() {
     let txn3 = txn.clone();
 
     // calc signature manually
-    let mut prehash: Sha512 = Sha512::new();
+    let mut prehash = HashAlgo::new();
     // add the txn version
     prehash.update(TXN_MSG_CTX);
     // add the txn bytes

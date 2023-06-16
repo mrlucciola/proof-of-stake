@@ -1,11 +1,9 @@
-// external
-use ed25519_dalek::Digest;
-// local
 use crate::ledger::{
     block::{constants::BLOCK_MSG_CTX, types::BlockDigest, Block, BlockId, BlockSignature},
-    general::Sha512,
+    general::HashAlgo,
     wallet::Wallet,
 };
+use ed25519_dalek::Digest;
 
 impl Block {
     /// ### Calculate the id (blockhash) for a `Block`.
@@ -24,9 +22,9 @@ impl Block {
     /// This is ONLY used with calc-id method.
     ///
     /// @todo add more block information to the block hasher.
-    fn calc_id_sha512_prehash(&self) -> Sha512 {
+    fn calc_id_sha512_prehash(&self) -> HashAlgo {
         // Create a hash digest object which we'll feed the message into:
-        let mut prehash: Sha512 = Sha512::new();
+        let mut prehash = HashAlgo::new();
         // add the block version
         prehash.update(BLOCK_MSG_CTX);
         // add the block header bytes

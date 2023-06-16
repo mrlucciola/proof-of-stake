@@ -1,4 +1,3 @@
-// local
 use posbc::{
     accounts::{
         account::Account,

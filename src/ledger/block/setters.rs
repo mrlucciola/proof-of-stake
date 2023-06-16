@@ -1,6 +1,8 @@
-// local
-use super::{Block, BlockSignature};
-use crate::ledger::{txn::Txn, wallet::Wallet};
+use crate::ledger::{
+    block::{Block, BlockSignature},
+    txn::Txn,
+    wallet::Wallet,
+};
 
 impl Block {
     /// ### Add the signature to the block body in place.

@@ -1,6 +1,7 @@
-// local
-use super::constants::{BLOCK_DIGEST_LEN, BLOCK_SIGNATURE_CTX};
-use crate::ledger::txn_pool::TxnMap;
+use crate::ledger::{
+    block::constants::{BLOCK_DIGEST_LEN, BLOCK_SIGNATURE_CTX},
+    txn_pool::TxnMap,
+};
 
 /// ### This is TxnMap with added functionality.
 /// @todo add condition that this map cant have more than _ number of txns.

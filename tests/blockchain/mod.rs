@@ -1,12 +1,10 @@
-// imports
-use std::{thread, time};
-// local
 use posbc::ledger::{
     block::{types::BlockTxnMap, Block},
     general::Result,
     txn::{Txn, TxnType},
     txn_pool::{TxnMap, TxnPool},
 };
+use std::{thread, time};
 // test
 use crate::common::fxns::{create_block, init_blockchain, init_blockchain_and_accounts};
 

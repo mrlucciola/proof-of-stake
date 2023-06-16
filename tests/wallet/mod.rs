@@ -1,9 +1,7 @@
-// imports
 use ed25519_dalek::{Digest, Signer};
-// local
 use posbc::ledger::{
-    general::{Sha512, KP},
-    txn::{constants::*, TxnCtxDigest, TxnDigest, TxnId},
+    general::{HashAlgo, KP},
+    txn::{constants::*, txn_id::TxnId, types::*},
 };
 // test
 use crate::common::{create_transfer_txn_default, init_send_recv};
@@ -19,7 +17,7 @@ fn verify_txn_signature_pass() {
 
     // manually calculate
     let msg = txn1.header().serialize();
-    let mut prehash: Sha512 = Sha512::new();
+    let mut prehash = HashAlgo::new();
     prehash.update(TXN_MSG_CTX);
     prehash.update(msg);
     let digest: TxnDigest = prehash.finalize().into();

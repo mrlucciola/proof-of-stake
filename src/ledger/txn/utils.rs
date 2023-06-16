@@ -1,11 +1,9 @@
-// imports
-use ed25519_dalek::Digest;
-// local
 use crate::ledger::{
-    general::Sha512,
+    general::HashAlgo,
     txn::{Txn, TxnDigest, TxnId, TxnSignature, TXN_MSG_CTX},
     wallet::Wallet,
 };
+use ed25519_dalek::Digest;
 
 impl Txn {
     /// ### Compute the id (hash digest) of the transaction.
@@ -25,9 +23,9 @@ impl Txn {
     ///
     /// This method is abstracted out to allow calc-id be adapted for
     /// different hashing algorithms.
-    fn calc_id_sha512_prehash(&self) -> Sha512 {
+    fn calc_id_sha512_prehash(&self) -> HashAlgo {
         // Create a hash digest object which we'll feed the message into:
-        let mut prehash: Sha512 = Sha512::new();
+        let mut prehash = HashAlgo::new();
         // add the txn version
         prehash.update(TXN_MSG_CTX);
         // add the txn bytes

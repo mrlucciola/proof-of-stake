@@ -1,16 +1,14 @@
-// imports
-use std::{fs::File, io::BufReader};
-// local
+pub mod constants;
+pub mod fxns;
+
 use posbc::ledger::{
     general::{PbKey, KP},
     txn::{Txn, TxnType},
     wallet::Wallet,
 };
+use std::{fs::File, io::BufReader};
 // test
 use constants::*;
-// mods
-pub mod constants;
-pub mod fxns;
 
 /// secp-2-ed: from get_user_info
 fn create_keypair_from_file(filepath: &String) -> KP {

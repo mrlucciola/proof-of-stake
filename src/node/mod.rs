@@ -4,15 +4,15 @@ pub mod p2p;
 mod setters;
 pub mod types;
 mod utils;
-// local
+
 use crate::{
     ledger::{blockchain::Blockchain, txn_pool::TxnPool, wallet::Wallet},
-    node::{error::NodeError, p2p::P2P},
+    node::p2p::P2P,
 };
 
-/// ### An instance of a `Node`.
-/// A node has a wallet, an instance of blockchain, and a transaction pool.
-/// Node will sync its blockchain ledger and transaction pool with its peers
+/// ## An instance of a `Node`.
+/// A node has a wallet, an instance of blockchain, and a transaction pool.\
+/// Node will sync its blockchain ledger and transaction pool with its peers\
 /// via the peer-to-peer network (p2p).
 ///
 /// The struct is set up this way to:

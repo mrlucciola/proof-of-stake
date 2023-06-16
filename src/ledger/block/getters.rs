@@ -1,4 +1,3 @@
-// local
 use crate::ledger::{
     block::{block_header::BlockHeader, Block, BlockId, BlockSignature, BlockTxnMap},
     blockchain::types::*,

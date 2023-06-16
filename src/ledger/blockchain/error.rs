@@ -1,7 +1,4 @@
-// external
-use thiserror::Error;
-
-#[derive(Debug, Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum BlockchainError {
     /// @todo move to `Txn`
     #[allow(dead_code)]
