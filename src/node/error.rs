@@ -1,9 +1,6 @@
-// external
-use thiserror::Error;
-// local
-use super::p2p::P2PError;
+use crate::node::p2p::error::P2PError;
 
-#[derive(Error, Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum NodeError {
     #[error("Blockchain not initialized.")]
     InitBlockchain,

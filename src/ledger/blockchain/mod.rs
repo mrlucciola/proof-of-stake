@@ -3,13 +3,12 @@ mod getters;
 mod setters;
 pub mod types;
 mod validation;
-// external
-use serde::Serialize;
-// local
+
 use crate::{accounts::accounts::Accounts, ledger::blockchain::types::*};
+use serde::{Deserialize, Serialize};
 
 /// ## Data structure, contains list of sequential blocks.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Blockchain {
     /// Ordered lookup collection (BTreeMap) of blocks, queriable by their ID.
     blocks: BlockMap,

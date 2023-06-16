@@ -1,7 +1,5 @@
-// external
-use serde::{Deserialize, Serialize};
-// local
 use crate::ledger::{general::PbKey, txn::TxnType};
+use serde::{Deserialize, Serialize};
 
 /// ## Transaction header.
 /// Contains the transaction header information.
@@ -19,7 +17,7 @@ pub struct TxnHeader {
 
 // Implement constructor and getters
 impl TxnHeader {
-    /// Constructor
+    /// ### Create a new transaction header.
     pub fn new(
         amt: u128,
         pbkey_send: PbKey,

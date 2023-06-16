@@ -1,13 +1,14 @@
-use arrayvec::ArrayString;
-use base64::display::Base64Display;
-use blake3::{Hash, OUT_LEN};
-use serde::{Serialize, Serializer};
-use std::convert::From;
-use std::fmt;
+use {
+    arrayvec::ArrayString,
+    base64::display::Base64Display,
+    blake3::{Hash, OUT_LEN},
+    serde::{Deserialize, Serialize, Serializer},
+    std::{convert::From, fmt},
+};
 
 pub type BlakeHex = ArrayString<{ 2 * OUT_LEN }>;
 
-#[derive(Clone, Copy, Hash, Serialize)]
+#[derive(Clone, Copy, Hash, Eq, Serialize, Deserialize)]
 pub struct BlakeHash([u8; OUT_LEN]);
 
 impl From<blake3::Hash> for BlakeHash {
@@ -57,21 +58,21 @@ impl BlakeHash {
         s
     }
 }
-/// This implementation is constant-time.
+// This implementation is constant-time.
 impl PartialEq<[u8; OUT_LEN]> for BlakeHash {
     #[inline]
     fn eq(&self, other: &[u8; OUT_LEN]) -> bool {
         constant_time_eq::constant_time_eq_32(&self.0, other)
     }
 }
-/// This implementation is constant-time.
+// This implementation is constant-time.
 impl PartialEq for BlakeHash {
     #[inline]
     fn eq(&self, other: &BlakeHash) -> bool {
         constant_time_eq::constant_time_eq_32(&self.0, &other.0)
     }
 }
-impl Eq for BlakeHash {}
+
 #[allow(clippy::ptr_arg)]
 pub fn serialize<S: Serializer>(v: &Vec<u8>, s: S) -> Result<S::Ok, S::Error> {
     if s.is_human_readable() {

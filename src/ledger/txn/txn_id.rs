@@ -1,20 +1,18 @@
-// external
+use crate::ledger::{
+    general::HashAlgo,
+    txn::{TxnCtxDigest, TxnDigest, TXN_DIGEST_LEN, TXN_SIGNATURE_CTX},
+};
 use {
     ed25519_dalek::Digest,
     serde::{Deserialize, Serialize},
     serde_big_array::BigArray,
 };
-// local
-use crate::ledger::{
-    general::Sha512,
-    txn::{TxnCtxDigest, TxnDigest, TXN_DIGEST_LEN, TXN_SIGNATURE_CTX},
-};
 
 #[derive(Debug, Clone, Copy, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct TxnId(#[serde(with = "BigArray")] pub TxnDigest);
 
-impl From<Sha512> for TxnId {
-    fn from(value: Sha512) -> Self {
+impl From<HashAlgo> for TxnId {
+    fn from(value: HashAlgo) -> Self {
         let val: TxnDigest = value.finalize().into();
         TxnId(val)
     }

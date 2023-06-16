@@ -1,8 +1,8 @@
-// local
 use crate::{
     ledger::{blockchain::Blockchain, txn_pool::TxnPool, wallet::Wallet},
     node::{p2p::P2P, Node},
 };
+use std::borrow::BorrowMut;
 
 impl Node {
     /// ### Get property `Node.wallet`.
@@ -20,8 +20,13 @@ impl Node {
         &self.txn_pool
     }
     /// ### Get property `Node.p2p`.
-    /// Node.p2p is the node's peer to peer instance.\
+    /// Node.p2p is the node's peer to peer instance.
     pub fn p2p(&self) -> &P2P {
         &self.p2p
+    }
+    /// ### Get property `Node.p2p` as mutable.
+    /// Node.p2p is the node's peer to peer instance.
+    pub fn p2p_mut(&mut self) -> &mut P2P {
+        self.p2p.borrow_mut()
     }
 }

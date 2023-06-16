@@ -1,11 +1,9 @@
-// external
+use crate::ledger::{block::types::BlockDigest, general::HashAlgo};
 use {
     ed25519_dalek::Digest,
     serde::{Deserialize, Serialize},
     serde_big_array::BigArray,
 };
-// local
-use crate::ledger::{block::types::BlockDigest, general::Sha512};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct BlockId(#[serde(with = "BigArray")] pub BlockDigest);
@@ -19,8 +17,8 @@ impl BlockId {
     }
 }
 
-impl From<Sha512> for BlockId {
-    fn from(value: Sha512) -> Self {
+impl From<HashAlgo> for BlockId {
+    fn from(value: HashAlgo) -> Self {
         let val: BlockDigest = value.finalize().into();
         BlockId(val)
     }

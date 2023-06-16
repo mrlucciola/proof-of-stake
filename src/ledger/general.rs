@@ -1,8 +1,8 @@
-// external
 use serde::{Deserialize, Serialize};
 // aliased types
 /// General reference regardless of which lib we use
-pub use ed25519_dalek::{Keypair as KP, Sha512};
+pub type HashAlgo = ed25519_dalek::Sha512;
+pub type KP = ed25519_dalek::Keypair;
 pub type Result<T> = std::result::Result<T, anyhow::Error>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

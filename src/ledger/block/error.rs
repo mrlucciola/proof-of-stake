@@ -1,7 +1,4 @@
-// external
-use thiserror::Error;
-
-#[derive(Error, Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum BlockError {
     #[error("BlockError::EmptySignature- Invalid block: No signature")]
     EmptySignature,

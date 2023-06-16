@@ -1,7 +1,5 @@
-// external
+use crate::ledger::txn::TxnDigest;
 use serde::{Deserialize, Serialize};
-// local
-use super::TxnDigest;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TxnSignature(pub Vec<u8>);

@@ -1,11 +1,10 @@
-use std::collections::BTreeMap;
-
-// external
-use serde::{Deserialize, Serialize};
-// local
 use crate::{
     ledger::{block::Block, blockchain::types::BlockMapKey},
     node::p2p::{types::Result, P2P},
+};
+use {
+    serde::{Deserialize, Serialize},
+    std::collections::BTreeMap,
 };
 
 impl P2P {
@@ -29,7 +28,7 @@ pub enum ListMode {
     One(String),
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Nodes(BTreeMap<BlockMapKey, Block>);
 
 #[derive(Debug, Serialize, Deserialize)]

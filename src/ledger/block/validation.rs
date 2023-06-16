@@ -1,6 +1,7 @@
-// local
-use super::{constants::BLOCK_SIGNATURE_CTX, error::BlockError, types::BlockDigest, Block};
-use crate::ledger::general::PbKey;
+use crate::ledger::{
+    block::{constants::BLOCK_SIGNATURE_CTX, error::BlockError, types::BlockDigest, Block},
+    general::PbKey,
+};
 
 impl Block {
     /// ### Check if signature is valid.

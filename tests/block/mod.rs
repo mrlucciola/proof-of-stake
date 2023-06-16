@@ -1,4 +1,3 @@
-// local
 use posbc::ledger::{
     block::{block_id::BlockId, types::BlockTxnMap, Block},
     txn::{Txn, TxnType},

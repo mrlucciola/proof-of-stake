@@ -1,16 +1,14 @@
-// external
+use crate::ledger::{
+    general::{PbKey, Result},
+    txn::{Txn, TxnType},
+};
 use {
     anyhow::ensure,
     secp256k1::PublicKey,
     serde::{Deserialize, Serialize},
 };
-// local
-use crate::ledger::{
-    general::{PbKey, Result},
-    txn::{Txn, TxnType},
-};
 
-/// Representation of a single on-chain account.
+/// ## Representation of a single on-chain account.
 ///
 /// @todo add `rent`
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -26,7 +24,7 @@ pub type AccountPbkey = PublicKey;
 pub type AccountMapKey = AccountId;
 
 impl Account {
-    /// Constructor: Create instance of an on-chain account.
+    /// ### Constructor: Create instance of an on-chain account.
     ///
     /// Load account info from the blockchain.
     pub fn new(id: &AccountId, balance: Option<u128>) -> Self {
@@ -68,7 +66,7 @@ impl Account {
     //     self.id = new_acct_id;
     // }
 
-    /// ## Increase balance by set amount.
+    /// ### Increase balance by set amount.
     ///
     /// New balance must be greater than original balance.
     ///
@@ -86,12 +84,10 @@ impl Account {
 
         Ok(self.balance)
     }
-    /// ## Decrease balance by set amount.
+    /// ### Decrease balance by set amount.
     ///
-    /// New balance must be less than original balance.
-    ///
-    /// Balance must be above 0.
-    ///
+    /// New balance must be less than original balance.\
+    /// Balance must be above 0.\
     /// Should only execute if transfer txn or fee txn.
     pub fn decrease_balance(&mut self, txn: &Txn) -> Result<u128> {
         // @todo add fee validation + error

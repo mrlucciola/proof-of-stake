@@ -1,14 +1,11 @@
+use posbc::{
+    ledger::general::{Result, KP},
+    node::{p2p::P2P, Node},
+};
 use std::{
     fs::File,
     io::BufReader,
     net::{IpAddr, Ipv4Addr},
-};
-
-// imports
-// local
-use posbc::{
-    ledger::general::{Result, KP},
-    node::{Node, P2P},
 };
 
 fn main() -> Result<()> {
@@ -19,7 +16,7 @@ fn main() -> Result<()> {
 
     // open with ed 25519 lib
     let kp = KP::from_bytes(&key_json).unwrap();
-    let new_wallet = Node::get_wallet_from_filepath(Some(&kp_filepath)).unwrap();
+    let new_wallet = Node::get_wallet_from_filepath(&kp_filepath).unwrap();
 
     let ip = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
     let port: u16 = 8898;

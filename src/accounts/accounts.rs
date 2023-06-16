@@ -1,13 +1,12 @@
-// imports
-use serde::Serialize;
-use std::collections::BTreeMap;
-
-// local
-use super::account::{Account, AccountMapKey};
+use crate::accounts::account::{Account, AccountMapKey};
+use {
+    serde::{Deserialize, Serialize},
+    std::collections::BTreeMap,
+};
 
 pub type AccountMap = BTreeMap<AccountMapKey, Account>;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Accounts {
     accounts: AccountMap,
 }

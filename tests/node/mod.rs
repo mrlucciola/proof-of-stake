@@ -1,12 +1,11 @@
-// external
+use posbc::node::{p2p::P2P, Node};
 use std::net::{IpAddr, Ipv4Addr};
-// local
-use posbc::node::{Node, P2P};
 // test
 use crate::common::fxns::init_blockchain_and_accounts;
 
 /// Test if the port is available using std lib.
 /// Attempt to open port at `localhost:port`.
+#[allow(dead_code)]
 fn port_is_available(port: u16) -> bool {
     let addr = std::net::SocketAddr::from(([127, 0, 0, 1], port));
 
@@ -41,7 +40,7 @@ async fn init_node_pass() {
     let mut node2 = Node::new(p2p2, main.wallet);
 
     // 3. connect to node1
-    node2.p2p_mut().unwrap().discover_peer(&node1_pbkey);
+    node2.p2p_mut().discover_peer(&node1_pbkey);
 }
 
 // Other tests:

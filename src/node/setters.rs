@@ -1,4 +1,3 @@
-// local
 use crate::node::{types::Result, Node};
 
 impl Node {

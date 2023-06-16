@@ -1,4 +1,8 @@
-// imports
+use crate::ledger::{
+    block::{block_signature::BlockSignature, constants::*, Block},
+    general::{PbKey, Result, KP},
+    txn::{constants::*, txn_signature::TxnSignature, Txn},
+};
 use {
     anyhow::format_err,
     ed25519_dalek::Signer,
@@ -8,21 +12,17 @@ use {
         io::{BufReader, BufWriter, Write},
     },
 };
-// local
-use crate::ledger::{
-    block::{block_signature::BlockSignature, constants::*, Block},
-    general::{PbKey, Result, KP},
-    txn::{constants::*, Txn, TxnSignature},
-};
 
+/// ## Wallet instance.
+/// Contains the keypair and helper methods for loading, using, saving keys.
 #[derive(Debug)]
 pub struct Wallet {
     keypair: KP,
 }
 
 impl Wallet {
-    /// ## Create a new wallet instance
-    /// Load keypair from file and return wallet instance
+    /// ### Create a new wallet instance.
+    /// Load keypair from file and return wallet instance.
     pub fn new_from_file(filepath: &String) -> Self {
         if !filepath.contains("_ed25519") {
             panic!("Filename must have _ed25519 in it: {}", filepath);
@@ -38,26 +38,28 @@ impl Wallet {
 
         Self { keypair: kp }
     }
-    /// ## Create a new wallet instance
-    /// Load keypair and return wallet instance
+    /// ### Create a new wallet instance.
+    /// Load keypair and return wallet instance.
     pub fn new_from_kp(keypair: KP) -> Self {
         Self { keypair }
     }
-    /// ## Return the signature for a given txn id/hash.
+    /// ### Return the signature for a given txn id/hash.
     /// Take in id/hash digest, sign digest with current wallet's key, return signature.
+    /// - @todo make this a generic function for signing any message. move logic to txn.
     pub fn sign_txn(&self, txn: &Txn) -> TxnSignature {
         self.sign_msg(&mut txn.calc_id().0, TXN_SIGNATURE_CTX)
             .into()
     }
 
-    /// ## Sign a block. Generate signature for block.
-    /// We are not using the prehash Sha512 for consistency, modularity and ease of use.\
+    /// ### Sign a block. Generate signature for block.
+    /// We are using the prehash Sha512 for consistency, modularity and ease of use.\
     /// Also, there may be significant or breaking changes in the future as suggested in their documentation (r.e. "bandaids").
+    /// - @todo make this a generic function for signing any message. move logic to block.
     pub fn sign_block(&self, block: &Block) -> BlockSignature {
         self.sign_msg(&mut block.calc_id().0, BLOCK_SIGNATURE_CTX)
             .into()
     }
-    /// ## Standard function for signing messages.
+    /// ### Standard function for signing messages.
     /// It is important to enforce consistency in how msgs are signed.
     fn sign_msg(&self, msg: &mut [u8; 64], ctx: &[u8]) -> ed25519::Signature {
         let mut vector = ctx.to_vec();
@@ -86,9 +88,9 @@ impl Wallet {
     /////////////////////////////////////////////////////////////////////
     /////////////////////////////// UTILS ///////////////////////////////
 
-    /// Create JSON file containing keypair as a u8-byte array
+    /// ### Create JSON file containing keypair as a u8-byte array.
     ///
-    /// if you dont have a key, create one.
+    /// If you dont have a key, create one.
     ///
     /// File must be `.json`.
     pub fn create_random_key(filepath: String) -> Result<()> {
@@ -116,8 +118,8 @@ impl Wallet {
     /////////////////////////////////////////////////////////////////////
     ///////////////////////////// VALIDATION ////////////////////////////
 
-    /// ## Validate a message.
-    /// Intended for ed25519
+    /// ### Validate a message.
+    /// Intended for ed25519.
     pub fn validate_msg(&self, msg: &Vec<u8>, signature: &Vec<u8>) -> Result<()> {
         let signature = ed25519_dalek::Signature::from_bytes(&signature).unwrap();
 

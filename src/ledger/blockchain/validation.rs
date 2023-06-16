@@ -1,4 +1,3 @@
-// local
 use crate::ledger::{block::Block, blockchain::Blockchain};
 
 impl Blockchain {

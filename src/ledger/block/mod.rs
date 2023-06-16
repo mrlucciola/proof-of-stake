@@ -8,22 +8,20 @@ pub mod setters;
 pub mod types;
 mod utils;
 mod validation;
-// external
-use serde::{Deserialize, Serialize};
-// local
+
 use crate::ledger::{
     block::{
         block_header::BlockHeader, block_id::BlockId, block_signature::BlockSignature, types::*,
     },
     general::PbKey,
+    wallet::Wallet,
 };
-
-use super::wallet::Wallet;
+use serde::{Deserialize, Serialize};
 
 /// ## Info contained within a block
 ///
 /// @todo create method to check if block is over gas limit (create gas value for each `Txn` type);
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Block {
     header: BlockHeader,
     /// Identifier/ID - hash digest of the current block
@@ -58,8 +56,6 @@ impl Block {
     /// ### Create and add the genesis block.
     ///
     /// The genesis block is the initial/seed block for the entire blockchain.
-    ///
-    /// @todo validates that no prior blocks exist.
     pub fn new_genesis(initializer: &Wallet) -> Self {
         // create genesis block header
         let genesis_block = BlockHeader::genesis(initializer.pbkey());
