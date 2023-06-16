@@ -18,7 +18,7 @@ fn verify_txn_signature_pass() {
     let txn3 = txn.clone();
 
     // manually calculate
-    let msg = txn1.to_bytes();
+    let msg = txn1.header().serialize();
     let mut prehash: Sha512 = Sha512::new();
     prehash.update(TXN_MSG_CTX);
     prehash.update(msg);

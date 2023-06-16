@@ -1,6 +1,11 @@
+use std::borrow::BorrowMut;
+
 // local
-use super::{Txn, TxnId, TxnSignature, TxnType};
-use crate::ledger::{general::PbKey, txn_pool::TxnMapKey};
+use crate::ledger::{
+    general::PbKey,
+    txn::{Txn, TxnHeader, TxnId, TxnSignature, TxnType},
+    txn_pool::TxnMapKey,
+};
 
 impl Txn {
     /// ### Get `Txn.id` property.
@@ -15,6 +20,12 @@ impl Txn {
     /// ### Getter for `Txn` `signature` property
     pub fn signature(&self) -> &TxnSignature {
         self.signature.as_ref().unwrap()
+    }
+    pub fn header(&self) -> &TxnHeader {
+        &self.header
+    }
+    pub fn header_mut(&mut self) -> &mut TxnHeader {
+        self.header.borrow_mut()
     }
 
     // Getters for header properties

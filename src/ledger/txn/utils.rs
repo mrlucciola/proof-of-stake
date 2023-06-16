@@ -1,17 +1,13 @@
 // imports
 use ed25519_dalek::Digest;
 // local
-use super::{Txn, TxnDigest, TxnId, TxnSignature, TXN_MSG_CTX};
-use crate::ledger::{general::Sha512, wallet::Wallet};
+use crate::ledger::{
+    general::Sha512,
+    txn::{Txn, TxnDigest, TxnId, TxnSignature, TXN_MSG_CTX},
+    wallet::Wallet,
+};
 
 impl Txn {
-    /// ### Convert transaction struct to bytes - NOT id/hash/message/digest
-    /// TODO: replace `Vec<u8>` - don't allocate
-    pub fn to_bytes(&self) -> Vec<u8> {
-        // serialize to a byte vector
-        serde_json::to_vec(&self.header).expect("Error serializing txn")
-    }
-
     /// ### Compute the id (hash digest) of the transaction.
     /// Converts semantic data for the txn - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
     ///
@@ -35,7 +31,7 @@ impl Txn {
         // add the txn version
         prehash.update(TXN_MSG_CTX);
         // add the txn bytes
-        prehash.update(self.to_bytes());
+        prehash.update(self.header.serialize());
         // return the hasher/prehash struct
         prehash
     }

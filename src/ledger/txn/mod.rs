@@ -53,7 +53,7 @@ impl fmt::Display for TxnType {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Txn {
     /// Transaction header
-    pub header: TxnHeader,
+    header: TxnHeader,
     /// Transaction identifier: Blake3 hash (currently as byte array)
     id: Option<TxnId>,
     /// Ecdsa signature as byte array
