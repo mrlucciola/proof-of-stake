@@ -1,6 +1,6 @@
 // local
 use posbc::ledger::{
-    block::{types::BlockTxnMap, Block, BlockId},
+    block::{block_id::BlockId, types::BlockTxnMap, Block},
     txn::{Txn, TxnType},
 };
 // test
@@ -43,10 +43,6 @@ fn create_empty_block_pass() {
     let mut block = Block::new(BlockTxnMap::new(), leader, prev_block_id, prev_blockheight);
     // create txn map
     add_sample_txns_to_block(0, &mut block);
-    println!("\n\nBLOCK\n{block:?}\nABOCE\n\n");
-
-    println!("\n\nBLOCK.id()\n{:?}\n\n",&block.id());
-    println!("\n\nBLOCK.calc_id()\n{:?}\n\n", &block.calc_id());
 
     // check if hashes line up
     assert_eq!(block.id(), block.calc_id());

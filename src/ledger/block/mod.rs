@@ -1,3 +1,4 @@
+pub mod block_header;
 pub mod block_id;
 pub mod block_signature;
 pub mod constants;
@@ -8,34 +9,25 @@ pub mod types;
 mod utils;
 mod validation;
 // external
-use serde::Deserialize;
-use {chrono::prelude::*, serde::Serialize};
-
+use serde::{Deserialize, Serialize};
 // local
-use crate::ledger::general::{PbKey, Result};
-pub use {block_id::BlockId, block_signature::BlockSignature, types::*};
+use crate::ledger::{
+    block::{
+        block_header::BlockHeader, block_id::BlockId, block_signature::BlockSignature, types::*,
+    },
+    general::{PbKey, Result},
+};
 
 /// ## Info contained within a block
 ///
 /// @todo create a `BlockHeader` struct to hold all fields except `txns` and `signature`;\
 /// @todo create method to check if block is over gas limit (create gas value for each `Txn` type);
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Block {
-    /// List/map of all transactions to be included in the block
-    txns: BlockTxnMap,
-    /// Public key of the current block proposer (node)
-    leader: PbKey,
-    /// Identifier of the previous block - hash digest
-    prev_block_id: BlockId,
-    /// Block height - current number of blocks in blockchain + 1
-    blockheight: u128,
-    /// Current time - unix time stamp
-    system_time: u64,
+    header: BlockHeader,
     /// Identifier/ID - hash digest of the current block
-    #[serde(skip_serializing)]
     id: Option<BlockId>,
     /// The leader's signature for this block submission - Ecdsa signature
-    #[serde(skip_serializing)]
     signature: Option<BlockSignature>,
 }
 
@@ -50,23 +42,15 @@ impl Block {
         prev_block_id: BlockId,
         prev_blockheight: u128,
     ) -> Self {
-        // get the current system time
-        let system_time: u64 = Utc::now().timestamp_millis().try_into().unwrap();
-        let blockheight = prev_blockheight + 1;
-
+        // create block header
+        let header = BlockHeader::new(txns, leader, prev_block_id, prev_blockheight);
         let mut block = Self {
-            txns,
-            leader: leader.into(),
-            prev_block_id,
-            blockheight,
-            system_time,
+            header,
             id: None,
             signature: None,
         };
         // set the id (hash) with the body
-        block.set_id();
-        // repeat again to hash with the set id
-        block.set_id();
+        block.update_id();
 
         block
     }
@@ -78,18 +62,16 @@ impl Block {
     /// - Validates that no prior blocks exist.
     /// - Manually assigns a blocktime (0 = 1/1/1970 00:00).
     pub fn new_genesis(initializer: PbKey) -> Result<Block> {
+        // create genesis block header
+        let genesis_block = BlockHeader::genesis(BlockTxnMap::new(), initializer);
         // create a new block using the `Block` constructor - we need to replace the blockheight, id, and signature
-        let mut genesis_block = Block::new(
-            BlockTxnMap::new(),
-            initializer,
-            BlockId::from_bytes([0u8; 64]),
-            0,
-        );
-        // replace blockheight & time
-        genesis_block.blockheight = 0;
-        genesis_block.system_time = 0;
-        // replace id/hash
-        genesis_block.set_id();
+        let mut genesis_block = Self {
+            header: genesis_block,
+            id: None,
+            signature: None,
+        };
+        // set id/hash
+        genesis_block.update_id();
 
         Ok(genesis_block)
     }
@@ -98,11 +80,11 @@ impl Block {
     //////////////// PRIVATE SETTERS ////////////////
     /// ### Calculate and set the id for a `Block`.
     /// Returns id.
-    fn set_id(&mut self) -> BlockId {
-        let id = self.calc_id();
-        self.id = Some(id);
+    fn update_id(&mut self) -> BlockId {
+        let new_id = self.calc_id();
+        self.id = Some(new_id);
 
-        id
+        new_id
     }
     /// ### Set the signature for the block.
     fn set_signature(&mut self, signature: BlockSignature) {

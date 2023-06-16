@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub use ed25519_dalek::{Keypair as KP, Sha512};
 pub type Result<T> = std::result::Result<T, anyhow::Error>;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PbKey(pub [u8; 32]);
 impl From<PbKey> for [u8; 32] {
     fn from(value: PbKey) -> Self {
