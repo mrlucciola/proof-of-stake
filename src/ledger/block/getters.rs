@@ -29,4 +29,8 @@ impl Block {
     pub fn leader(&self) -> &PbKey {
         &self.leader
     }
+    /// ### Get `Block.prev_block_id` property.
+    pub fn prev_block_id(&self) -> &BlockId {
+        &self.prev_block_id
+    }
 }

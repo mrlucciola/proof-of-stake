@@ -1,4 +1,4 @@
-// imports
+// external
 use ed25519_dalek::{Digest, Signer};
 // local
 use posbc::ledger::{
