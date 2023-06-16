@@ -71,10 +71,9 @@ impl BlockHeader {
         &self.blockheight
     }
 
-    /// ### Convert to bytes - NOT id/hash/message/digest
-    /// TODO: replace `Vec<u8>` - don't allocate if possible
-    pub fn to_bytes(&self) -> Vec<u8> {
-        // serialize to a byte vector
+    /// ### Serialize header to bytes - NOT id/hash/message/digest
+    /// @todo replace `Vec<u8>` - don't allocate if possible
+    pub fn serialize(&self) -> Vec<u8> {
         serde_json::to_vec(self).expect("Error serializing block header")
     }
 }

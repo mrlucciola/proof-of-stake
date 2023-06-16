@@ -8,12 +8,6 @@ use crate::ledger::{
 };
 
 impl Block {
-    /// ### Convert to bytes - NOT id/hash/message/digest
-    /// TODO: replace `Vec<u8>` - don't allocate if possible
-    pub fn to_bytes(&self) -> Vec<u8> {
-        // serialize to a byte vector
-        serde_json::to_vec(self).expect("Error serializing block")
-    }
     /// ### Calculate the id (blockhash) for a `Block`.
     /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.
     ///
@@ -26,14 +20,18 @@ impl Block {
 
         BlockId(digest)
     }
-    /// ### Calculate the pre-hash struct for the id
+    /// ### Calculate the pre-hash struct for the id.
+    /// This is ONLY used with calc-id method.
+    ///
+    /// @todo add more block information to the block hasher.
     fn calc_id_sha512_prehash(&self) -> Sha512 {
         // Create a hash digest object which we'll feed the message into:
         let mut prehash: Sha512 = Sha512::new();
         // add the block version
         prehash.update(BLOCK_MSG_CTX);
-        // add the block bytes
-        prehash.update(self.header.to_bytes());
+        // add the block header bytes
+        prehash.update(self.header.serialize());
+        // @todo add other info to the prehash
         // return the hasher/prehash struct
         prehash
     }

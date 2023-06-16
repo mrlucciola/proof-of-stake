@@ -8,13 +8,13 @@ use crate::ledger::{general::PbKey, txn::TxnType};
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TxnHeader {
     // Token amount to be transfered
-    pub amt: u128,
+    amt: u128,
     pbkey_send: PbKey,
     pbkey_recv: PbKey,
     // The time the txn was created
-    pub system_time: u64,
+    system_time: u64,
     /// Type of transaction - as int
-    pub txn_type: TxnType,
+    txn_type: TxnType,
 }
 
 // Implement constructor and getters
@@ -35,24 +35,31 @@ impl TxnHeader {
             txn_type,
         }
     }
-    /// ### Get `Txn.amt` property
+    /// ### Get property `Txn.amt`.
     pub fn amt(&self) -> &u128 {
         &self.amt
     }
-    /// ### Get `Txn.pbkey_send` property
+    /// ### Get property `Txn.pbkey_send`.
     pub fn pbkey_send(&self) -> &PbKey {
         &self.pbkey_send
     }
-    /// ### Get `Txn.pbkey_recv` property
+    /// ### Get property `Txn.pbkey_recv`.
     pub fn pbkey_recv(&self) -> &PbKey {
         &self.pbkey_recv
     }
-    /// ### Get `Txn.system_time` property
+    /// ### Get property `Txn.system_time`.
     pub fn system_time(&self) -> &u64 {
         &self.system_time
     }
-    /// ### Get `Txn.txn_type` property
+    /// ### Get property `Txn.txn_type`.
     pub fn txn_type(&self) -> &TxnType {
         &self.txn_type
+    }
+
+    /// ### Serialize transaction header to bytes.
+    ///
+    /// @todo replace `Vec<u8>` - don't allocate if all inputs have known size.
+    pub fn serialize(&self) -> Vec<u8> {
+        serde_json::to_vec(self).expect("Error serializing transaction header")
     }
 }

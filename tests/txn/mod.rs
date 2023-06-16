@@ -36,7 +36,7 @@ fn create_signed_txn_pass() {
     // add the txn version
     prehash.update(TXN_MSG_CTX);
     // add the txn bytes
-    prehash.update(txn1.to_bytes());
+    prehash.update(txn1.header().serialize());
     // convert to byte array
     let digest: TxnDigest = prehash.finalize().into();
     let mut digest_buffer: TxnCtxDigest = [0_u8; TXN_DIGEST_LEN + TXN_SIGNATURE_CTX.len()];
