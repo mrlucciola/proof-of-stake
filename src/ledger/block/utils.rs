@@ -9,7 +9,7 @@ impl Block {
     /// TODO: replace `Vec<u8>` - don't allocate if possible
     pub fn to_bytes(&self) -> Vec<u8> {
         // serialize to a byte vector
-        serde_json::to_vec(&self).expect("Error serializing block")
+        serde_json::to_vec(self).expect("Error serializing block")
     }
     /// ### Calculate the id (blockhash) for a `Block`.
     /// Converts semantic data for the block - all non-calculated fields (i.e. excludes `id` and `signature`) into bytes.

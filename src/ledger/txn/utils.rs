@@ -9,7 +9,7 @@ impl Txn {
     /// TODO: replace `Vec<u8>` - don't allocate
     pub fn to_bytes(&self) -> Vec<u8> {
         // serialize to a byte vector
-        serde_json::to_vec(&self).expect("Error serializing txn")
+        serde_json::to_vec(&self.header).expect("Error serializing txn")
     }
 
     /// ### Compute the id (hash digest) of the transaction.
@@ -24,7 +24,11 @@ impl Txn {
 
         TxnId(digest)
     }
-    /// ### Calculate the pre-hash struct for the id
+    /// ### Calculate the pre-hash struct for the id.
+    /// This is only used in the `calc_id` method.
+    ///
+    /// This method is abstracted out to allow calc-id be adapted for
+    /// different hashing algorithms.
     fn calc_id_sha512_prehash(&self) -> Sha512 {
         // Create a hash digest object which we'll feed the message into:
         let mut prehash: Sha512 = Sha512::new();
@@ -42,9 +46,9 @@ impl Txn {
     }
 
     /// ### Add the signature to the transaction body in place.
-    /// 1) Sign the transaction
-    /// 2) Add signature to transaction body
-    /// 3) Return signature
+    /// 1) Create the signature - sign the transaction;
+    /// 2) Add signature to transaction body;
+    /// 3) Return signature;
     pub fn sign(&mut self, wallet: &Wallet) -> TxnSignature {
         let sig = self.calc_signature(wallet);
         self.set_signature(sig.to_owned());

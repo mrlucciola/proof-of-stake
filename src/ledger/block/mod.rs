@@ -32,8 +32,10 @@ pub struct Block {
     /// Current time - unix time stamp
     system_time: u64,
     /// Identifier/ID - hash digest of the current block
+    #[serde(skip_serializing)]
     id: Option<BlockId>,
     /// The leader's signature for this block submission - Ecdsa signature
+    #[serde(skip_serializing)]
     signature: Option<BlockSignature>,
 }
 
@@ -61,8 +63,9 @@ impl Block {
             id: None,
             signature: None,
         };
-
         // set the id (hash) with the body
+        block.set_id();
+        // repeat again to hash with the set id
         block.set_id();
 
         block
