@@ -46,8 +46,13 @@ impl BlockHeader {
             system_time: Utc::now().timestamp_millis().try_into().unwrap(),
         }
     }
-    pub fn genesis(txns: BlockTxnMap, leader: PbKey) -> Self {
-        Self::new(txns, leader, BlockId::from_bytes([0u8; 64]), 0)
+    pub fn genesis(leader: PbKey) -> Self {
+        Self::new(
+            BlockTxnMap::new(),
+            leader,
+            BlockId::from_bytes([0u8; 64]),
+            0,
+        )
     }
 
     /// ### Get property `Block.txns`.

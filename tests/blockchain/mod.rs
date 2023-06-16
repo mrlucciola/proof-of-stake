@@ -12,8 +12,13 @@ use crate::common::fxns::{create_block, init_blockchain, init_blockchain_and_acc
 
 #[test]
 fn create_blockchain_pass() {
-    let (users, blockchain) = init_blockchain();
+    let (users, mut blockchain) = init_blockchain();
     let main = users.main;
+    let genesis = Block::new_genesis(&main.wallet);
+
+    blockchain
+        .add_block(genesis)
+        .expect("Error adding genesis block to blockchain.");
 
     let blocks = blockchain.blocks();
 
@@ -43,15 +48,34 @@ fn create_blockchain_pass() {
 #[test]
 fn add_block_to_blockchain_pass() {
     let (users, mut blockchain) = init_blockchain();
+    let main = users.main;
+
+    let blocks_len_init = blockchain.blocks().len();
+    assert_eq!(
+        blocks_len_init, 0,
+        "Blockchain must have 0 blocks after initializing"
+    );
+
+    let genesis = Block::new_genesis(&main.wallet);
+    blockchain
+        .add_block(genesis)
+        .expect("Error adding genesis block to blockchain.");
 
     let blocks_len_pre = blockchain.blocks().len();
+    assert_eq!(
+        blocks_len_pre,
+        blocks_len_init + 1,
+        "Blockchain must have 1 block after adding genesis"
+    );
 
     // add a block to the chain
-    let mut new_block_to_add = create_block(&users.main, &blockchain);
+    let mut new_block_to_add = create_block(&main, &blockchain);
 
-    new_block_to_add.sign(&users.main.wallet);
+    new_block_to_add.sign(&main.wallet);
     let key = new_block_to_add.id_key();
-    blockchain.add_block(new_block_to_add).unwrap(); // dont worry about error handling
+    blockchain
+        .add_block(new_block_to_add)
+        .expect("Error adding second block to blockchain");
     let blocks_len_post = blockchain.blocks().len();
 
     // check
@@ -141,10 +165,14 @@ fn execute_txn_via_blockchain_pass() -> Result<()> {
 #[test]
 fn add_txn_to_blocks_pass() -> Result<()> {
     let (users, mut blockchain) = init_blockchain_and_accounts();
-    let amt_to_send = 1;
-    let pbkey_recv = users.recv.pbkey();
-    let txn_type = TxnType::Transfer;
-    let txn_ct = 5;
+    let main = users.main;
+    let send = users.send;
+    let recv = users.recv;
+
+    let genesis = Block::new_genesis(&main.wallet);
+    blockchain
+        .add_block(genesis)
+        .expect("Error adding genesis block to blockchain.");
 
     // create txn pool
     let mut txn_pool = TxnPool::new();
@@ -153,9 +181,15 @@ fn add_txn_to_blocks_pass() -> Result<()> {
 
     // create txns and add them to the map
     let ten_millis = time::Duration::from_millis(10);
+
+    // txn config
+    let amt_to_send = 1;
+    let txn_type = TxnType::Transfer;
+    let txn_ct = 5;
+
     for _ in 0..txn_ct {
         thread::sleep(ten_millis);
-        let txn: Txn = Txn::new_signed(&users.send.wallet, pbkey_recv, amt_to_send, txn_type);
+        let txn: Txn = Txn::new_signed(&send.wallet, recv.pbkey(), amt_to_send, txn_type);
 
         txn_pool.add_txn(txn.clone())?;
         // @todo only add txn id, not whole txn
@@ -171,7 +205,7 @@ fn add_txn_to_blocks_pass() -> Result<()> {
     let prev_block = blockchain.last_block();
     let mut new_block = Block::new(
         BlockTxnMap::new(),
-        users.main.pbkey(),
+        main.pbkey(),
         prev_block.id(),
         prev_block.blockheight().to_owned(),
     );

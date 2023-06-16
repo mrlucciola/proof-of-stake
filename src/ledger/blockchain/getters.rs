@@ -4,7 +4,7 @@ use std::borrow::BorrowMut;
 use super::{BlockMap, BlockMapKey, Blockchain};
 use crate::{
     accounts::accounts::{AccountMap, Accounts},
-    ledger::{block::Block, PbKey},
+    ledger::block::Block,
 };
 
 impl Blockchain {
@@ -21,6 +21,8 @@ impl Blockchain {
     /// Current behavior is to panic when no block is present.\
     /// A blockchain should never be empty, representing an undefined state.\
     /// A blockchain always needs a genesis block.
+    ///
+    /// @todo return a result if empty, not panic.
     pub fn last_block(&self) -> &Block {
         self.blocks.values().next_back().unwrap()
     }
@@ -36,9 +38,5 @@ impl Blockchain {
     /// ### Get map of `accounts`.
     pub fn account_map(&self) -> &AccountMap {
         &self.accounts.accounts()
-    }
-    /// ### Get `Blockchain.initializer` property.
-    pub fn initializer(&self) -> &PbKey {
-        &self.initializer
     }
 }
