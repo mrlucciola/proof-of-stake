@@ -1,6 +1,7 @@
 pub mod constants;
 mod getters;
 mod setters;
+pub mod txn_header;
 pub mod txn_id;
 pub mod txn_signature;
 pub mod types;
@@ -13,11 +14,13 @@ use {
 };
 // local
 use crate::ledger::{general::PbKey, wallet::Wallet};
-use constants::*;
-pub use {txn_id::TxnId, txn_signature::TxnSignature, types::*};
+pub use {
+    constants::*, txn_header::TxnHeader, txn_id::TxnId, txn_signature::TxnSignature, types::*,
+};
 
 // exported types
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+// @todo move to separate file
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TxnType {
     Transfer = 1,
 }
@@ -49,13 +52,8 @@ impl fmt::Display for TxnType {
 /// @todo create `TxnHeader` struct to hold all fields except `id` and `signature`;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Txn {
-    pub amt: u128,
-    pbkey_send: PbKey,
-    pbkey_recv: PbKey,
-    // The time the txn was created
-    pub system_time: u64,
-    /// Type of transaction - as int
-    pub txn_type: TxnType,
+    /// Transaction header
+    pub header: TxnHeader,
     /// Transaction identifier: Blake3 hash (currently as byte array)
     id: Option<TxnId>,
     /// Ecdsa signature as byte array
@@ -75,13 +73,10 @@ impl Txn {
     ) -> Self {
         // get the current system time
         let system_time: u64 = Utc::now().timestamp_millis().try_into().unwrap();
-
+        // build the header
+        let txn_header = TxnHeader::new(amt, pbkey_send, pbkey_recv, system_time, txn_type);
         let mut txn = Self {
-            pbkey_send,
-            pbkey_recv,
-            amt,
-            system_time,
-            txn_type,
+            header: txn_header,
             id: None,        //[0u8; 64],
             signature: None, //[0u8; 64],
         };

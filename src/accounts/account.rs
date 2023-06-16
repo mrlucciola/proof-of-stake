@@ -1,5 +1,9 @@
-// imports
-use {anyhow::ensure, secp256k1::PublicKey, serde::Serialize};
+// external
+use {
+    anyhow::ensure,
+    secp256k1::PublicKey,
+    serde::{Deserialize, Serialize},
+};
 // local
 use crate::ledger::{
     general::{PbKey, Result},
@@ -8,8 +12,8 @@ use crate::ledger::{
 
 /// Representation of a single on-chain account.
 ///
-/// TODO: add `rent`
-#[derive(Debug, Clone, Copy, Serialize)]
+/// @todo add `rent`
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Account {
     /// ID: An on-chain account's public identifier, as its represented throughout the rest of the repositories. Abstract class, derives public key
     id: AccountId,
@@ -73,11 +77,11 @@ impl Account {
     /// Should only execute if transfer txn or coinbase txn.
     pub fn increase_balance(&mut self, txn: &Txn) -> Result<u128> {
         // @todo add coinbase validation + error
-        if txn.txn_type != TxnType::Transfer {
+        if txn.txn_type() != &TxnType::Transfer {
             panic!("Only allowing transfer transactions.");
         }
 
-        let amt_to_incr = txn.amt;
+        let amt_to_incr = txn.amt();
         self.balance += amt_to_incr;
 
         Ok(self.balance)
@@ -92,11 +96,11 @@ impl Account {
     pub fn decrease_balance(&mut self, txn: &Txn) -> Result<u128> {
         // @todo add fee validation + error
         ensure!(
-            txn.txn_type == TxnType::Transfer,
+            txn.txn_type() == &TxnType::Transfer,
             "Transfer is the only accepted Txn Type"
         );
 
-        let amt_to_decr = txn.amt;
+        let amt_to_decr = txn.amt();
         self.balance -= amt_to_decr;
 
         Ok(self.balance)
