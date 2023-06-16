@@ -15,8 +15,10 @@ use crate::ledger::{
     block::{
         block_header::BlockHeader, block_id::BlockId, block_signature::BlockSignature, types::*,
     },
-    general::{PbKey, Result},
+    general::PbKey,
 };
+
+use super::wallet::Wallet;
 
 /// ## Info contained within a block
 ///
@@ -59,9 +61,9 @@ impl Block {
     /// The genesis block is the initial/seed block for the entire blockchain.
     ///
     /// @todo validates that no prior blocks exist.
-    pub fn new_genesis(initializer: PbKey) -> Result<Block> {
+    pub fn new_genesis(initializer: &Wallet) -> Self {
         // create genesis block header
-        let genesis_block = BlockHeader::genesis(BlockTxnMap::new(), initializer);
+        let genesis_block = BlockHeader::genesis(initializer.pbkey());
         // create a new block using the `Block` constructor - we need to replace the blockheight, id, and signature
         let mut genesis_block = Self {
             header: genesis_block,
@@ -70,8 +72,9 @@ impl Block {
         };
         // set id/hash
         genesis_block.update_id();
+        genesis_block.sign(&initializer);
 
-        Ok(genesis_block)
+        genesis_block
     }
 
     /////////////////////////////////////////////////

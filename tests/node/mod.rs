@@ -1,7 +1,7 @@
-// imports
+// external
 use std::net::{IpAddr, Ipv4Addr};
 // local
-use posbc::node::{Node, Result, P2P};
+use posbc::node::{p2p::P2P, types::Result, Node};
 // test
 use crate::common::fxns::init_blockchain_and_accounts;
 
@@ -35,3 +35,12 @@ fn init_node_pass() -> Result<()> {
     // @todo initialize txn pool
     Ok(())
 }
+
+// Other tests:
+// - Sync a arbitrary block with another node.
+// - Sync the full blockchain with another node.
+// - Test block consensus.
+// - Send a transaction.
+// - Propose and submit a block to peers.
+// - (Multiple) test transaction gossip.
+// - (Multiple) test block gossip.

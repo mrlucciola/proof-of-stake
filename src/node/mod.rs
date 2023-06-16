@@ -1,12 +1,14 @@
 mod error;
 mod getters;
-mod p2p;
+pub mod p2p;
 mod setters;
-mod types;
+pub mod types;
 mod utils;
 // local
-use crate::ledger::{blockchain::Blockchain, txn_pool::TxnPool, wallet::Wallet};
-pub use {error::NodeError, p2p::P2P, types::Result};
+use crate::{
+    ledger::{blockchain::Blockchain, txn_pool::TxnPool, wallet::Wallet},
+    node::{error::NodeError, p2p::P2P},
+};
 
 /// ### An instance of a `Node`.
 /// A node has a wallet, an instance of blockchain, and a transaction pool.
@@ -20,12 +22,13 @@ pub use {error::NodeError, p2p::P2P, types::Result};
 /// 1. Leverage the type-system for error handling;
 #[derive(Debug)]
 pub struct Node {
-    wallet: Option<Wallet>,
-    blockchain: Option<Blockchain>,
-    txn_pool: Option<TxnPool>,
-    p2p: Option<P2P>,
+    wallet: Wallet,
+    blockchain: Blockchain,
+    txn_pool: TxnPool,
+    p2p: P2P,
 }
 
+// @todo store node info locally so that it can be retrieved on startup
 impl Node {
     /// ### Create a new `Node` instance.
     ///
@@ -34,47 +37,11 @@ impl Node {
     /// 1. They may be updated asynchronously;
     /// 1. It may not be necessary to initialize immediately.
     pub fn new(p2p: P2P, wallet: Wallet) -> Self {
-        let mut new_node = Self {
-            wallet: None,
-            blockchain: None,
-            txn_pool: None,
-            p2p: None,
-        };
-
-        new_node.set_p2p(p2p).unwrap();
-        new_node.set_wallet(wallet).unwrap();
-
-        new_node
+        Self {
+            wallet,
+            blockchain: Blockchain::new(),
+            txn_pool: TxnPool::new(),
+            p2p,
+        }
     }
-
-    /////////////////////////////////////////////////////
-    ////////////////// PROPERTY SETTERS /////////////////
-    /// ### Set `Node.wallet` property with `Wallet` instance.
-    fn set_wallet(&mut self, wallet: Wallet) -> Result<()> {
-        self.wallet = Some(wallet);
-
-        Ok(())
-    }
-    /// ### Set `Node.blockchain` property with `P2P` instance.
-    #[allow(dead_code)]
-    fn set_blockchain(&mut self, blockchain: Blockchain) -> Result<()> {
-        self.blockchain = Some(blockchain);
-
-        Ok(())
-    }
-    /// ### Set `Node.txn_pool` property with `TxnPool` instance.
-    #[allow(dead_code)]
-    fn set_txn_pool(&mut self, txn_pool: TxnPool) -> Result<()> {
-        self.txn_pool = Some(txn_pool);
-
-        Ok(())
-    }
-    /// ### Set `Node.p2p` property with `P2P` instance.
-    fn set_p2p(&mut self, p2p: P2P) -> Result<()> {
-        self.p2p = Some(p2p);
-
-        Ok(())
-    }
-    ////////////////// PROPERTY SETTERS /////////////////
-    /////////////////////////////////////////////////////
 }
